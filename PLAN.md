@@ -6,12 +6,14 @@
 
 ## Ground rules
 
-- [ ] Do not modify the existing Shennian repository during Phase 0-4; use copy-out only.
-- [ ] Keep native helper behavior compatible during the first formal release; do not redesign helper protocol yet.
-- [ ] Keep standalone mode independent from Shennian Cloud; users configure their own OpenAI-compatible vision model.
-- [ ] Do not install native helper silently during npm `postinstall`; helper setup must be explicit.
-- [ ] Keep the project private until license, compliance, signing, security, and release docs are reviewed.
-- [ ] Do not print `.env`, API keys, tokens, raw clipboard content, or full screenshots in logs or CLI output.
+These are standing rules, not TODO items:
+
+1. Do not modify the existing Shennian repository during Phase 0-4; use copy-out only.
+2. Keep native helper behavior compatible during the first formal release; do not redesign helper protocol yet.
+3. Keep standalone mode independent from Shennian Cloud; users configure their own OpenAI-compatible vision model.
+4. Do not install native helper silently during npm `postinstall`; helper setup must be explicit.
+5. Keep the project private until license, compliance, signing, security, and release docs are reviewed.
+6. Do not print `.env`, API keys, tokens, raw clipboard content, or full screenshots in logs or CLI output.
 
 ## Target product checklist
 
