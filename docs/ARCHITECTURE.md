@@ -24,7 +24,7 @@ UseChat keeps business state in TypeScript and platform capabilities in native h
 | Native helper | window, screenshot, OCR, input, clipboard, file materialization, activity detection | model calls, ledger, dedupe, agent routing |
 | Helper runtime | packaging, manifest, install, upgrade, signing evidence | hidden postinstall side effects |
 
-## WeChat MVP flow
+## WeChat first release flow
 
 ```text
 read(chat)
@@ -73,11 +73,11 @@ Platform mode is future work.
 
 ## Native helper compatibility
 
-The MVP keeps the existing helper protocol compatible with the current Shennian helper. This avoids simultaneous changes in JS state machine and native automation.
+The first formal release keeps the existing helper protocol compatible with the current Shennian helper. This avoids simultaneous changes in JS state machine and native automation.
 
 Rules:
 
-- Do not rename helper commands during MVP.
+- Do not rename helper commands during the first formal release.
 - Do not change response shapes unless additive.
 - Keep stable reason codes.
 - Keep helper as a capability runtime, not a business daemon.

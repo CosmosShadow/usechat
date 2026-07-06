@@ -2,7 +2,7 @@
 
 Planned binary: `usechat`.
 
-MVP commands:
+Initial formal release commands:
 
 ```bash
 usechat init

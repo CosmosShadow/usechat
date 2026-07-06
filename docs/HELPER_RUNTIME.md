@@ -17,11 +17,11 @@ A pure Node.js package cannot reliably provide all required desktop capabilities
 
 UseChat keeps these capabilities in a native helper and keeps product logic in TypeScript.
 
-## MVP compatibility target
+## First release compatibility target
 
 The initial helper source and protocol should be copied from the current Shennian helper implementation and kept behavior-compatible.
 
-MVP commands remain JSON-RPC style, including:
+First release commands remain JSON-RPC style, including:
 
 - `health.check`
 - `permissions.check`

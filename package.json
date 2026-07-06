@@ -6,7 +6,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "check": "node -e \"console.log('UseChat scaffold: docs and package layout ready')\"",
+    "check": "node -e \"console.log('UseChat project docs and package layout ready')\"",
     "test": "node -e \"console.log('No tests yet: implementation has not started')\""
   },
   "engines": {

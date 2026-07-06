@@ -1,6 +1,6 @@
 # UseChat
 
-> **Private project scaffold. Not open source yet.**
+> **Private project. Not open source yet.**
 >
 > UseChat is **Computer Use for messaging agents**. It lets AI agents use local messaging apps through visible, permissioned desktop automation. The first connector is WeChat.
 
@@ -41,7 +41,7 @@ Principles:
 
 UseChat starts with WeChat Desktop on macOS and Windows.
 
-### MVP commands
+### First release commands
 
 ```bash
 usechat init
@@ -54,7 +54,7 @@ usechat read --app wechat --chat "文件传输助手" --limit 10
 usechat write --app wechat --chat "文件传输助手" --text "hello" --yes
 ```
 
-### MVP capabilities
+### First release capabilities
 
 - Discover and validate the native helper runtime.
 - Check platform permissions and WeChat readiness.
@@ -116,6 +116,6 @@ Long-term relationship:
 
 ## Status
 
-Current status: **private planning scaffold**.
+Current status: **private formal project foundation**.
 
 Next step: follow [PLAN.md](./PLAN.md) to copy the existing helper source and connector logic into this repository without modifying Shennian.

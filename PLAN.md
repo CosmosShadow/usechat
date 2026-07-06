@@ -7,7 +7,7 @@
 ## Ground rules
 
 - [ ] Do not modify the existing Shennian repository during Phase 0-4; use copy-out only.
-- [ ] Keep native helper behavior compatible during MVP; do not redesign helper protocol yet.
+- [ ] Keep native helper behavior compatible during the first formal release; do not redesign helper protocol yet.
 - [ ] Keep standalone mode independent from Shennian Cloud; users configure their own OpenAI-compatible vision model.
 - [ ] Do not install native helper silently during npm `postinstall`; helper setup must be explicit.
 - [ ] Keep the project private until license, compliance, signing, security, and release docs are reviewed.
@@ -22,14 +22,14 @@
 - [ ] `usechat read --app wechat --chat "ABC" --format markdown` works.
 - [ ] `usechat write --app wechat --chat "ABC" --text "hello" --yes` works.
 
-## Phase 0 — Project charter and scaffold
+## Phase 0 — Project charter and repository foundation
 
 Estimate: 0.5-1 day.
 
 - [x] Create private repository / project directory.
 - [x] Add private root `package.json`.
 - [x] Add pnpm workspace file.
-- [x] Add root TypeScript base config placeholder.
+- [x] Add root TypeScript base config.
 - [x] Add `.gitignore`.
 - [x] Add README with positioning and non-goals.
 - [x] Add architecture document.
@@ -74,7 +74,7 @@ Estimate: 1-2 days.
 ### Attribution and notices
 
 - [ ] Add `NOTICE.md` with copied-source attribution.
-- [ ] Add third-party notice placeholder for Windows native DLLs and OCR models.
+- [ ] Add third-party notice file for Windows native DLLs and OCR models.
 - [ ] Add license decision note; default private for now.
 - [ ] Record Shennian source snapshot commit / path in copy-out notes.
 
@@ -239,7 +239,7 @@ Acceptance:
 - [ ] Prompt and schema live in this repository.
 - [ ] Unit tests cover success and failure cases.
 
-## Phase 5 — WeChat read MVP
+## Phase 5 — WeChat read first release
 
 Estimate: 4-7 days.
 
@@ -249,7 +249,7 @@ Estimate: 4-7 days.
 - [ ] Support `--limit <n>`.
 - [ ] Support `--format markdown`.
 - [ ] Support `--format json`.
-- [ ] Support `--download never` for MVP.
+- [ ] Support `--download never` for the first formal release.
 - [ ] Add readable failure output.
 - [ ] Add JSON failure output.
 
@@ -283,7 +283,7 @@ Acceptance:
 - [ ] Failure does not click or type dangerous input after failed preflight.
 - [ ] No raw screenshot is saved by default.
 
-## Phase 6 — WeChat write MVP
+## Phase 6 — WeChat write first release
 
 Estimate: 3-5 days.
 
@@ -327,7 +327,7 @@ Acceptance:
 
 ## Phase 7 — Full connector capabilities
 
-Estimate: 1-2 weeks after MVP.
+Estimate: 1-2 weeks after the first read/write release.
 
 ### Attachments outbound
 
@@ -408,7 +408,7 @@ Acceptance:
 - [ ] Programmatic mode has stable JSON contracts.
 - [ ] Human confirmation policy is documented for agents.
 
-## Phase 9 — Private beta release
+## Phase 9 — Private formal release
 
 Estimate: 1 week.
 
@@ -431,7 +431,7 @@ Estimate: 1 week.
 - [ ] Generate helper runtime manifests.
 - [ ] Generate helper runtime evidence.
 
-### Private beta checks
+### Private release checks
 
 - [ ] Clean-machine macOS install.
 - [ ] Clean-machine macOS doctor.
@@ -467,6 +467,6 @@ Acceptance:
 
 ## Timeline summary
 
-- [ ] MVP alpha (`doctor + read + write + BYO model`): target **3-4 weeks**.
-- [ ] Full WeChat connector beta: target **6-8 weeks**.
+- [ ] First formal release (`doctor + read + write + BYO model`): target **3-4 weeks**.
+- [ ] Complete WeChat connector release: target **6-8 weeks**.
 - [ ] Public open-source candidate: requires separate legal, security, signing, release, and community docs review.

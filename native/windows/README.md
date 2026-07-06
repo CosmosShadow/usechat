@@ -2,7 +2,7 @@
 
 This directory will contain the Windows C#/.NET helper source copied from the current Shennian helper implementation.
 
-MVP policy:
+First release policy:
 
 - keep helper protocol compatible;
 - preserve visible desktop / user-session requirements;

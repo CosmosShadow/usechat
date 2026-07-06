@@ -2,7 +2,7 @@
 
 This directory will contain the macOS Swift helper source copied from the current Shennian helper implementation.
 
-MVP policy:
+First release policy:
 
 - keep helper protocol compatible;
 - do not redesign permissions or IPC in the first copy-out;
