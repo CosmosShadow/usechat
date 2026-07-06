@@ -24,6 +24,19 @@ usechat read --app wechat --chat "ABC" --limit 10
 usechat write --app wechat --chat "ABC" --text "hello" --yes
 ```
 
+真实设备回归可以直接跑：
+
+```bash
+pnpm build
+pnpm smoke:wechat:abc
+```
+
+Windows 远程测试必须在已登录的可见桌面会话中执行；SSH Session 0 不能操作微信窗口。可用交互式计划任务入口：
+
+```powershell
+pnpm smoke:wechat:abc:windows-task
+```
+
 ## 为什么做 UseChat
 
 真实工作仍然大量发生在消息软件里。多数 AI Agent 能写代码、读文件、调用 API，但不能安全地使用用户自己的本机聊天软件。UseChat 要把这件事做成明确、本地、可审计、可授权的能力。
@@ -63,6 +76,24 @@ usechat write --app wechat --chat "文件传输助手" --text "hello" --yes
 - 使用用户配置的视觉模型结构化当前可见消息。
 - 输出 Markdown 或 JSON。
 - 发送文本消息，默认确认，支持 `--yes` 跳过确认。
+
+## 真实设备 smoke
+
+macOS 或 Windows 本机可用：
+
+```bash
+pnpm smoke:wechat:abc
+```
+
+它会创建临时 UseChat 配置、使用 `ocr-only` 本地 provider、依次执行 `doctor`、读取 ABC、发送一条 `UseChat smoke ...` marker、再读取并确认 marker 是否可见。脚本只输出结构化摘要，不输出完整聊天内容。
+
+Windows 如果通过 SSH 调用，请先保证当前用户已经登录 Windows 桌面和微信，然后使用：
+
+```powershell
+pnpm smoke:wechat:abc:windows-task
+```
+
+该命令会注册并触发一个交互式计划任务，让 smoke 在可见桌面会话中运行。
 
 ### 后续能力
 
