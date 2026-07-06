@@ -1,0 +1,67 @@
+// @covers ../index.ts
+
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { describe, expect, it } from 'vitest'
+import { isAffirmativeSendConfirmation, main, shouldPromptBeforeSend } from '../index.js'
+
+describe('UseChat CLI', () => {
+  it('parses explicit send confirmations only', () => {
+    expect(isAffirmativeSendConfirmation('yes')).toBe(true)
+    expect(isAffirmativeSendConfirmation(' YES ')).toBe(true)
+    expect(isAffirmativeSendConfirmation('y')).toBe(false)
+    expect(isAffirmativeSendConfirmation('no')).toBe(false)
+  })
+
+  it('decides when write should prompt before sending', () => {
+    expect(shouldPromptBeforeSend({ sendRequiresConfirm: true })).toBe(true)
+    expect(shouldPromptBeforeSend({ sendRequiresConfirm: true, yesFlag: true })).toBe(false)
+    expect(shouldPromptBeforeSend({ sendRequiresConfirm: true, shortYesFlag: true })).toBe(false)
+    expect(shouldPromptBeforeSend({ sendRequiresConfirm: false })).toBe(false)
+    expect(shouldPromptBeforeSend({ sendRequiresConfirm: true, dryRun: true })).toBe(false)
+  })
+
+  it('supports write --dry-run without requiring helper or model setup', async () => {
+    const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
+    const output = await captureConsoleLog(async () => {
+      const code = await main([
+        '--config',
+        configPath,
+        'write',
+        '--app',
+        'wechat',
+        '--chat',
+        'ABC',
+        '--text',
+        'hello',
+        '--dry-run',
+        '--json',
+      ])
+      expect(code).toBe(0)
+    })
+    const parsed = JSON.parse(output)
+    expect(parsed).toMatchObject({
+      ok: true,
+      app: 'wechat',
+      chat: 'ABC',
+      text: 'hello',
+      sent: false,
+      status: 'dry-run',
+    })
+  })
+})
+
+async function captureConsoleLog(run: () => Promise<void>): Promise<string> {
+  const originalLog = console.log
+  const lines: string[] = []
+  console.log = (...args: unknown[]) => {
+    lines.push(args.map(String).join(' '))
+  }
+  try {
+    await run()
+  } finally {
+    console.log = originalLog
+  }
+  return lines.join('\n')
+}

@@ -54,6 +54,7 @@ export type WeChatVisionProvider = {
 
 export type CreateWeChatRuntimeInput = {
   helperPath?: string
+  helperTransport?: HelperTransport & { stop?: () => Promise<void> }
   env?: NodeJS.ProcessEnv
   platform?: NodeJS.Platform | string
   verifyIntegrity?: boolean
@@ -69,17 +70,7 @@ export type WeChatRuntime = {
 
 export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeChatRuntime {
   const platform = input.platform ?? process.platform
-  const resolved = resolveWeChatHelperOrThrow(input)
-  const requiredCapabilities = platform === 'win32'
-    ? requiredWindowsWeChatChannelHelperCapabilitiesForProfile('send')
-    : requiredWeChatChannelHelperCapabilitiesForProfile('send')
-  const helper = new WeChatChannelHelperClient({
-    helperPath: resolved.helperPath,
-    expectedHelperVersion: resolved.version,
-    requiredCapabilities,
-    guardUnsafeWindowsCommands: platform === 'win32',
-    skipUserActivityGuard: input.skipUserActivityGuard,
-  })
+  const helper = input.helperTransport ?? createDefaultHelperTransport(input, platform)
   return {
     async read(readInput) {
       if (!input.provider) throw new Error('model_not_configured: read requires a VisionModelProvider')
@@ -159,9 +150,23 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
       return { ok: true, app: 'wechat', chat: writeInput.chat, text: writeInput.text, sent: true, status: 'sent-unconfirmed', traceId, ...(warnings.length ? { warnings } : {}) }
     },
     stop() {
-      return helper.stop()
+      return helper.stop?.() ?? Promise.resolve()
     },
   }
+}
+
+function createDefaultHelperTransport(input: CreateWeChatRuntimeInput, platform: NodeJS.Platform | string): WeChatChannelHelperClient {
+  const resolved = resolveWeChatHelperOrThrow(input)
+  const requiredCapabilities = platform === 'win32'
+    ? requiredWindowsWeChatChannelHelperCapabilitiesForProfile('send')
+    : requiredWeChatChannelHelperCapabilitiesForProfile('send')
+  return new WeChatChannelHelperClient({
+    helperPath: resolved.helperPath,
+    expectedHelperVersion: resolved.version,
+    requiredCapabilities,
+    guardUnsafeWindowsCommands: platform === 'win32',
+    skipUserActivityGuard: input.skipUserActivityGuard,
+  })
 }
 
 export async function openConversation(input: {
@@ -352,7 +357,10 @@ function resolveWeChatHelperOrThrow(input: CreateWeChatRuntimeInput): Extract<Re
 }
 
 function normalizeObservedMessages(value: unknown[]): WeChatObservedMessage[] {
-  return value.map((item, index) => normalizeObservedMessage(item, index)).filter((item): item is WeChatObservedMessage => item !== null)
+  const normalized = value
+    .map((item, index) => normalizeObservedMessage(item, index))
+    .filter((item): item is WeChatObservedMessage => item !== null)
+  return orderMessagesByBboxWhenReliable(normalized)
 }
 
 function normalizeObservedMessage(value: unknown, index: number): WeChatObservedMessage | null {
@@ -362,6 +370,7 @@ function normalizeObservedMessage(value: unknown, index: number): WeChatObserved
   const kind = String(record.kind ?? 'unknown').trim() || 'unknown'
   const text = nullableString(record.normalizedText ?? record.text ?? record.textExcerpt)
   const anchor = nullableString(record.anchorText) ?? text
+  const bbox = sanitizeMessageBbox(record.bbox)
   return {
     stableMessageKey: nullableString(record.stableMessageKey) ?? `visible:${index}:${senderRole}:${kind}:${(anchor ?? '').slice(0, 80)}`,
     senderRole,
@@ -370,10 +379,64 @@ function normalizeObservedMessage(value: unknown, index: number): WeChatObserved
     normalizedText: text,
     anchorText: anchor,
     textExcerpt: nullableString(record.textExcerpt) ?? text,
-    bbox: record.bbox,
+    ...(bbox ? { bbox } : {}),
     mediaMetadata: record.mediaMetadata,
     observedAt: nullableString(record.observedAt) ?? new Date().toISOString(),
   }
+}
+
+type NormalizedMessageBbox = {
+  x: number
+  y: number
+  width: number
+  height: number
+  coordinateSpace?: string
+}
+
+function sanitizeMessageBbox(value: unknown): NormalizedMessageBbox | undefined {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const record = value as Record<string, unknown>
+  const x = Number(record.x)
+  const y = Number(record.y)
+  const width = Number(record.width)
+  const height = Number(record.height)
+  if (![x, y, width, height].every(Number.isFinite)) return undefined
+  if (width <= 0 || height <= 0) return undefined
+  if (Math.abs(x) > 100_000 || Math.abs(y) > 100_000 || width > 100_000 || height > 100_000) return undefined
+  return {
+    x,
+    y,
+    width,
+    height,
+    ...(typeof record.coordinateSpace === 'string' && record.coordinateSpace.trim() ? { coordinateSpace: record.coordinateSpace } : {}),
+  }
+}
+
+function orderMessagesByBboxWhenReliable(messages: WeChatObservedMessage[]): WeChatObservedMessage[] {
+  const withComparableBbox = messages
+    .map((message, index) => ({ message, index, bbox: comparableMessageBbox(message.bbox) }))
+    .filter((item): item is { message: WeChatObservedMessage; index: number; bbox: NormalizedMessageBbox } => item.bbox !== null)
+  if (withComparableBbox.length < 2) return messages
+  const boxedIndexes = new Set(withComparableBbox.map((item) => item.index))
+  const withoutComparableBbox = messages
+    .map((message, index) => ({ message, index }))
+    .filter((item) => !boxedIndexes.has(item.index))
+  const sorted = [...withComparableBbox].sort((left, right) => {
+    const dy = left.bbox.y - right.bbox.y
+    if (Math.abs(dy) > Math.max(8, Math.min(left.bbox.height, right.bbox.height) * 0.35)) return dy
+    const dx = left.bbox.x - right.bbox.x
+    if (Math.abs(dx) > 8) return dx
+    return left.index - right.index
+  })
+  return [
+    ...sorted.map((item) => item.message),
+    ...withoutComparableBbox.map((item) => item.message),
+  ]
+}
+
+function comparableMessageBbox(value: unknown): NormalizedMessageBbox | null {
+  const bbox = sanitizeMessageBbox(value)
+  return bbox ?? null
 }
 
 function normalizeSenderRole(value: unknown): WeChatObservedMessage['senderRole'] {

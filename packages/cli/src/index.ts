@@ -2,8 +2,11 @@
 // @arch ../../../docs/ARCHITECTURE.md
 // @test src/__tests__/cli.test.ts
 
+import { randomUUID } from 'node:crypto'
 import { createInterface } from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 import {
   ensureUseChatConfig,
   formatConfigList,
@@ -34,7 +37,7 @@ type ParsedArgs = {
   global: GlobalOptions
 }
 
-async function main(argv = process.argv.slice(2)): Promise<number> {
+export async function main(argv = process.argv.slice(2)): Promise<number> {
   const parsed = parseArgs(argv)
   try {
     if (parsed.flags.version === true || parsed.flags.v === true || parsed.command === '--version') {
@@ -151,14 +154,25 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   if (!chat || text === undefined) throw new Error('usage: usechat write --app wechat --chat <name> --text <text> [--yes]')
   const loaded = loadUseChatConfig({ configPath: parsed.global.configPath })
   const dryRun = parsed.flags['dry-run'] === true
-  const yes = parsed.flags.yes === true || parsed.flags.y === true || loaded.config.wechat.sendRequiresConfirm === false
-  if (!yes && !dryRun) {
+  if (shouldPromptBeforeSend({
+    dryRun,
+    yesFlag: parsed.flags.yes === true,
+    shortYesFlag: parsed.flags.y === true,
+    sendRequiresConfirm: loaded.config.wechat.sendRequiresConfirm,
+  })) {
     const confirmed = await confirmSend(chat, text)
     if (!confirmed) {
       if (parsed.global.json || parsed.flags.json === true) printJson({ ok: false, reasonCode: 'user_cancelled', sent: false })
       else console.error('已取消发送。')
       return 2
     }
+  }
+  const yes = parsed.flags.yes === true || parsed.flags.y === true || loaded.config.wechat.sendRequiresConfirm === false
+  if (dryRun) {
+    const result = { ok: true, app: 'wechat', chat, text, sent: false, status: 'dry-run', traceId: `dry-run-${randomUUID()}` }
+    if (parsed.global.json || parsed.flags.json === true) printJson(result)
+    else console.log(`dry-run：不会发送到 ${chat}`)
+    return 0
   }
   const provider = maybeCreateProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
@@ -190,14 +204,30 @@ function maybeCreateProviderFromConfig(config: UseChatConfig) {
   return createProviderFromConfig(config)
 }
 
+export function shouldPromptBeforeSend(input: {
+  dryRun?: boolean
+  yesFlag?: boolean
+  shortYesFlag?: boolean
+  sendRequiresConfirm?: boolean
+}): boolean {
+  if (input.dryRun) return false
+  if (input.yesFlag || input.shortYesFlag) return false
+  if (input.sendRequiresConfirm === false) return false
+  return true
+}
+
 async function confirmSend(chat: string, text: string): Promise<boolean> {
   const rl = createInterface({ input, output })
   try {
     const answer = await rl.question(`确认发送到「${chat}」？\n${text}\n输入 yes 继续：`)
-    return answer.trim().toLowerCase() === 'yes'
+    return isAffirmativeSendConfirmation(answer)
   } finally {
     rl.close()
   }
+}
+
+export function isAffirmativeSendConfirmation(answer: string): boolean {
+  return answer.trim().toLowerCase() === 'yes'
 }
 
 function parseArgs(argv: string[]): ParsedArgs {
@@ -305,8 +335,16 @@ function handleCliError(error: unknown, json: boolean): number {
   return 1
 }
 
-main().then((code) => {
-  process.exitCode = code
-}).catch((error) => {
-  process.exitCode = handleCliError(error, false)
-})
+if (isCliEntrypoint()) {
+  main().then((code) => {
+    process.exitCode = code
+  }).catch((error) => {
+    process.exitCode = handleCliError(error, false)
+  })
+}
+
+function isCliEntrypoint(): boolean {
+  const entrypoint = process.argv[1]
+  if (!entrypoint) return false
+  return path.resolve(entrypoint) === path.resolve(fileURLToPath(import.meta.url))
+}

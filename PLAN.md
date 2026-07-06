@@ -273,8 +273,8 @@
 ### 测试与 smoke
 
 - [x] 单元测试 read output formatting。
-- [ ] 单元测试 model-to-message normalization。
-- [ ] Mock helper read flow 测试。
+- [x] 单元测试 model-to-message normalization。
+- [x] Mock helper read flow 测试。
 - [x] macOS smoke：读取 `文件传输助手`。
 - [ ] Windows smoke：读取一个已知对话。
 
@@ -313,10 +313,10 @@
 
 ### 测试与 smoke
 
-- [ ] 单元测试确认逻辑。
-- [ ] 单元测试 `--yes` 行为。
-- [ ] 单元测试 dry run。
-- [ ] Mock helper write flow 测试。
+- [x] 单元测试确认逻辑。
+- [x] 单元测试 `--yes` 行为。
+- [x] 单元测试 dry run。
+- [x] Mock helper write flow 测试。
 - [x] macOS smoke：写入 `文件传输助手`。
 - [ ] Windows smoke：写入一个已知对话。
 
