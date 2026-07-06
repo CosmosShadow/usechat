@@ -55,7 +55,13 @@ export function fallbackMessageInputPoint(window: WeChatWindowInfo): WeChatScree
   const bounds = window.bounds
   if (!bounds) return null
   const xOffset = Math.max(520, Math.min(bounds.width - 160, bounds.width * 0.68))
-  const bottomInset = Math.max(48, Math.min(88, bounds.height * 0.08))
+  // Desktop WeChat's composer has a toolbar at the top and a tall editable
+  // area below it. The old point used a small bottom inset, which landed on
+  // the lower chrome/blank area on recent macOS WeChat builds: click looked
+  // successful, but the text editor did not become first responder, so paste
+  // was silently dropped. Aim at the vertical middle of the editable band
+  // instead of near the bottom edge.
+  const bottomInset = Math.max(120, Math.min(180, bounds.height * 0.13))
   return {
     x: Math.round(bounds.x + xOffset),
     y: Math.round(bounds.y + bounds.height - bottomInset),

@@ -172,12 +172,13 @@ function compactResult(id, parsed, stderr = '') {
   if (id.includes('read')) {
     const messages = Array.isArray(parsed.messages) ? parsed.messages : []
     const texts = messages.map((message) => String(message.normalizedText || message.textExcerpt || ''))
+    const compactMarker = compactComparableText(options.marker)
     return {
       ok: parsed.ok === true,
       reasonCode: cliReasonCode,
       messageCount: messages.length,
       containsChatName: texts.some((text) => text.includes(options.chat)),
-      markerFound: texts.some((text) => text.includes(options.marker)),
+      markerFound: texts.some((text) => text.includes(options.marker) || compactComparableText(text).includes(compactMarker)),
       traceId: parsed.traceId,
       window: parsed.window?.bounds,
     }
@@ -223,6 +224,10 @@ function extractCliReasonCode(stderr) {
   const match = /UseChat\s+\S+[:：]\s*([a-z0-9_.-]+)/i.exec(text)
     ?? /([a-z0-9_.-]+)(?::|\s*$)/i.exec(text)
   return match?.[1]
+}
+
+function compactComparableText(value) {
+  return String(value ?? '').normalize('NFKC').replace(/\s+/g, '')
 }
 
 function finish(value) {

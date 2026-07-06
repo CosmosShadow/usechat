@@ -1,7 +1,7 @@
 // @covers ../wechat/points.ts
 
 import { describe, expect, it } from 'vitest'
-import { screenPointForClassifierRect } from '../wechat/points.js'
+import { fallbackMessageInputPoint, screenPointForClassifierRect } from '../wechat/points.js'
 
 describe('wechat point conversion', () => {
   it('uses screenshot bounds when converting normalized classifier rects', () => {
@@ -21,5 +21,12 @@ describe('wechat point conversion', () => {
       'message-input',
     )
     expect(point).toEqual({ x: 1099, y: 1015, coordinateSpace: 'screen' })
+  })
+
+  it('aims fallback message input point inside the editable composer band', () => {
+    expect(fallbackMessageInputPoint({
+      windowId: 'wechat',
+      bounds: { x: 31, y: 70, width: 1010, height: 1208, coordinateSpace: 'screen' },
+    })).toEqual({ x: 718, y: 1121, coordinateSpace: 'screen' })
   })
 })

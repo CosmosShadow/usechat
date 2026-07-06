@@ -1,6 +1,7 @@
 // @arch ../../../docs/ARCHITECTURE.md
 // @test src/__tests__/wechat-runtime.test.ts
 
+import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import {
   resolveWeChatChannelHelperAsset,
@@ -15,6 +16,7 @@ import {
 } from './helper-protocol.js'
 import { applyMessageLimit, formatWeChatMessagesMarkdown } from './format.js'
 import { fallbackMessageInputPoint, fallbackSearchPoint, screenPointForClassifierRect } from './points.js'
+import { validateWeChatMessages } from './message-quality.js'
 import type {
   WeChatObservedMessage,
   WeChatOcrResult,
@@ -60,6 +62,12 @@ export type CreateWeChatRuntimeInput = {
   verifyIntegrity?: boolean
   provider?: WeChatVisionProvider
   skipUserActivityGuard?: boolean
+  macosSubmitText?: (input: {
+    text: string
+    window: WeChatWindowInfo
+    inputPoint: WeChatScreenPoint | null
+    traceId?: string
+  }) => Promise<void>
 }
 
 export type WeChatRuntime = {
@@ -92,6 +100,13 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
         traceId,
       })
       const messages = applyMessageLimit(normalizeObservedMessages(structured.structuredMessages ?? structured.observedMessages ?? []), readInput.limit)
+      const quality = validateWeChatMessages({
+        messages,
+        windowBounds: {
+          width: observation.capture.width,
+          height: observation.capture.height,
+        },
+      })
       return {
         ok: true,
         app: 'wechat',
@@ -100,6 +115,7 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
         markdown: formatWeChatMessagesMarkdown(messages),
         traceId,
         window: opened.window,
+        quality,
       }
     },
     async write(writeInput) {
@@ -123,20 +139,17 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
             pasteWaitMs: 900,
           }, traceId)
           assertHelperOk(submitted, 'wechat.pasteAndSubmit')
-        } else {
-          const focus = await helper.request('wechat.focusMessageInput', {
-            windowId: opened.window.windowId,
-            ...(inputPoint ? { inputPoint } : {}),
-            waitMs: 260,
-          }, traceId)
-          assertHelperOk(focus, 'wechat.focusMessageInput')
+        } else if (platform === 'darwin') {
           const setText = await helper.request('clipboard.setText', { text: writeInput.text }, traceId)
           assertHelperOk(setText, 'clipboard.setText')
-          const paste = await helper.request('keyboard.shortcut', { key: 'v', modifiers: ['command'] }, traceId)
-          assertHelperOk(paste, 'keyboard.shortcut')
-          await sleep(500)
-          const submit = await helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, traceId)
-          assertHelperOk(submit, 'keyboard.shortcut')
+          await (input.macosSubmitText ?? macosPasteAndSubmitWithSystemEvents)({
+            text: writeInput.text,
+            window: opened.window,
+            inputPoint,
+            traceId,
+          })
+        } else {
+          throw new Error(`unsupported_platform: ${platform}`)
         }
         committed = true
       } finally {
@@ -153,6 +166,59 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
       return helper.stop?.() ?? Promise.resolve()
     },
   }
+}
+
+async function macosPasteAndSubmitWithSystemEvents(input: {
+  text: string
+  window: WeChatWindowInfo,
+  inputPoint: WeChatScreenPoint | null,
+  traceId?: string
+}): Promise<void> {
+  const point = input.inputPoint ?? fallbackMessageInputPoint(input.window)
+  if (!point) throw new Error('wechat_input_point_required')
+
+  const script = buildMacOsPasteAndSubmitScript(point)
+  const submitted = spawnSync('/usr/bin/osascript', [], {
+    input: script,
+    encoding: 'utf8',
+    timeout: 15_000,
+  })
+  assertProcessOk(submitted, 'wechat_submit_failed')
+  await sleep(500)
+}
+
+function buildMacOsPasteAndSubmitScript(point: WeChatScreenPoint): string {
+  const x = Math.round(point.x)
+  const y = Math.round(point.y)
+  if (!Number.isFinite(x) || !Number.isFinite(y)) throw new Error('wechat_input_point_invalid')
+  return [
+    'tell application "System Events"',
+    '  if not (exists process "WeChat") then error "wechat_not_running"',
+    '  tell process "WeChat"',
+    '    set frontmost to true',
+    '    delay 0.15',
+    `    click at {${x}, ${y}}`,
+    '    delay 0.2',
+    '    keystroke "a" using command down',
+    '    delay 0.05',
+    '    key code 51',
+    '    delay 0.05',
+    '    keystroke "v" using command down',
+    '    delay 0.18',
+    '    key code 36',
+    '  end tell',
+    'end tell',
+    '',
+  ].join('\n')
+}
+
+function assertProcessOk(result: ReturnType<typeof spawnSync>, reasonCode: string): void {
+  if (result.error) throw new Error(`${reasonCode}: ${result.error.message}`)
+  if (typeof result.status === 'number' && result.status !== 0) {
+    const summary = String(result.stderr || result.stdout || '').trim().split(/\r?\n/)[0] || `exit ${result.status}`
+    throw new Error(`${reasonCode}: ${summary}`)
+  }
+  if (result.signal) throw new Error(`${reasonCode}: signal ${result.signal}`)
 }
 
 function createDefaultHelperTransport(input: CreateWeChatRuntimeInput, platform: NodeJS.Platform | string): WeChatChannelHelperClient {

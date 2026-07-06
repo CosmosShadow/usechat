@@ -5,7 +5,7 @@ import { defaultUseChatConfigPath, redactSecrets, setConfigValue, validateUseCha
 
 describe('UseChat config', () => {
   it('uses ~/.usechat/config.json by default', () => {
-    expect(defaultUseChatConfigPath({ homedir: '/tmp/home', env: {} })).toBe('/tmp/home/.usechat/config.json')
+    expect(defaultUseChatConfigPath({ homedir: '/tmp/home', env: {} }).replace(/\\/g, '/')).toBe('/tmp/home/.usechat/config.json')
   })
 
   it('rejects raw api keys in apiKeyEnv', () => {

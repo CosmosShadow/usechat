@@ -62,6 +62,17 @@ export type WeChatReadResult = {
   markdown: string
   traceId: string
   window?: WeChatWindowInfo
+  quality?: {
+    ok: boolean
+    warnings: Array<{
+      code: string
+      message: string
+      messageIndex?: number
+      stableMessageKey?: string
+      details?: Record<string, unknown>
+    }>
+    metrics: Record<string, number>
+  }
 }
 
 export type WeChatWriteResult = {

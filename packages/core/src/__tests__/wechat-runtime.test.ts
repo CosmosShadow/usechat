@@ -112,6 +112,13 @@ describe('wechat runtime read/write', () => {
 
     expect(result.messages.map((message) => message.normalizedText)).toEqual(['first', 'second', 'third'])
     expect(result.messages[2]?.bbox).toBeUndefined()
+    expect(result.quality?.ok).toBe(true)
+    expect(result.quality?.metrics).toMatchObject({
+      messageCount: 3,
+      comparableBboxCount: 2,
+      invalidBboxCount: 0,
+      nonMonotonicPairCount: 0,
+    })
   })
 
   it('does not resolve or call helper during dry run writes', async () => {
@@ -152,6 +159,45 @@ describe('wechat runtime read/write', () => {
     expect(helper.calls.find((call) => call.command === 'wechat.pasteAndSubmit')?.params).toMatchObject({
       text: 'hello',
       windowId: '100',
+      inputPoint: { coordinateSpace: 'screen' },
+    })
+  })
+
+  it('runs a macOS write flow through the System Events submit hook', async () => {
+    const helper = new FakeHelper([
+      ok({ wechatRunning: true }),
+      ok(windowInfo()),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+        { text: '发送', bbox: { x: 1030, y: 760, width: 60, height: 36 } },
+      ])),
+      ok({ sequenceNumber: 1 }),
+      ok({ copied: true }),
+      ok({ restored: true }),
+    ])
+    const submitted: unknown[] = []
+    const runtime = createWeChatRuntime({
+      helperTransport: helper,
+      platform: 'darwin',
+      macosSubmitText: async (input) => {
+        submitted.push(input)
+      },
+    })
+
+    const result = await runtime.write({ chat: 'ABC', text: 'hello', yes: true })
+
+    expect(result).toMatchObject({ ok: true, sent: true, status: 'sent-unconfirmed' })
+    expect(helper.commands()).toEqual([
+      'permissions.check',
+      'windows.ensureReady',
+      'windows.captureAndOcr',
+      'clipboard.snapshot',
+      'clipboard.setText',
+      'clipboard.restore',
+    ])
+    expect(submitted[0]).toMatchObject({
+      text: 'hello',
+      window: { windowId: '100' },
       inputPoint: { coordinateSpace: 'screen' },
     })
   })

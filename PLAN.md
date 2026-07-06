@@ -265,7 +265,7 @@
 - [x] 可用时收集 OCR/layout hints。
 - [x] 调用 model provider。
 - [x] 归一化消息。
-- [ ] 校验消息顺序和 bbox 基本合理性。
+- [x] 校验消息顺序和 bbox 基本合理性。
 - [x] 按 `--limit` 截取。
 - [x] 输出 Markdown。
 - [x] 输出 JSON。
@@ -334,10 +334,14 @@
 - [x] macOS：`usechat read --app wechat --chat "ABC" --format json --download never` 成功读取 ABC。
 - [x] macOS：`usechat write --app wechat --chat "ABC" --text "UseChat mac ABC ..." --yes --json` 成功提交，随后 read 能读回 marker。
 - [x] macOS：`pnpm smoke:wechat:abc` 通过，验证 marker 可读回。
+- [x] macOS：2026-07-07 重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
+- [x] macOS：2026-07-07 重新验证 `pnpm smoke:wechat:abc -- --marker "UseChatmacABC20260707035915"` 通过，发送后 read-back 找到 marker。
 - [x] Windows：`usechat doctor` 通过，Helper / 可见桌面 / 微信进程检查正常。
 - [x] Windows：已复现并收敛当前 blocker：微信显示“为了你的账号安全，请重新登录 / 扫码登录”，UseChat 现在会返回 `wechat_login_required`，不会继续搜索、点击、粘贴或发送。
 - [x] Windows：ABC 读写 smoke 入口已固化为 `pnpm smoke:wechat:abc:windows-task`，可在可见桌面会话里运行。
 - [x] Windows：计划任务 smoke 已重跑，doctor 通过；因微信仍要求重新登录，read 返回 `wechat_login_required`，write 自动跳过。
+- [x] Windows：2026-07-07 同步最新代码到 `C:\Users\simpl\usechat`，`pnpm build && pnpm typecheck && pnpm test` 通过。
+- [x] Windows：2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 再次验证；doctor 通过，read 仍返回 `wechat_login_required`，write 自动跳过。
 - [ ] Windows：用户重新登录微信后，重新验证读取 ABC。
 - [ ] Windows：用户重新登录微信后，重新验证发送 marker 到 ABC 并读回。
 
