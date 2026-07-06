@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "packageKind": "shennian-helper-runtime",
+  "platform": "darwin",
+  "helperVersion": "0.1.12",
+  "protocolVersion": 1,
+  "minCliVersion": "0.2.100",
+  "sha256": {
+    "runtimeManifest": "2bf105c822fd83f916543db62bfaa84dafcc5e648a452457ff76d3e7fcfaad55",
+    "entrypoint": "78eb60f0e787cc30ac3791f778c3432e452f42d6a3d4059a6d412ba38825232a"
+  },
+  "installTarget": {
+    "kind": "app-bundle",
+    "defaultPath": "~/Library/Application Support/Shennian/Helper/Shennian Helper.app"
+  },
+  "payload": {
+    "kind": "macos-helper-app",
+    "bundleId": "ai.shennian.helper",
+    "runtimeManifest": "Contents/Resources/wechat-channel/macos/manifest.json",
+    "entrypoint": "Contents/MacOS/Shennian Helper"
+  },
+  "signature": {
+    "requiredForRelease": true,
+    "signed": true,
+    "notarized": false
+  }
+}

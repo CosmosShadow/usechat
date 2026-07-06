@@ -61,31 +61,31 @@
 
 ### 源码 copy-out
 
-- [ ] 拷贝 helper protocol 类型到 `packages/core`。
-- [ ] 拷贝 helper client transport 到 `packages/core`。
-- [ ] 拷贝 helper asset / runtime resolver 到 `packages/core` 或 `helper-runtime`。
-- [ ] 拷贝 macOS Swift helper 源码到 `native/macos`。
-- [ ] 拷贝 Windows C# helper 源码到 `native/windows`。
-- [ ] 拷贝 macOS helper 构建脚本到 `native/macos` 或 `helper-runtime`。
-- [ ] 拷贝 Windows helper 构建脚本到 `native/windows` 或 `helper-runtime`。
-- [ ] 拷贝 helper runtime 打包脚本到 `helper-runtime`。
-- [ ] 拷贝 helper manifest schema fixture 到 `helper-runtime`。
-- [ ] 保持 helper command 名称不变。
-- [ ] 保持 helper response shape 不变，只允许 additive 字段。
+- [x] 拷贝 helper protocol 类型到 `packages/core`。
+- [x] 拷贝 helper client transport 到 `packages/core`。
+- [x] 拷贝 helper asset / runtime resolver 到 `packages/core` 或 `helper-runtime`。
+- [x] 拷贝 macOS Swift helper 源码到 `native/macos`。
+- [x] 拷贝 Windows C# helper 源码到 `native/windows`。
+- [x] 拷贝 macOS helper 构建脚本到 `native/macos` 或 `helper-runtime`。
+- [x] 拷贝 Windows helper 构建脚本到 `native/windows` 或 `helper-runtime`。
+- [x] 拷贝 helper runtime 打包脚本到 `helper-runtime`。
+- [x] 拷贝 helper manifest schema fixture 到 `helper-runtime`。
+- [x] 保持 helper command 名称不变。
+- [x] 保持 helper response shape 不变，只允许 additive 字段。
 
 ### 归因与 notice
 
-- [ ] 添加 `NOTICE.md`，记录 copy-out 来源。
-- [ ] 为 Windows native DLL 和 OCR 模型添加 third-party notice 文件。
-- [ ] 添加 license 决策说明；当前默认保持 private。
-- [ ] 记录 Shennian 源码快照 commit / path。
+- [x] 添加 `NOTICE.md`，记录 copy-out 来源。
+- [x] 为 Windows native DLL 和 OCR 模型添加 third-party notice 文件。
+- [x] 添加 license 决策说明；当前默认保持 private。
+- [x] 记录 Shennian 源码快照 commit / path。
 
 验收：
 
-- [ ] 新仓库包含可审计的 helper 源码。
-- [ ] 暂无行为变更。
-- [ ] helper 源码可与 Shennian 源码快照 diff。
-- [ ] 不修改 Shennian 仓库文件。
+- [x] 新仓库包含可审计的 helper 源码。
+- [x] 暂无行为变更。
+- [x] helper 源码可与 Shennian 源码快照 diff。
+- [x] 不修改 Shennian 仓库文件。
 
 ## Phase 2 — CLI 与本地配置
 

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "packageKind": "shennian-helper-runtime",
+  "platform": "win32",
+  "helperVersion": "0.1.26",
+  "protocolVersion": 1,
+  "minCliVersion": "0.2.100",
+  "sha256": {
+    "runtimeManifest": "01da79b4385fef035b5ba88057f0352259c6a0e76d4358dd1040af3a7fb310b9",
+    "entrypoint": "319177963d3a75e5a34594c96b2e2d9b5deacd894eee3af1123ba7a80f26d744"
+  },
+  "installTarget": {
+    "kind": "directory",
+    "defaultPath": "%LOCALAPPDATA%\\Programs\\Shennian Helper"
+  },
+  "payload": {
+    "kind": "windows-helper-runtime",
+    "runtimeManifest": "resources\\wechat-channel\\windows\\manifest.json",
+    "entrypoint": "resources\\wechat-channel\\windows\\shennian-wechat-channel-helper.exe",
+    "manifestSha256": "01da79b4385fef035b5ba88057f0352259c6a0e76d4358dd1040af3a7fb310b9"
+  },
+  "signature": {
+    "requiredForRelease": true,
+    "signed": true,
+    "notarized": false
+  }
+}
