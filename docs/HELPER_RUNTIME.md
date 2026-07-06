@@ -1,27 +1,27 @@
 # Helper Runtime
 
-UseChat includes native helper source and uses helper runtime artifacts for normal users.
+UseChat 包含 native helper 源码，并为普通用户使用 helper runtime artifact。
 
-## Why a helper exists
+## 为什么需要 Helper
 
-A pure Node.js package cannot reliably provide all required desktop capabilities across macOS and Windows:
+纯 Node.js 包无法稳定提供 macOS 和 Windows 上的所有桌面能力：
 
-- stable permission identity;
-- window discovery and focus;
-- window capture;
-- local OCR / layout hints;
-- mouse, keyboard, right-click, scroll;
-- clipboard text and file operations;
-- file/image/video materialization;
-- user activity and takeover detection.
+- 稳定的系统权限身份；
+- 窗口发现和聚焦；
+- 窗口截图；
+- 本地 OCR / layout hints；
+- 鼠标、键盘、右键、滚动；
+- 剪贴板文本和文件操作；
+- 文件、图片、视频物化；
+- 用户活动和接管检测。
 
-UseChat keeps these capabilities in a native helper and keeps product logic in TypeScript.
+UseChat 把这些能力放在 native helper，把产品逻辑留在 TypeScript。
 
-## First release compatibility target
+## 首个正式版本兼容目标
 
-The initial helper source and protocol should be copied from the current Shennian helper implementation and kept behavior-compatible.
+初始 helper 源码和 protocol 从当前 Shennian helper 实现 copy-out，并保持行为兼容。
 
-First release commands remain JSON-RPC style, including:
+首个正式版本的命令仍使用 JSON-RPC 风格，包括：
 
 - `health.check`
 - `permissions.check`
@@ -42,26 +42,26 @@ First release commands remain JSON-RPC style, including:
 - `activity.snapshot`
 - `automation.lease.*`
 
-## Source layout
+## 源码目录
 
 ```text
-native/macos/      # Swift helper source
-native/windows/    # C#/.NET helper source
-helper-runtime/    # packaging, manifest, install, release tools
+native/macos/      # Swift helper 源码
+native/windows/    # C#/.NET helper 源码
+helper-runtime/    # 打包、manifest、安装、release 工具
 ```
 
-## User paths
+## 用户路径
 
-### Normal users
+### 普通用户
 
 ```bash
 usechat setup-helper
 usechat doctor
 ```
 
-Normal users should receive a prebuilt helper runtime artifact. The setup action must be explicit and must not run silently during npm install.
+普通用户应该使用预编译 helper runtime artifact。setup 动作必须显式触发，不能在 npm install 时静默执行。
 
-### Developers
+### 开发者
 
 ```bash
 pnpm build:helper:mac
@@ -69,26 +69,26 @@ pnpm build:helper:win
 usechat config set helper.path /path/to/helper
 ```
 
-Developers can self-build and point UseChat at their local helper.
+开发者可以自编译，并让 UseChat 指向自己的 helper。
 
-## Release artifact requirements
+## Release artifact 要求
 
-Each helper runtime release should include:
+每个 helper runtime release 应包含：
 
-- helper version;
-- protocol version;
-- platform and architecture;
-- manifest JSON;
-- sha256 checksums;
-- signing / notarization / Authenticode evidence where applicable;
-- third-party notices;
-- source revision.
+- helper version；
+- protocol version；
+- platform 和 architecture；
+- manifest JSON；
+- sha256 校验和；
+- 必要时包含签名 / notarization / Authenticode evidence；
+- third-party notices；
+- source revision。
 
-## Safety rules
+## 安全规则
 
-- No helper business scheduler.
-- No hidden network calls from helper.
-- No model provider inside helper.
-- No direct reading of WeChat databases.
-- No process injection.
-- Fail closed on permission, window, screenshot, clipboard, or user takeover uncertainty.
+- Helper 不做业务 scheduler。
+- Helper 不做隐藏网络调用。
+- Helper 内不放 model provider。
+- 不直接读取微信数据库。
+- 不注入进程。
+- 权限、窗口、截图、剪贴板或用户接管状态不确定时 fail closed。

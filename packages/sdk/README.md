@@ -1,8 +1,8 @@
 # UseChat SDK
 
-Embeddable TypeScript API for apps and agents.
+给应用和 Agent 嵌入的 TypeScript API。
 
-Planned API:
+计划 API：
 
 ```ts
 import { createUseChat } from '@shennian/usechat-sdk'

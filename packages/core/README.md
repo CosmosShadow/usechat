@@ -1,16 +1,16 @@
 # `@usechat/core`
 
-Connector core for UseChat.
+UseChat 的连接器核心。
 
-Planned responsibilities:
+计划职责：
 
-- connector schema;
-- helper protocol types;
-- helper client abstraction;
-- read/write state machine;
-- local ledger;
-- media action planning;
-- outbound queue;
-- trace and reason codes.
+- connector schema；
+- helper protocol types；
+- helper client abstraction；
+- read/write 状态机；
+- 本机 ledger；
+- media action planning；
+- outbound queue；
+- trace 和 reasonCode。
 
-This package should not depend on Shennian account, server, relay, billing, or agent adapters.
+这个包不应该依赖神念账号、服务端、relay、计费或 Agent adapters。

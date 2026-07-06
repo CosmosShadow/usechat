@@ -1,50 +1,50 @@
-# Security and Compliance Notes
+# 安全与合规说明
 
-This document is not legal advice. It records product and engineering boundaries for UseChat.
+本文不是法律意见，只记录 UseChat 的产品和工程边界。
 
-## Positioning
+## 定位
 
-UseChat is a local computer-use tool. It operates the user's own visible desktop messaging app on the user's own computer after explicit authorization.
+UseChat 是本地 Computer Use 工具。它在用户显式授权后，操作用户自己电脑上可见的消息软件。
 
-Do say:
+可以这样说：
 
-- local-first;
-- visible computer use;
-- user-authorized;
-- personal assistant;
-- agent uses your own desktop app.
+- 本地优先；
+- 可见 Computer Use；
+- 用户授权；
+- 个人助理；
+- Agent 使用你自己的桌面软件。
 
-Do not say:
+不要这样说：
 
-- anti-ban;
-- bypass detection;
-- bulk messaging;
-- group control;
-- marketing automation;
-- unlimited accounts;
-- protocol cracking.
+- 防封；
+- 绕过检测；
+- 群发；
+- 群控；
+- 营销自动化；
+- 无限账号；
+- 协议破解。
 
-## Hard technical boundaries
+## 技术红线
 
-- No protocol reverse engineering.
-- No process injection.
-- No client patching.
-- No local database scraping.
-- No cache scanning to infer messages or attachments.
-- No hidden background sending without user policy.
-- No storing API keys in logs.
-- No printing raw secrets in CLI output.
+- 不逆向协议。
+- 不注入进程。
+- 不 patch 客户端。
+- 不读取本地数据库。
+- 不扫描缓存来推断消息或附件。
+- 没有用户策略时不隐藏后台发送。
+- 不把 API key 写入日志。
+- CLI 输出不打印原始密钥。
 
-## Privacy defaults
+## 隐私默认值
 
-- Screenshots are used for the current model call and not saved by default.
-- Clipboard content is not logged.
-- OCR full text is not logged by default.
-- Attachments stay local unless a user or embedding platform explicitly transfers them.
-- Diagnostic export is explicit and should support redaction.
+- 截图只用于当次模型调用，默认不保存。
+- 剪贴板内容不写日志。
+- OCR 全文默认不写日志。
+- 附件留在本机，除非用户或嵌入平台显式传输。
+- 诊断导出必须显式触发，并支持脱敏。
 
-## Sending policy
+## 发送策略
 
-The default CLI behavior should confirm destination and content before sending. Non-interactive usage must opt in with `--yes` or an explicit policy.
+CLI 默认应在发送前确认目标对话和内容。非交互使用必须通过 `--yes` 或显式策略选择。
 
-If the window, chat title, input box, clipboard, or user activity status is uncertain, UseChat must fail closed.
+如果窗口、聊天标题、输入框、剪贴板或用户活动状态不确定，UseChat 必须 fail closed。

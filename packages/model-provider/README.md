@@ -1,13 +1,13 @@
 # Model Provider
 
-OpenAI-compatible model provider for UseChat.
+UseChat 的 OpenAI-compatible 模型 provider。
 
-Planned features:
+计划能力：
 
-- visible-window structuring;
-- optional window classification;
-- JSON schema validation;
-- retry / timeout handling;
-- provider-agnostic error normalization.
+- 可见窗口结构化；
+- 可选窗口分类；
+- JSON schema 校验；
+- retry / timeout 处理；
+- provider-agnostic 错误归一化。
 
-No provider key should be hardcoded or logged.
+不得硬编码或记录 provider key。

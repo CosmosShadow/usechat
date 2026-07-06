@@ -1,10 +1,10 @@
 # macOS Helper
 
-This directory will contain the macOS Swift helper source copied from the current Shennian helper implementation.
+这里会放从当前 Shennian helper 实现 copy-out 的 macOS Swift helper 源码。
 
-First release policy:
+首个正式版本策略：
 
-- keep helper protocol compatible;
-- do not redesign permissions or IPC in the first copy-out;
-- support self-build for developers;
-- support signed prebuilt helper runtime for normal users later.
+- 保持 helper protocol 兼容；
+- 第一次 copy-out 不重新设计权限或 IPC；
+- 支持开发者自编译；
+- 后续为普通用户提供签名预编译 helper runtime。

@@ -1,11 +1,11 @@
-# Helper Runtime Packaging
+# Helper Runtime 打包
 
-This directory will contain helper runtime packaging, manifest, install, upgrade, and release scripts.
+这里会放 helper runtime 的打包、manifest、安装、升级和 release 脚本。
 
-Normal users should install helper runtime through an explicit command:
+普通用户应通过显式命令安装 helper runtime：
 
 ```bash
 usechat setup-helper
 ```
 
-No helper runtime should be installed silently during npm postinstall.
+不得在 npm postinstall 阶段静默安装 helper runtime。

@@ -1,8 +1,8 @@
 # `@shennian/usechat` CLI
 
-Planned binary: `usechat`.
+计划 binary：`usechat`。
 
-Initial formal release commands:
+首个正式版本命令：
 
 ```bash
 usechat init
@@ -13,4 +13,4 @@ usechat read --app wechat --chat <name>
 usechat write --app wechat --chat <name> --text <text>
 ```
 
-The CLI is the first public surface of UseChat.
+CLI 是 UseChat 的第一个公开使用面。

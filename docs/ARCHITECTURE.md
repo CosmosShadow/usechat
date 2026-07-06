@@ -1,46 +1,46 @@
-# UseChat Architecture
+# UseChat 架构
 
-## One-line architecture
+## 一句话架构
 
 ```text
-Agent / human CLI
-  -> UseChat CLI / SDK / tool server
+Agent / 人类 CLI
+  -> UseChat CLI / SDK / 工具服务
   -> connector core
   -> model provider + native helper protocol
-  -> visible local messaging app
+  -> 用户本机可见的消息软件
 ```
 
-UseChat keeps business state in TypeScript and platform capabilities in native helpers.
+UseChat 把业务状态机留在 TypeScript，把平台能力放在 native helper。
 
-## Layers
+## 分层
 
-| Layer | Responsibility | Should not do |
-|------|----------------|---------------|
-| CLI | commands, config, output, confirmation, setup entry | native UI automation details |
-| SDK | embeddable API for external apps / agents | own global state unexpectedly |
-| Core | connector state machine, schema, ledger, media plan, outbound queue, trace | platform-specific APIs, model secrets |
-| Model provider | OpenAI-compatible VLM calls, prompts, JSON schema normalization | account/billing logic, UI automation |
-| Helper protocol | JSON-RPC command contract, reason codes, capabilities | product/session semantics |
-| Native helper | window, screenshot, OCR, input, clipboard, file materialization, activity detection | model calls, ledger, dedupe, agent routing |
-| Helper runtime | packaging, manifest, install, upgrade, signing evidence | hidden postinstall side effects |
+| 层 | 负责 | 不应该负责 |
+|----|------|------------|
+| CLI | 命令、配置、输出、发送确认、setup 入口 | native UI 自动化细节 |
+| SDK | 给外部应用 / Agent 嵌入的 API | 暗中持有全局状态 |
+| Core | 连接器状态机、schema、ledger、media plan、outbound queue、trace | 平台 API、模型密钥 |
+| Model provider | OpenAI-compatible VLM 调用、prompt、JSON schema 归一化 | 账号 / 计费逻辑、UI 自动化 |
+| Helper protocol | JSON-RPC command contract、reasonCode、capabilities | 产品 / session 语义 |
+| Native helper | 窗口、截图、OCR、输入、剪贴板、文件物化、用户活动检测 | 模型调用、ledger、去重、Agent 路由 |
+| Helper runtime | 打包、manifest、安装、升级、签名 evidence | 隐式 postinstall 副作用 |
 
-## WeChat first release flow
+## 微信首个正式版本流程
 
 ```text
 read(chat)
-  -> doctor/preflight
+  -> doctor / preflight
   -> helper.ensureReady
   -> helper.search/open conversation
-  -> helper.captureAndOcr or capture + OCR hints
+  -> helper.captureAndOcr 或 capture + OCR hints
   -> model.structureVisibleWindow
   -> normalize / validate
-  -> output markdown/json
+  -> 输出 markdown/json
 ```
 
 ```text
 write(chat, text)
-  -> doctor/preflight
-  -> confirm unless --yes
+  -> doctor / preflight
+  -> 除非 --yes，否则确认
   -> helper.ensureReady
   -> helper.search/open conversation
   -> clipboard snapshot
@@ -50,42 +50,42 @@ write(chat, text)
   -> report status
 ```
 
-## Standalone mode vs platform mode
+## 独立模式与平台模式
 
-### Standalone mode
+### 独立模式
 
-Standalone mode is the first target.
+独立模式是第一目标。
 
-- No Shennian account.
-- No Shennian machine token.
-- No Shennian server relay.
-- BYO model provider.
-- Local config under `~/.usechat`.
-- Local attachments and trace under `~/.usechat`.
+- 不需要神念账号。
+- 不需要神念 machine token。
+- 不需要神念 server relay。
+- 用户自配模型 provider。
+- 本地配置在 `~/.usechat`。
+- 本地附件和 trace 在 `~/.usechat`。
 
-### Platform mode
+### 平台模式
 
-Platform mode is future work.
+平台模式是后续工作。
 
-- Shennian or another agent platform can embed UseChat.
-- The platform can provide identity, cloud sync, audit, remote confirmation, team controls, or managed model routing.
-- UseChat core should remain usable without that platform.
+- 神念或其他 Agent 平台可以嵌入 UseChat。
+- 平台可以提供身份、云同步、审计、远程确认、团队控制或托管模型路由。
+- UseChat core 必须保持没有平台也能独立使用。
 
-## Native helper compatibility
+## Native helper 兼容性
 
-The first formal release keeps the existing helper protocol compatible with the current Shennian helper. This avoids simultaneous changes in JS state machine and native automation.
+首个正式版本保持与当前 Shennian helper 的 helper protocol 兼容。这样可以避免 JS 状态机和 native 自动化同时大改。
 
-Rules:
+规则：
 
-- Do not rename helper commands during the first formal release.
-- Do not change response shapes unless additive.
-- Keep stable reason codes.
-- Keep helper as a capability runtime, not a business daemon.
-- All UI-affecting commands are serialized.
+- 首个正式版本不重命名 helper commands。
+- 除 additive 字段外，不改变 response shape。
+- 保持稳定 reasonCode。
+- Helper 只是 capability runtime，不是业务 daemon。
+- 所有影响 UI 的命令必须串行化。
 
-## Local data ownership
+## 本地数据所有权
 
-Default local root:
+默认本地根目录：
 
 ```text
 ~/.usechat/
@@ -99,11 +99,11 @@ Default local root:
   helper/
 ```
 
-No raw screenshots, OCR full text, or clipboard contents should be stored by default. Diagnostic export must be an explicit user action.
+默认不保存原始截图、OCR 全文或剪贴板内容。诊断导出必须是用户显式动作。
 
 ## Model provider contract
 
-Core only depends on a provider interface:
+Core 只依赖 provider interface：
 
 ```ts
 interface VisionModelProvider {
@@ -112,11 +112,11 @@ interface VisionModelProvider {
 }
 ```
 
-First implementation: OpenAI-compatible chat completions style vision endpoint.
+第一个实现是 OpenAI-compatible chat completions 风格的视觉 endpoint。
 
 ## Connector interface
 
-Initial TypeScript shape:
+初始 TypeScript 形态：
 
 ```ts
 interface MessagingConnector {
@@ -127,4 +127,4 @@ interface MessagingConnector {
 }
 ```
 
-WeChat is the first implementation. The interface should not hardcode WeChat-only concepts unless the concept is genuinely connector-specific.
+微信是第一个实现。这个接口不应该硬编码微信概念，除非该概念确实是 connector-specific。

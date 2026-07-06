@@ -1,9 +1,9 @@
-# Examples
+# 示例
 
-Planned examples:
+计划提供：
 
-- CLI read/write examples.
-- Codex skill/instructions example.
-- Claude Code instructions example.
-- JSONL watch example.
-- Future MCP/tool server example.
+- CLI read/write 示例。
+- Codex skill / instructions 示例。
+- Claude Code instructions 示例。
+- JSONL watch 示例。
+- 未来 MCP / tool server 示例。
