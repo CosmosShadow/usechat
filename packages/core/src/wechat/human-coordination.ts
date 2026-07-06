@@ -32,6 +32,15 @@ export type WeChatChannelActivityGateDecision =
     waitMs: number
   }
 
+export type WaitForWeChatChannelActivityGateInput = {
+  readSnapshot: () => Promise<WeChatChannelHumanActivitySnapshot | null | undefined>
+  stage: WeChatChannelActivityGateStage
+  policy?: Partial<WeChatChannelActivityGatePolicy>
+  maxWaitMs?: number
+  minWaitMs?: number
+  sleep?: (ms: number) => Promise<void>
+}
+
 export const DEFAULT_WECHAT_CHANNEL_ACTIVITY_GATE_POLICY: WeChatChannelActivityGatePolicy = {
   mouseMovedThresholdMs: 2_000,
   mouseClickThresholdMs: 3_000,
@@ -91,6 +100,27 @@ export function decideWeChatChannelActivityGate(input: {
     stage: input.stage,
     reasonCode: blocked.reasonCode,
     waitMs: blocked.waitMs,
+  }
+}
+
+export async function waitForWeChatChannelActivityGate(input: WaitForWeChatChannelActivityGateInput): Promise<WeChatChannelActivityGateDecision> {
+  const sleep = input.sleep ?? defaultSleep
+  const maxWaitMs = Math.max(0, input.maxWaitMs ?? 0)
+  const minWaitMs = Math.max(0, input.minWaitMs ?? 250)
+  let waitedMs = 0
+
+  for (;;) {
+    const decision = decideWeChatChannelActivityGate({
+      snapshot: await input.readSnapshot(),
+      stage: input.stage,
+      policy: input.policy,
+    })
+    if (decision.ok) return decision
+    const remainingMs = maxWaitMs - waitedMs
+    if (remainingMs <= 0) return decision
+    const waitMs = Math.min(Math.max(decision.waitMs, minWaitMs), remainingMs)
+    await sleep(waitMs)
+    waitedMs += waitMs
   }
 }
 
@@ -158,4 +188,8 @@ function stringOrUndefined(value: unknown): string | undefined {
 
 function booleanOrUndefined(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined
+}
+
+function defaultSleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }

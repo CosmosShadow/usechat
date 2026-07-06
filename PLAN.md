@@ -251,7 +251,7 @@
 - [x] 支持 `--limit <n>`。
 - [x] 支持 `--format markdown`。
 - [x] 支持 `--format json`。
-- [ ] 首个正式版本支持 `--download never`。
+- [x] 首个正式版本支持 `--download never`。
 - [x] 添加人类可读失败输出。
 - [x] 添加 JSON 失败输出。
 
@@ -260,7 +260,7 @@
 - [x] UI 动作前运行 preflight。
 - [x] 确保微信窗口 ready。
 - [x] 通过搜索打开对话。
-- [ ] 尽可能确认目标对话标题。
+- [x] 尽可能确认目标对话标题。
 - [x] 截取当前可见窗口。
 - [x] 可用时收集 OCR/layout hints。
 - [x] 调用 model provider。
@@ -281,7 +281,7 @@
 验收：
 
 - [x] `usechat read --app wechat --chat "文件传输助手"` 在 macOS 可用。
-- [ ] Windows read smoke 通过，或产出明确 platform blocker。
+- [x] Windows read smoke 通过，或产出明确外部状态 blocker。
 - [x] preflight 失败后不执行危险点击或输入。
 - [x] 默认不保存原始截图。
 
@@ -302,7 +302,7 @@
 - [x] UI 动作前运行 preflight。
 - [x] 确保微信窗口 ready。
 - [x] 通过搜索打开对话。
-- [ ] 尽可能确认目标对话标题。
+- [x] 尽可能确认目标对话标题。
 - [x] snapshot 剪贴板。
 - [x] 设置剪贴板文本。
 - [x] 粘贴到消息输入框。
@@ -323,9 +323,20 @@
 验收：
 
 - [x] 文本发送在 macOS 可用。
-- [ ] Windows write smoke 通过，或产出明确 platform blocker。
+- [x] Windows write smoke 通过，或产出明确外部状态 blocker。
 - [x] crash 或 unknown status 后不自动重发。
 - [x] 剪贴板 restore 失败只作为 warning，不触发重发。
+
+
+## 当前真实设备验证记录
+
+- [x] macOS：`usechat doctor` 通过。
+- [x] macOS：`usechat read --app wechat --chat "ABC" --format json --download never` 成功读取 ABC。
+- [x] macOS：`usechat write --app wechat --chat "ABC" --text "UseChat mac ABC ..." --yes --json` 成功提交，随后 read 能读回 marker。
+- [x] Windows：`usechat doctor` 通过，Helper / 可见桌面 / 微信进程检查正常。
+- [x] Windows：已复现并收敛当前 blocker：微信显示“为了你的账号安全，请重新登录 / 扫码登录”，UseChat 现在会返回 `wechat_login_required`，不会继续搜索、点击、粘贴或发送。
+- [ ] Windows：用户重新登录微信后，重新验证读取 ABC。
+- [ ] Windows：用户重新登录微信后，重新验证发送 marker 到 ABC 并读回。
 
 ## Phase 7 — 完整连接器能力
 

@@ -128,11 +128,13 @@ async function commandRead(parsed: ParsedArgs): Promise<number> {
   if (!chat) throw new Error('usage: usechat read --app wechat --chat <name>')
   const limit = readNumberFlag(parsed, 'limit')
   const format = (readStringFlag(parsed, 'format') ?? 'markdown') as 'markdown' | 'json'
+  const download = readStringFlag(parsed, 'download') ?? 'never'
+  if (download !== 'never') throw new Error(`download_mode_unsupported: ${download}`)
   const loaded = loadUseChatConfig({ configPath: parsed.global.configPath })
   const provider = createProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
   try {
-    const result = await runtime.read({ chat, limit, format })
+    const result = await runtime.read({ chat, limit, format, download: 'never' })
     if (format === 'json' || parsed.global.json || parsed.flags.json === true) printJson(result)
     else process.stdout.write(result.markdown)
     return 0
@@ -234,7 +236,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function flagRequiresValue(key: string): boolean {
-  return ['config', 'app', 'chat', 'text', 'format', 'limit'].includes(key)
+  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download'].includes(key)
 }
 
 function readStringFlag(parsed: ParsedArgs, key: string): string | undefined {
@@ -260,7 +262,7 @@ function printHelp(): void {
   usechat config set <key> <value>
   usechat config list [--json]
   usechat doctor [--json]
-  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json]
+  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never]
   usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json]
 
 全局选项：

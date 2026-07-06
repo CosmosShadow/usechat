@@ -62,7 +62,7 @@ export type CreateWeChatRuntimeInput = {
 }
 
 export type WeChatRuntime = {
-  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; traceId?: string }): Promise<WeChatReadResult>
+  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never'; traceId?: string }): Promise<WeChatReadResult>
   write(input: { chat: string; text: string; yes?: boolean; dryRun?: boolean; traceId?: string }): Promise<WeChatWriteResult>
   stop(): Promise<void>
 }
@@ -83,6 +83,7 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
   return {
     async read(readInput) {
       if (!input.provider) throw new Error('model_not_configured: read requires a VisionModelProvider')
+      if (readInput.download && readInput.download !== 'never') throw new Error(`download_mode_unsupported: ${readInput.download}`)
       const traceId = readInput.traceId ?? `read-${randomUUID()}`
       const opened = await openConversation({ helper, chat: readInput.chat, provider: input.provider, traceId, platform })
       const observation = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
@@ -117,12 +118,6 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
       }
       const opened = await openConversation({ helper, chat: writeInput.chat, provider: input.provider, traceId, platform, needInputPoint: true })
       const inputPoint = opened.inputPoint ?? fallbackMessageInputPoint(opened.window)
-      const focus = await helper.request('wechat.focusMessageInput', {
-        windowId: opened.window.windowId,
-        ...(inputPoint ? { inputPoint } : {}),
-        waitMs: 260,
-      }, traceId)
-      assertHelperOk(focus, 'wechat.focusMessageInput')
       const snapshot = await helper.request('clipboard.snapshot', {}, traceId)
       assertHelperOk(snapshot, 'clipboard.snapshot')
       const warnings: string[] = []
@@ -138,6 +133,12 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
           }, traceId)
           assertHelperOk(submitted, 'wechat.pasteAndSubmit')
         } else {
+          const focus = await helper.request('wechat.focusMessageInput', {
+            windowId: opened.window.windowId,
+            ...(inputPoint ? { inputPoint } : {}),
+            waitMs: 260,
+          }, traceId)
+          assertHelperOk(focus, 'wechat.focusMessageInput')
           const setText = await helper.request('clipboard.setText', { text: writeInput.text }, traceId)
           assertHelperOk(setText, 'clipboard.setText')
           const paste = await helper.request('keyboard.shortcut', { key: 'v', modifiers: ['command'] }, traceId)
@@ -173,8 +174,13 @@ export async function openConversation(input: {
 }): Promise<{ opened: true; window: WeChatWindowInfo; searchPoint?: WeChatScreenPoint | null; inputPoint?: WeChatScreenPoint | null }> {
   const window = await ensureWeChatWindowReady(input.helper, input.traceId, { foreground: 'required' })
   const observation = await captureAndRecognizeWeChatWindow(input.helper, window.windowId, input.traceId, window.bounds)
+  throwIfWeChatLoginRequired(observation)
   let searchPoint = fallbackSearchPoint(window)
   let inputPoint = fallbackMessageInputPoint(window)
+  if (visibleTopTitleMatches(input.chat, observation)) {
+    if (input.needInputPoint) inputPoint = inferMessageInputPointFromOcr(observation, window) ?? inputPoint
+    return { opened: true, window, searchPoint, inputPoint }
+  }
   if (input.provider?.classifyWindow) {
     try {
       const classified = await input.provider.classifyWindow({
@@ -202,16 +208,18 @@ export async function openConversation(input: {
     ...(searchPoint ? { searchPoint } : {}),
   }, input.traceId)
   assertHelperOk(search, 'wechat.searchConversation')
-  if (input.platform === 'win32') {
-    const enter = await input.helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, input.traceId)
-    assertHelperOk(enter, 'keyboard.shortcut')
-    await sleep(900)
-  } else if (await clickVisibleConversationTitle({ ...input, window })) {
+  if (await clickVisibleConversationTitle({ ...input, window })) {
     await sleep(900)
   } else {
     const enter = await input.helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, input.traceId)
     assertHelperOk(enter, 'keyboard.shortcut')
     await sleep(900)
+  }
+  if (input.needInputPoint) {
+    const postOpen = await captureAndRecognizeWeChatWindow(input.helper, window.windowId, input.traceId, window.bounds)
+    throwIfWeChatLoginRequired(postOpen)
+    inputPoint = inferMessageInputPointFromOcr(postOpen, window) ?? inputPoint
+    assertTargetConversationTitleIfVisible(input.chat, postOpen)
   }
   return { opened: true, window, searchPoint, inputPoint }
 }
@@ -459,11 +467,111 @@ function screenPointForOcrBlock(
   const y = Number(bbox.y) + Number(bbox.height) * 0.5
   if (![x, y].every(Number.isFinite)) return null
   if (bbox.coordinateSpace === 'screen' || !window.bounds) return { x: Math.round(x), y: Math.round(y), coordinateSpace: 'screen' }
-  const scaleX = window.bounds.width / screenshot.width
-  const scaleY = window.bounds.height / screenshot.height
+  const bounds = screenshot.bounds ?? window.bounds
+  const scaleX = bounds.width / screenshot.width
+  const scaleY = bounds.height / screenshot.height
   return {
-    x: Math.round(window.bounds.x + x * scaleX),
-    y: Math.round(window.bounds.y + y * scaleY),
+    x: Math.round(bounds.x + x * scaleX),
+    y: Math.round(bounds.y + y * scaleY),
+    coordinateSpace: 'screen',
+  }
+}
+
+function inferMessageInputPointFromOcr(
+  observation: { capture: WeChatScreenshot; ocr: WeChatOcrResult },
+  window: WeChatWindowInfo,
+): WeChatScreenPoint | null {
+  const sendButton = chooseSendButtonBlock({
+    blocks: observation.ocr.blocks ?? [],
+    captureWidth: observation.capture.width,
+    captureHeight: observation.capture.height,
+  })
+  const bbox = sendButton?.bbox
+  if (!bbox) return null
+  const offset = Math.min(Math.max(observation.capture.width * 0.18, 220), 380)
+  const x = Math.max(observation.capture.width * 0.34, Number(bbox.x) - offset)
+  const y = Number(bbox.y) + Number(bbox.height) * 0.5
+  if (![x, y].every(Number.isFinite)) return null
+  return screenPointForOcrRelativePoint({ x, y, coordinateSpace: bbox.coordinateSpace }, observation.capture, window)
+}
+
+function chooseSendButtonBlock(input: {
+  blocks: Array<{ text?: string; bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } }>
+  captureWidth: number
+  captureHeight: number
+}): { bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } } | undefined {
+  const candidates = input.blocks
+    .filter((block) => {
+      const bbox = block.bbox
+      if (!bbox) return false
+      const text = normalizeComparableText(block.text)
+      if (text !== '发送' && text !== 'send') return false
+      if (bbox.x < input.captureWidth * 0.50) return false
+      if (bbox.y < input.captureHeight * 0.65) return false
+      return true
+    })
+    .map((block) => ({
+      block,
+      score: (block.bbox?.x ?? 0) / Math.max(1, input.captureWidth) + (block.bbox?.y ?? 0) / Math.max(1, input.captureHeight),
+    }))
+    .sort((left, right) => right.score - left.score)
+  return candidates[0]?.block
+}
+
+function assertTargetConversationTitleIfVisible(
+  chat: string,
+  observation: { capture: WeChatScreenshot; ocr: WeChatOcrResult },
+): void {
+  if (!visibleTopTitleMatches(chat, observation)) {
+    // Best-effort only: OCR may miss the title, so do not block a command that
+    // was opened through WeChat's own search result.
+  }
+}
+
+function visibleTopTitleMatches(
+  chat: string,
+  observation: { capture: WeChatScreenshot; ocr: WeChatOcrResult },
+): boolean {
+  const target = normalizeComparableText(chat)
+  if (!target) return false
+  return (observation.ocr.blocks ?? []).some((block) => {
+    const bbox = block.bbox
+    if (!bbox) return false
+    if (bbox.x < observation.capture.width * 0.23) return false
+    if (bbox.y > observation.capture.height * 0.16) return false
+    const text = normalizeComparableText(block.text)
+    return text === target || text.startsWith(`${target}(`) || text.includes(target)
+  })
+}
+
+function throwIfWeChatLoginRequired(observation: { ocr: WeChatOcrResult }): void {
+  const normalized = (observation.ocr.blocks ?? [])
+    .map((block) => normalizeComparableText(block.text))
+    .join('')
+  if (!normalized) return
+  if (
+    normalized.includes('扫码登录')
+    || normalized.includes('重新登录')
+    || normalized.includes('登录微信')
+    || normalized.includes('安全验证')
+    || normalized.includes('为了你的账号安全')
+    || (normalized.includes('仅传输文件') && !normalized.includes('进入微信'))
+  ) {
+    throw new Error('wechat_login_required')
+  }
+}
+
+function screenPointForOcrRelativePoint(
+  point: { x: number; y: number; coordinateSpace?: string },
+  screenshot: WeChatScreenshot,
+  window: WeChatWindowInfo,
+): WeChatScreenPoint | null {
+  if (point.coordinateSpace === 'screen') return { x: Math.round(point.x), y: Math.round(point.y), coordinateSpace: 'screen' }
+  const bounds = screenshot.bounds ?? window.bounds
+  if (!bounds) return null
+  return {
+    x: Math.round(bounds.x + point.x * (bounds.width / screenshot.width)),
+    y: Math.round(bounds.y + point.y * (bounds.height / screenshot.height)),
     coordinateSpace: 'screen',
   }
 }

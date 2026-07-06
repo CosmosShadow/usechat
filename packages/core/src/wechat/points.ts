@@ -69,11 +69,12 @@ function screenPointForScreenshotPoint(
   window: WeChatWindowInfo,
 ): { x: number; y: number } | null {
   if (![point.x, point.y].every(Number.isFinite)) return null
-  if (point.coordinateSpace === 'screen' || !window.bounds) return { x: point.x, y: point.y }
-  const scaleX = window.bounds.width / screenshot.width
-  const scaleY = window.bounds.height / screenshot.height
+  const bounds = screenshot.bounds ?? window.bounds
+  if (point.coordinateSpace === 'screen' || !bounds) return { x: point.x, y: point.y }
+  const scaleX = bounds.width / screenshot.width
+  const scaleY = bounds.height / screenshot.height
   return {
-    x: window.bounds.x + point.x * scaleX,
-    y: window.bounds.y + point.y * scaleY,
+    x: bounds.x + point.x * scaleX,
+    y: bounds.y + point.y * scaleY,
   }
 }

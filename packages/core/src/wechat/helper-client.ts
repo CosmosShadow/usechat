@@ -10,8 +10,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { createInterface, type Interface } from 'node:readline'
 import {
-  decideWeChatChannelActivityGate,
   normalizeWeChatChannelActivitySnapshot,
+  waitForWeChatChannelActivityGate,
 } from './human-coordination.js'
 import {
   createWeChatChannelHelperHello,
@@ -76,6 +76,9 @@ const READ_ONLY_GUARD_THROTTLE_MS = 1_500
 // re-probe-every-time behavior).
 const DEFAULT_DANGEROUS_GUARD_THROTTLE_MS = 8_000
 const DANGEROUS_GUARD_THROTTLE_ENV = 'SHENNIAN_WECHAT_DANGEROUS_GUARD_THROTTLE_MS'
+const USER_ACTIVITY_MAX_WAIT_MS = 6_500
+const USER_ACTIVITY_MAX_WAIT_ENV = 'USECHAT_WECHAT_USER_ACTIVITY_MAX_WAIT_MS'
+const LEGACY_USER_ACTIVITY_MAX_WAIT_ENV = 'SHENNIAN_WECHAT_USER_ACTIVITY_MAX_WAIT_MS'
 
 class HelperVersionMismatchError extends Error {
   constructor(message: string, readonly helperPid: number | null) {
@@ -90,6 +93,14 @@ function readDangerousGuardThrottleMs(): number {
   const parsed = Number.parseInt(raw, 10)
   if (!Number.isFinite(parsed) || parsed < 0) return DEFAULT_DANGEROUS_GUARD_THROTTLE_MS
   return parsed
+}
+
+function readUserActivityMaxWaitMs(): number {
+  const raw = process.env[USER_ACTIVITY_MAX_WAIT_ENV] ?? process.env[LEGACY_USER_ACTIVITY_MAX_WAIT_ENV]
+  if (raw === undefined || raw === '') return USER_ACTIVITY_MAX_WAIT_MS
+  const parsed = Number.parseInt(raw, 10)
+  if (!Number.isFinite(parsed) || parsed < 0) return USER_ACTIVITY_MAX_WAIT_MS
+  return Math.min(parsed, 60_000)
 }
 
 export class WeChatChannelHelperClient {
@@ -447,13 +458,7 @@ export class WeChatChannelHelperClient {
       // recovery + window availability re-derivation.
       if (!isReadOnlyGuardedWindowsCommand(command)) {
         if (!this.options.skipUserActivityGuard && isUserActivityGuardedWindowsCommand(command)) {
-          const activity = await this.sendRawRequest('activity.snapshot', {}, traceId)
-          if (!activity.ok) throw new Error(`${activity.errorCode ?? 'user_activity_unknown'}: ${activity.errorSummary ?? command}`)
-          const decision = decideWeChatChannelActivityGate({
-            snapshot: normalizeWeChatChannelActivitySnapshot(activity.result),
-            stage: 'dangerous_action',
-          })
-          if (!decision.ok) throw new Error(`user_active:${decision.reasonCode}`)
+          await this.waitForQuietUserActivity(command, traceId)
         }
         await this.cleanupWindowsOverlays('before', command, traceId)
       }
@@ -490,18 +495,26 @@ export class WeChatChannelHelperClient {
     if (result.wechatMainWindowResponsive === false) throw new Error('wechat_window_unresponsive')
 
     if (!this.options.skipUserActivityGuard && isUserActivityGuardedWindowsCommand(command)) {
-      const activity = await this.sendRawRequest('activity.snapshot', {}, traceId)
-      if (!activity.ok) throw new Error(`${activity.errorCode ?? 'user_activity_unknown'}: ${activity.errorSummary ?? command}`)
-      const decision = decideWeChatChannelActivityGate({
-        snapshot: normalizeWeChatChannelActivitySnapshot(activity.result),
-        stage: 'dangerous_action',
-      })
-      if (!decision.ok) throw new Error(`user_active:${decision.reasonCode}`)
+      await this.waitForQuietUserActivity(command, traceId)
     }
 
     await this.cleanupWindowsOverlays('before', command, traceId)
     // Guard fully passed; let the next read-only burst reuse this result.
     this.lastGuardPassAtMs = Date.now()
+  }
+
+  private async waitForQuietUserActivity(command: WeChatChannelHelperCommandName, traceId?: string): Promise<void> {
+    const decision = await waitForWeChatChannelActivityGate({
+      stage: 'dangerous_action',
+      maxWaitMs: readUserActivityMaxWaitMs(),
+      readSnapshot: async () => {
+        const activity = await this.sendRawRequest('activity.snapshot', {}, traceId)
+        if (!activity.ok) throw new Error(`${activity.errorCode ?? 'user_activity_unknown'}: ${activity.errorSummary ?? command}`)
+        return normalizeWeChatChannelActivitySnapshot(activity.result)
+      },
+      sleep,
+    })
+    if (!decision.ok) throw new Error(`user_active:${decision.reasonCode}`)
   }
 
   private async tryRecoverFromStuckShell(traceId?: string): Promise<boolean> {
