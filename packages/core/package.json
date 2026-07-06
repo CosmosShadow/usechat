@@ -1,0 +1,31 @@
+{
+  "name": "@shennian/usechat-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UseChat connector core and local runtime primitives.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./wechat/helper-protocol": {
+      "types": "./dist/wechat/helper-protocol.d.ts",
+      "import": "./dist/wechat/helper-protocol.js"
+    },
+    "./wechat/helper-client": {
+      "types": "./dist/wechat/helper-client.d.ts",
+      "import": "./dist/wechat/helper-client.js"
+    },
+    "./wechat/helper-assets": {
+      "types": "./dist/wechat/helper-assets.d.ts",
+      "import": "./dist/wechat/helper-assets.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  }
+}

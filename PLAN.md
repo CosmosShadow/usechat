@@ -93,49 +93,49 @@
 
 ### 包结构
 
-- [ ] 创建 `packages/cli/package.json`。
-- [ ] 创建 `packages/core/package.json`。
-- [ ] 创建 `packages/model-provider/package.json`。
-- [ ] 创建 `packages/sdk/package.json`。
-- [ ] 添加 build scripts。
-- [ ] 添加 typecheck scripts。
-- [ ] 添加 test runner。
+- [x] 创建 `packages/cli/package.json`。
+- [x] 创建 `packages/core/package.json`。
+- [x] 创建 `packages/model-provider/package.json`。
+- [x] 创建 `packages/sdk/package.json`。
+- [x] 添加 build scripts。
+- [x] 添加 typecheck scripts。
+- [x] 添加 test runner。
 
 ### CLI 基础命令
 
-- [ ] 实现 `usechat --version`。
-- [ ] 实现 `usechat --help`。
-- [ ] 实现 `usechat init`。
-- [ ] 实现 `usechat config get [key]`。
-- [ ] 实现 `usechat config set <key> <value>`。
-- [ ] 实现 `usechat config list`。
+- [x] 实现 `usechat --version`。
+- [x] 实现 `usechat --help`。
+- [x] 实现 `usechat init`。
+- [x] 实现 `usechat config get [key]`。
+- [x] 实现 `usechat config set <key> <value>`。
+- [x] 实现 `usechat config list`。
 
 ### 配置 schema
 
-- [ ] 配置默认写到 `~/.usechat/config.json`。
-- [ ] 支持 `model.provider`。
-- [ ] 支持 `model.baseUrl`。
-- [ ] 支持 `model.name`。
-- [ ] 支持 `model.apiKeyEnv`。
-- [ ] 支持可选 `model.timeoutMs`。
-- [ ] 支持 `helper.path` override。
-- [ ] 支持 `output.defaultFormat`。
-- [ ] 支持 `wechat.sendRequiresConfirm`。
-- [ ] 支持 `dataDir`。
-- [ ] 校验配置并给出可执行错误提示。
+- [x] 配置默认写到 `~/.usechat/config.json`。
+- [x] 支持 `model.provider`。
+- [x] 支持 `model.baseUrl`。
+- [x] 支持 `model.name`。
+- [x] 支持 `model.apiKeyEnv`。
+- [x] 支持可选 `model.timeoutMs`。
+- [x] 支持 `helper.path` override。
+- [x] 支持 `output.defaultFormat`。
+- [x] 支持 `wechat.sendRequiresConfirm`。
+- [x] 支持 `dataDir`。
+- [x] 校验配置并给出可执行错误提示。
 
 ### 密钥处理
 
-- [ ] 优先使用 `apiKeyEnv`，不鼓励保存明文 key。
-- [ ] 永不打印 API key 值。
-- [ ] JSON 输出中脱敏 secret-like 字段。
+- [x] 优先使用 `apiKeyEnv`，不鼓励保存明文 key。
+- [x] 永不打印 API key 值。
+- [x] JSON 输出中脱敏 secret-like 字段。
 
 验收：
 
-- [ ] CLI 不需要神念账号、machine token 或 daemon 即可运行。
-- [ ] 配置输出永不打印 API key。
-- [ ] 配置优先使用 `apiKeyEnv`。
-- [ ] `pnpm test` 或等价测试通过。
+- [x] CLI 不需要神念账号、machine token 或 daemon 即可运行。
+- [x] 配置输出永不打印 API key。
+- [x] 配置优先使用 `apiKeyEnv`。
+- [x] `pnpm test` 或等价测试通过。
 
 ## Phase 3 — Helper runtime 发现与 doctor
 
@@ -206,8 +206,8 @@
 ### OpenAI-compatible provider
 
 - [ ] 实现 Chat Completions-compatible 请求。
-- [ ] 支持 `model.baseUrl`。
-- [ ] 支持 `model.name`。
+- [x] 支持 `model.baseUrl`。
+- [x] 支持 `model.name`。
 - [ ] 从 `model.apiKeyEnv` 读取 API key。
 - [ ] 支持 timeout。
 - [ ] 支持 JSON response parsing。

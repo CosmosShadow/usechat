@@ -6,8 +6,16 @@
   "type": "module",
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "check": "node -e \"console.log('UseChat project docs and package layout ready')\"",
-    "test": "node -e \"console.log('No tests yet: implementation has not started')\""
+    "build": "pnpm -r build",
+    "check": "pnpm typecheck && pnpm test",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.9",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "engines": {
     "node": ">=18"

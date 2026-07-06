@@ -7,6 +7,21 @@
     "declaration": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shennian/usechat-core": [
+        "packages/core/src/index.ts"
+      ],
+      "@shennian/usechat-core/*": [
+        "packages/core/src/*"
+      ],
+      "@shennian/usechat-model-provider": [
+        "packages/model-provider/src/index.ts"
+      ],
+      "@shennian/usechat-sdk": [
+        "packages/sdk/src/index.ts"
+      ]
+    }
   }
 }
