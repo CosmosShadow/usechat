@@ -71,6 +71,24 @@ usechat config set helper.path /path/to/helper
 
 开发者可以自编译，并让 UseChat 指向自己的 helper。
 
+## Windows 可见桌面要求
+
+Windows 的微信 UI 自动化必须运行在已登录的可见桌面会话中。通过 SSH 直接启动命令通常处于 Session 0，不能可靠读取或操作用户桌面窗口。
+
+远程回归请使用交互式计划任务入口：
+
+```powershell
+pnpm smoke:wechat:abc:windows-task
+```
+
+该入口会把 `scripts/wechat-abc-smoke.mjs` 放到当前用户可见桌面会话里执行，并把摘要写入：
+
+```text
+.usechat-smoke/windows/summary.json
+```
+
+如果摘要返回 `wechat_login_required`，表示微信桌面端当前需要用户重新登录或完成安全验证。UseChat 在这个状态下会 fail closed：停止 read/write 后续步骤，write 不会继续点击、粘贴或发送。处理方式是先在 Windows 桌面上手动登录微信，确认目标对话可见或可搜索，然后重新运行 smoke。
+
 ## Release artifact 要求
 
 每个 helper runtime release 应包含：

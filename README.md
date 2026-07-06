@@ -95,6 +95,20 @@ pnpm smoke:wechat:abc:windows-task
 
 该命令会注册并触发一个交互式计划任务，让 smoke 在可见桌面会话中运行。
 
+如果摘要里出现：
+
+```json
+{
+  "blockerReasonCode": "wechat_login_required"
+}
+```
+
+表示 UseChat 已经看到微信窗口，但微信桌面端当前停在“重新登录 / 扫码登录 / 安全验证”状态。此时 UseChat 会停止后续搜索、点击、粘贴和发送，避免在错误窗口里误操作。请先在 Windows 可见桌面会话中手动完成微信登录，并确认能看到 ABC 群对话，再重新运行：
+
+```powershell
+pnpm smoke:wechat:abc:windows-task
+```
+
 ### 后续能力
 
 - 发送文件、图片、视频。

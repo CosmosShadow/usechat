@@ -342,6 +342,7 @@
 - [x] Windows：计划任务 smoke 已重跑，doctor 通过；因微信仍要求重新登录，read 返回 `wechat_login_required`，write 自动跳过。
 - [x] Windows：2026-07-07 同步最新代码到 `C:\Users\simpl\usechat`，`pnpm build && pnpm typecheck && pnpm test` 通过。
 - [x] Windows：2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 再次验证；doctor 通过，read 仍返回 `wechat_login_required`，write 自动跳过。
+- [x] Windows：2026-07-07 再次通过 `pnpm smoke:wechat:abc:windows-task` 验证当前外部状态；doctor 通过，read 仍返回 `wechat_login_required`，write 自动跳过。
 - [ ] Windows：用户重新登录微信后，重新验证读取 ABC。
 - [ ] Windows：用户重新登录微信后，重新验证发送 marker 到 ABC 并读回。
 

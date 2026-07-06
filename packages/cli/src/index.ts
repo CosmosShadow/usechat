@@ -49,11 +49,11 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       return 0
     }
     switch (parsed.command) {
-      case 'init': return commandInit(parsed)
-      case 'config': return commandConfig(parsed)
-      case 'doctor': return commandDoctor(parsed)
-      case 'read': return commandRead(parsed)
-      case 'write': return commandWrite(parsed)
+      case 'init': return await commandInit(parsed)
+      case 'config': return await commandConfig(parsed)
+      case 'doctor': return await commandDoctor(parsed)
+      case 'read': return await commandRead(parsed)
+      case 'write': return await commandWrite(parsed)
       default:
         throw new Error(`unknown_command: ${parsed.command}`)
     }
