@@ -7,6 +7,8 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 
 export const WECHAT_CHANNEL_HELPER_VERSION = '0.1.12'
+export const USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV = 'USECHAT_HELPER_DIR'
+export const USECHAT_HELPER_RUNTIME_DIR_ENV = 'USECHAT_HELPER_RUNTIME_DIR'
 export const WECHAT_CHANNEL_HELPER_DIR_ENV = 'SHENNIAN_WECHAT_CHANNEL_HELPER_DIR'
 export const SHENNIAN_HELPER_RUNTIME_DIR_ENV = 'SHENNIAN_HELPER_RUNTIME_DIR'
 export const WECHAT_CHANNEL_HELPER_RUNTIME_REQUIRED_REASON = 'helper_runtime_required'
@@ -204,12 +206,14 @@ function defaultHelperAssetBaseDirs(input: {
     if (!candidates.includes(normalized)) candidates.push(normalized)
   }
 
-  const explicit = env[WECHAT_CHANNEL_HELPER_DIR_ENV]?.trim()
+  const explicit = env[USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV]?.trim()
+    || env[WECHAT_CHANNEL_HELPER_DIR_ENV]?.trim()
   if (explicit) {
     push(resolveLegacyHelperDirCandidate(explicit, platformDir))
   }
 
-  const helperRuntimeRoot = env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
+  const helperRuntimeRoot = env[USECHAT_HELPER_RUNTIME_DIR_ENV]?.trim()
+    || env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
   if (helperRuntimeRoot) {
     for (const candidate of resolveHelperRuntimeDirCandidates(helperRuntimeRoot, platformDir)) push(candidate)
   }
@@ -221,6 +225,7 @@ function defaultHelperAssetBaseDirs(input: {
     homedir: input.homedir,
     push,
   })
+  pushLocalBuildHelperRuntimeDirs({ platformDir, push })
 
   if (input.includeInstalledDesktop === false) return candidates
 
@@ -262,8 +267,11 @@ function pushInstalledHelperRuntimeDirs(input: {
       push(path.join(runtimeRoot, 'wechat-channel', platformDir))
     }
     if (home) {
+      push(path.join(home, '.usechat', 'helper', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
+      push(path.join(home, '.usechat', 'helper', 'wechat-channel', platformDir))
       push(path.join(home, 'Applications', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
     }
+    push(path.join('/Applications', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
     push(path.join('/Applications', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
     push(path.join('/Library', 'Application Support', 'Shennian', 'Helper', 'wechat-channel', platformDir))
   } else if (platform === 'win32') {
@@ -272,12 +280,24 @@ function pushInstalledHelperRuntimeDirs(input: {
     const programFiles = env.ProgramFiles || env.PROGRAMFILES
     const programFilesX86 = env['ProgramFiles(x86)'] || env['PROGRAMFILES(X86)']
     if (localAppData) {
+      push(path.join(localAppData, 'Programs', 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
+      push(path.join(localAppData, 'UseChat', 'Helper', 'wechat-channel', platformDir))
       push(path.join(localAppData, 'Programs', 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
       push(path.join(localAppData, 'Shennian', 'Helper', 'wechat-channel', platformDir))
     }
+    if (programFiles) push(path.join(programFiles, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
+    if (programFilesX86) push(path.join(programFilesX86, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
     if (programFiles) push(path.join(programFiles, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
     if (programFilesX86) push(path.join(programFilesX86, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
   }
+}
+
+function pushLocalBuildHelperRuntimeDirs(input: {
+  platformDir: string
+  push: (candidate: string | undefined | null) => void
+}): void {
+  input.push(path.resolve(process.cwd(), 'helper-runtime', 'wechat-channel', input.platformDir))
+  input.push(path.resolve(process.cwd(), 'helper-runtime', 'dist', 'wechat-channel', input.platformDir))
 }
 
 function resolveLegacyHelperDirCandidate(value: string, platformDir: string): string {
@@ -299,8 +319,11 @@ function defaultHelperRuntimeRoot(input: {
   homedir?: string
 }): string | null {
   const env = input.env
-  const explicit = env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
+  const explicit = env[USECHAT_HELPER_RUNTIME_DIR_ENV]?.trim()
+    || env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
   if (explicit) return path.resolve(explicit)
+  // Keep compatibility with the first copy-out runtime: the already installed
+  // Helper.app still stores its macOS socket under Shennian's support dir.
   const home = input.homedir || (input.platform === 'win32' ? env.USERPROFILE : env.HOME)
   if (input.platform === 'darwin') {
     return home ? path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper') : null
@@ -441,7 +464,7 @@ function isDesktopPackagedHelperDir(platform: NodeJS.Platform | string, baseDir:
 function helperRuntimeRequiredMessage(platform: NodeJS.Platform | string, checkedDirs: string[]): string {
   const platformName = platform === 'win32' ? 'Windows' : 'macOS'
   const checked = checkedDirs.length > 0 ? ` Checked helper directories: ${checkedDirs.join(', ')}` : ''
-  return `WeChat RPA requires Shennian Helper runtime on ${platformName}; open Shennian Desktop or use the 使用微信 page to install Helper, then retry.${checked}`
+  return `UseChat requires an explicit WeChat helper runtime on ${platformName}; run usechat doctor for details, set USECHAT_HELPER_DIR, or configure helper.path after installing a helper runtime.${checked}`
 }
 
 function getRuntimeEnv(): NodeJS.ProcessEnv {

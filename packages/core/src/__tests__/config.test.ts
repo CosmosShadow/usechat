@@ -36,4 +36,9 @@ describe('UseChat config', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.issues.map((issue) => issue.reasonCode)).toContain('model_provider_missing')
   })
+
+  it('allows local ocr-only provider for smoke reads', () => {
+    const result = validateUseChatConfig({ model: { provider: 'ocr-only' }, dataDir: '/tmp/usechat' }, { env: {}, homedir: '/tmp/home' })
+    expect(result.ok).toBe(true)
+  })
 })

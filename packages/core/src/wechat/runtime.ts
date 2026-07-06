@@ -128,14 +128,24 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
       const warnings: string[] = []
       let committed = false
       try {
-        const submitted = await helper.request('wechat.pasteAndSubmit', {
-          text: writeInput.text,
-          windowId: opened.window.windowId,
-          ...(inputPoint ? { inputPoint } : {}),
-          waitMs: 260,
-          pasteWaitMs: 900,
-        }, traceId)
-        assertHelperOk(submitted, 'wechat.pasteAndSubmit')
+        if (platform === 'win32') {
+          const submitted = await helper.request('wechat.pasteAndSubmit', {
+            text: writeInput.text,
+            windowId: opened.window.windowId,
+            ...(inputPoint ? { inputPoint } : {}),
+            waitMs: 260,
+            pasteWaitMs: 900,
+          }, traceId)
+          assertHelperOk(submitted, 'wechat.pasteAndSubmit')
+        } else {
+          const setText = await helper.request('clipboard.setText', { text: writeInput.text }, traceId)
+          assertHelperOk(setText, 'clipboard.setText')
+          const paste = await helper.request('keyboard.shortcut', { key: 'v', modifiers: ['command'] }, traceId)
+          assertHelperOk(paste, 'keyboard.shortcut')
+          await sleep(500)
+          const submit = await helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, traceId)
+          assertHelperOk(submit, 'keyboard.shortcut')
+        }
         committed = true
       } finally {
         const restoreParams = snapshot.result && typeof snapshot.result === 'object' ? snapshot.result as Record<string, unknown> : {}
@@ -192,13 +202,45 @@ export async function openConversation(input: {
     ...(searchPoint ? { searchPoint } : {}),
   }, input.traceId)
   assertHelperOk(search, 'wechat.searchConversation')
-  // Press Enter to open the top search result. This is intentionally simple for
-  // UseChat's first independent path; title verification is added after the
-  // basic read/write smoke is stable.
-  const enter = await input.helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, input.traceId)
-  assertHelperOk(enter, 'keyboard.shortcut')
-  await sleep(900)
+  if (input.platform === 'win32') {
+    const enter = await input.helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, input.traceId)
+    assertHelperOk(enter, 'keyboard.shortcut')
+    await sleep(900)
+  } else if (await clickVisibleConversationTitle({ ...input, window })) {
+    await sleep(900)
+  } else {
+    const enter = await input.helper.request('keyboard.shortcut', { key: 'return', modifiers: [] }, input.traceId)
+    assertHelperOk(enter, 'keyboard.shortcut')
+    await sleep(900)
+  }
   return { opened: true, window, searchPoint, inputPoint }
+}
+
+async function clickVisibleConversationTitle(input: {
+  helper: HelperTransport
+  chat: string
+  window: WeChatWindowInfo
+  traceId?: string
+}): Promise<boolean> {
+  const observed = await captureAndRecognizeWeChatWindow(input.helper, input.window.windowId, input.traceId, input.window.bounds)
+  const blocks = observed.ocr.blocks ?? []
+  const target = normalizeComparableText(input.chat)
+  const match = chooseConversationTitleBlock({
+    blocks,
+    target,
+    captureWidth: observed.capture.width,
+    captureHeight: observed.capture.height,
+  })
+  const point = screenPointForOcrBlock(match, observed.capture, input.window)
+  if (!point) return false
+  const clicked = await input.helper.request('mouse.click', {
+    x: point.x,
+    y: point.y,
+    coordinateSpace: 'screen',
+    windowId: input.window.windowId,
+  }, input.traceId)
+  assertHelperOk(clicked, 'mouse.click')
+  return true
 }
 
 export async function ensureWeChatWindowReady(
@@ -220,7 +262,39 @@ export async function ensureWeChatWindowReady(
     : { restore: allowForeground, focus: allowForeground }, traceId)
   assertHelperOk(ready, 'windows.ensureReady')
   if (!ready.result?.windowId) throw new Error('helper_invalid_response: windows.ensureReady missing WeChat window data')
+  if (process.platform === 'darwin') return preferMacMainWeChatWindow(helper, ready.result, traceId)
   return ready.result
+}
+
+async function preferMacMainWeChatWindow(
+  helper: HelperTransport,
+  readyWindow: WeChatWindowInfo,
+  traceId?: string,
+): Promise<WeChatWindowInfo> {
+  if (isMacMainWeChatWindow(readyWindow) && readyWindow.title === '微信') return readyWindow
+  try {
+    const listed = await helper.request<{ windows?: WeChatWindowInfo[] }>('windows.list', {}, traceId)
+    assertHelperOk(listed, 'windows.list')
+    const windows = listed.result?.windows ?? []
+    const mainCandidates = windows.filter((window) => (
+      window.windowId
+      && window.visible !== false
+      && window.minimized !== true
+      && isMacMainWeChatWindow(window)
+    ))
+    const main = mainCandidates.find((window) => window.title === '微信') ?? mainCandidates[0]
+    if (!main) return readyWindow
+    const focus = await helper.request('windows.focus', { windowId: main.windowId }, traceId)
+    assertHelperOk(focus, 'windows.focus')
+    return main
+  } catch {
+    return readyWindow
+  }
+}
+
+function isMacMainWeChatWindow(window: WeChatWindowInfo): boolean {
+  const appName = String(window.appName || '').toLowerCase()
+  return appName === 'wechat' && (window.title === '微信' || window.title === '微信 (窗口)')
 }
 
 export async function captureAndRecognizeWeChatWindow(
@@ -306,6 +380,96 @@ function nullableString(value: unknown): string | null {
 
 function assertHelperOk(response: WeChatChannelHelperResponse, command: string): void {
   if (!response.ok) throw new Error(`${response.errorCode || 'helper_command_failed'}: ${response.errorSummary || command}`)
+}
+
+
+function chooseConversationTitleBlock(input: {
+  blocks: Array<{ text?: string; bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } }>
+  target: string
+  captureWidth: number
+  captureHeight: number
+}): { bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } } | undefined {
+  const leftPaneMaxX = input.captureWidth * 0.42
+  const candidates = input.blocks
+    .filter((block) => {
+      const bbox = block.bbox
+      if (!bbox) return false
+      const text = normalizeComparableText(block.text)
+      if (text !== input.target) return false
+      if (bbox.x >= leftPaneMaxX) return false
+      // Exclude the search field and top chrome.
+      if (bbox.y < input.captureHeight * 0.08) return false
+      return true
+    })
+    .map((block) => ({ block, score: scoreConversationTitleCandidate(block, input.blocks, input.captureWidth, input.captureHeight) }))
+    .sort((left, right) => right.score - left.score)
+  return candidates[0]?.block
+}
+
+function scoreConversationTitleCandidate(
+  block: { text?: string; bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } },
+  blocks: Array<{ text?: string; bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } }>,
+  captureWidth: number,
+  captureHeight: number,
+): number {
+  const bbox = block.bbox
+  if (!bbox) return Number.NEGATIVE_INFINITY
+  let score = 0
+  const cy = bbox.y + bbox.height / 2
+  // A real conversation title row has a timestamp on the same baseline at the
+  // right side of the left pane. A preview line (for example current chat's
+  // last message text) usually does not.
+  const hasSameRowTime = blocks.some((candidate) => {
+    const cb = candidate.bbox
+    if (!cb) return false
+    if (cb.x < captureWidth * 0.24 || cb.x > captureWidth * 0.42) return false
+    if (Math.abs((cb.y + cb.height / 2) - cy) > Math.max(18, bbox.height * 1.4)) return false
+    return isLikelyConversationTimeText(candidate.text)
+  })
+  if (hasSameRowTime) score += 1_000
+  // Titles sit above their preview line, so another text block is often below
+  // them within the same row.
+  const hasPreviewBelow = blocks.some((candidate) => {
+    const cb = candidate.bbox
+    if (!cb || candidate === block) return false
+    if (cb.x < bbox.x - 12 || cb.x > captureWidth * 0.34) return false
+    const dy = cb.y - bbox.y
+    return dy > bbox.height * 0.6 && dy < Math.max(70, captureHeight * 0.04)
+  })
+  if (hasPreviewBelow) score += 100
+  // Prefer lower results only as a tie breaker; this avoids picking the top
+  // selected chat's preview text when it happens to equal the target name.
+  score += bbox.y / Math.max(1, captureHeight)
+  return score
+}
+
+function isLikelyConversationTimeText(value: unknown): boolean {
+  const text = String(value ?? '').normalize('NFKC').trim()
+  return /^(?:昨天|前天|周[一二三四五六日天]|星期[一二三四五六日天]|\d{1,2}:\d{2}|\d{1,2}\/\d{1,2}|\d{4}\/\d{1,2}\/\d{1,2})/.test(text)
+}
+
+function screenPointForOcrBlock(
+  block: { bbox?: { x: number; y: number; width: number; height: number; coordinateSpace?: string } } | undefined,
+  screenshot: WeChatScreenshot,
+  window: WeChatWindowInfo,
+): WeChatScreenPoint | null {
+  const bbox = block?.bbox
+  if (!bbox) return null
+  const x = Number(bbox.x) + Number(bbox.width) * 0.5
+  const y = Number(bbox.y) + Number(bbox.height) * 0.5
+  if (![x, y].every(Number.isFinite)) return null
+  if (bbox.coordinateSpace === 'screen' || !window.bounds) return { x: Math.round(x), y: Math.round(y), coordinateSpace: 'screen' }
+  const scaleX = window.bounds.width / screenshot.width
+  const scaleY = window.bounds.height / screenshot.height
+  return {
+    x: Math.round(window.bounds.x + x * scaleX),
+    y: Math.round(window.bounds.y + y * scaleY),
+    coordinateSpace: 'screen',
+  }
+}
+
+function normalizeComparableText(value: unknown): string {
+  return String(value ?? '').normalize('NFKC').trim().toLowerCase().replace(/\s+/g, '')
 }
 
 function sleep(ms: number): Promise<void> {

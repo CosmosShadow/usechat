@@ -45,8 +45,8 @@ export function fallbackSearchPoint(window: WeChatWindowInfo): WeChatScreenPoint
   const bounds = window.bounds
   if (!bounds) return null
   return {
-    x: Math.round(bounds.x + Math.max(80, bounds.width * 0.11)),
-    y: Math.round(bounds.y + Math.max(48, bounds.height * 0.08)),
+    x: Math.round(bounds.x + Math.min(Math.max(bounds.width * 0.20, 120), 260)),
+    y: Math.round(bounds.y + Math.min(Math.max(bounds.height * 0.045, 36), 72)),
     coordinateSpace: 'screen',
   }
 }
@@ -54,9 +54,11 @@ export function fallbackSearchPoint(window: WeChatWindowInfo): WeChatScreenPoint
 export function fallbackMessageInputPoint(window: WeChatWindowInfo): WeChatScreenPoint | null {
   const bounds = window.bounds
   if (!bounds) return null
+  const xOffset = Math.max(520, Math.min(bounds.width - 160, bounds.width * 0.68))
+  const bottomInset = Math.max(48, Math.min(88, bounds.height * 0.08))
   return {
-    x: Math.round(bounds.x + bounds.width * 0.66),
-    y: Math.round(bounds.y + bounds.height * 0.88),
+    x: Math.round(bounds.x + xOffset),
+    y: Math.round(bounds.y + bounds.height - bottomInset),
     coordinateSpace: 'screen',
   }
 }

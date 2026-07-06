@@ -147,6 +147,28 @@ export function createOpenAICompatibleVisionProvider(config: OpenAICompatiblePro
   }
 }
 
+export function createOcrOnlyVisionProvider(): VisionModelProvider {
+  return {
+    async structureVisibleWindow(input) {
+      const messages = normalizeOcrBlocksAsMessages(input.edgeOcrBlocks ?? [])
+      return {
+        ok: true,
+        structuredMessages: messages,
+        schemaVersion: 1,
+        modelVersion: 'ocr-only',
+      }
+    },
+    async classifyWindow() {
+      return {
+        ok: true,
+        windowKind: 'chat_main',
+        confidence: 0.2,
+        warnings: ['ocr_only_layout_fallback'],
+      }
+    },
+  }
+}
+
 export function stripJsonMarkdownFence(text: string): string {
   const trimmed = text.trim()
   const match = /^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(trimmed)
@@ -311,6 +333,27 @@ function normalizeStructuredMessage(value: unknown, index: number): UseChatStruc
     mediaMetadata: record.mediaMetadata,
     observedAt: nullableString(record.observedAt) ?? new Date().toISOString(),
   }
+}
+
+function normalizeOcrBlocksAsMessages(blocks: unknown[]): UseChatStructuredMessage[] {
+  const messages: UseChatStructuredMessage[] = []
+  blocks.forEach((block, index) => {
+      if (!block || typeof block !== 'object' || Array.isArray(block)) return
+      const record = block as Record<string, unknown>
+      const text = nullableString(record.text)
+      if (!text) return
+      messages.push({
+        stableMessageKey: `ocr:${index}:${text.slice(0, 80)}`,
+        senderRole: 'unknown' as const,
+        kind: 'text' as const,
+        normalizedText: text,
+        anchorText: text,
+        textExcerpt: text,
+        bbox: record.bbox,
+        observedAt: new Date().toISOString(),
+      })
+    })
+  return messages
 }
 
 function normalizeSenderRole(value: unknown): UseChatStructuredMessage['senderRole'] {

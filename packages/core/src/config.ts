@@ -164,18 +164,21 @@ export function validateUseChatConfig(config: unknown, input: {
   if (!isNonEmptyString(normalized.model.provider)) {
     issues.push({ path: 'model.provider', reasonCode: 'model_provider_missing', message: '请设置模型 provider，例如：usechat config set model.provider openai-compatible' })
   }
-  if (!isNonEmptyString(normalized.model.baseUrl)) {
-    issues.push({ path: 'model.baseUrl', reasonCode: 'model_base_url_missing', message: '请设置 OpenAI-compatible baseUrl，例如：usechat config set model.baseUrl https://api.openai.com/v1' })
-  } else if (!looksLikeHttpUrl(normalized.model.baseUrl)) {
-    issues.push({ path: 'model.baseUrl', reasonCode: 'model_base_url_invalid', message: 'model.baseUrl 必须是 http(s) URL。' })
-  }
-  if (!isNonEmptyString(normalized.model.name)) {
-    issues.push({ path: 'model.name', reasonCode: 'model_name_missing', message: '请设置视觉模型名称，例如：usechat config set model.name gpt-4.1-mini' })
-  }
-  if (!isNonEmptyString(normalized.model.apiKeyEnv)) {
-    issues.push({ path: 'model.apiKeyEnv', reasonCode: 'model_api_key_env_missing', message: '请设置 API key 环境变量名，例如：usechat config set model.apiKeyEnv OPENAI_API_KEY' })
-  } else if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(normalized.model.apiKeyEnv)) {
-    issues.push({ path: 'model.apiKeyEnv', reasonCode: 'model_api_key_env_invalid', message: 'model.apiKeyEnv 必须是环境变量名，不应填写明文 key。' })
+  const isOcrOnly = normalized.model.provider === 'ocr-only'
+  if (!isOcrOnly) {
+    if (!isNonEmptyString(normalized.model.baseUrl)) {
+      issues.push({ path: 'model.baseUrl', reasonCode: 'model_base_url_missing', message: '请设置 OpenAI-compatible baseUrl，例如：usechat config set model.baseUrl https://api.openai.com/v1' })
+    } else if (!looksLikeHttpUrl(normalized.model.baseUrl)) {
+      issues.push({ path: 'model.baseUrl', reasonCode: 'model_base_url_invalid', message: 'model.baseUrl 必须是 http(s) URL。' })
+    }
+    if (!isNonEmptyString(normalized.model.name)) {
+      issues.push({ path: 'model.name', reasonCode: 'model_name_missing', message: '请设置视觉模型名称，例如：usechat config set model.name gpt-4.1-mini' })
+    }
+    if (!isNonEmptyString(normalized.model.apiKeyEnv)) {
+      issues.push({ path: 'model.apiKeyEnv', reasonCode: 'model_api_key_env_missing', message: '请设置 API key 环境变量名，例如：usechat config set model.apiKeyEnv OPENAI_API_KEY' })
+    } else if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(normalized.model.apiKeyEnv)) {
+      issues.push({ path: 'model.apiKeyEnv', reasonCode: 'model_api_key_env_invalid', message: 'model.apiKeyEnv 必须是环境变量名，不应填写明文 key。' })
+    }
   }
   if (normalized.model.timeoutMs !== undefined && (!Number.isInteger(normalized.model.timeoutMs) || normalized.model.timeoutMs <= 0)) {
     issues.push({ path: 'model.timeoutMs', reasonCode: 'model_timeout_invalid', message: 'model.timeoutMs 必须是正整数毫秒。' })

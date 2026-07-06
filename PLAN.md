@@ -18,11 +18,11 @@
 ## 目标产品检查项
 
 - [ ] 可以通过 `@shennian/usechat` 或内部等价包安装。
-- [ ] CLI binary 是 `usechat`。
-- [ ] `usechat init` 可用。
-- [ ] `usechat doctor` 可用。
-- [ ] `usechat read --app wechat --chat "ABC" --format markdown` 可用。
-- [ ] `usechat write --app wechat --chat "ABC" --text "hello" --yes` 可用。
+- [x] CLI binary 是 `usechat`。
+- [x] `usechat init` 可用。
+- [x] `usechat doctor` 可用。
+- [x] `usechat read --app wechat --chat "ABC" --format markdown` 可用。
+- [x] `usechat write --app wechat --chat "ABC" --text "hello" --yes` 可用。
 
 ## Phase 0 — 项目章程与仓库基础
 
@@ -143,53 +143,53 @@
 
 ### Helper resolver
 
-- [ ] 支持显式 `USECHAT_HELPER_DIR`。
-- [ ] 支持配置 `helper.path`。
-- [ ] 检测已安装的 Shennian Helper runtime。
-- [ ] 检测本仓库本地构建的 UseChat helper runtime。
-- [ ] 预留未来官方 UseChat helper 安装路径。
-- [ ] 校验 helper manifest。
-- [ ] 校验 helper executable 存在。
-- [ ] 校验 helper version。
-- [ ] 校验 protocol version。
-- [ ] 校验 required capabilities。
+- [x] 支持显式 `USECHAT_HELPER_DIR`。
+- [x] 支持配置 `helper.path`。
+- [x] 检测已安装的 Shennian Helper runtime。
+- [x] 检测本仓库本地构建的 UseChat helper runtime。
+- [x] 预留未来官方 UseChat helper 安装路径。
+- [x] 校验 helper manifest。
+- [x] 校验 helper executable 存在。
+- [x] 校验 helper version。
+- [x] 校验 protocol version。
+- [x] 校验 required capabilities。
 
 ### Doctor 命令
 
-- [ ] 实现 `usechat doctor` 人类可读输出。
-- [ ] 实现 `usechat doctor --json` 机器可读输出。
-- [ ] 检查平台支持。
-- [ ] 检查 helper 是否存在。
-- [ ] 检查 helper health。
-- [ ] 检查 helper version 和 protocol。
-- [ ] 检查 required capabilities。
-- [ ] 检查 macOS 权限。
-- [ ] 检查 Windows 可见桌面条件。
-- [ ] 检查微信进程。
-- [ ] 检查可见微信窗口。
-- [ ] 检查模型配置。
-- [ ] 返回稳定 reason codes。
+- [x] 实现 `usechat doctor` 人类可读输出。
+- [x] 实现 `usechat doctor --json` 机器可读输出。
+- [x] 检查平台支持。
+- [x] 检查 helper 是否存在。
+- [x] 检查 helper health。
+- [x] 检查 helper version 和 protocol。
+- [x] 检查 required capabilities。
+- [x] 检查 macOS 权限。
+- [x] 检查 Windows 可见桌面条件。
+- [x] 检查微信进程。
+- [x] 检查可见微信窗口。
+- [x] 检查模型配置。
+- [x] 返回稳定 reason codes。
 
 ### Reason codes
 
-- [ ] `unsupported_platform`。
-- [ ] `helper_missing`。
-- [ ] `helper_manifest_missing`。
-- [ ] `helper_invalid_manifest`。
-- [ ] `helper_version_mismatch`。
-- [ ] `helper_protocol_mismatch`。
-- [ ] `helper_capability_missing`。
-- [ ] `permission_missing`。
-- [ ] `wechat_not_running`。
-- [ ] `wechat_window_not_found`。
-- [ ] `model_not_configured`。
+- [x] `unsupported_platform`。
+- [x] `helper_missing`。
+- [x] `helper_manifest_missing`。
+- [x] `helper_invalid_manifest`。
+- [x] `helper_version_mismatch`。
+- [x] `helper_protocol_mismatch`。
+- [x] `helper_capability_missing`。
+- [x] `permission_missing`。
+- [x] `wechat_not_running`。
+- [x] `wechat_window_not_found`。
+- [x] `model_not_configured`。
 
 验收：
 
-- [ ] Doctor 返回带稳定 reasonCode 的 JSON。
-- [ ] Doctor 有人类可读输出。
-- [ ] helper 缺失时指向显式 setup 说明，不依赖 npm postinstall magic。
-- [ ] Doctor 不执行危险 UI 动作。
+- [x] Doctor 返回带稳定 reasonCode 的 JSON。
+- [x] Doctor 有人类可读输出。
+- [x] helper 缺失时指向显式 setup 说明，不依赖 npm postinstall magic。
+- [x] Doctor 不执行危险 UI 动作。
 
 ## Phase 4 — 用户自配模型 provider
 
@@ -197,49 +197,49 @@
 
 ### Provider 接口
 
-- [ ] 定义 `VisionModelProvider` interface。
-- [ ] 定义 `structureVisibleWindow` input schema。
-- [ ] 定义 `structureVisibleWindow` output schema。
-- [ ] 定义可选 `classifyWindow` input/output schema。
-- [ ] 将 provider 错误归一为稳定 reasonCode。
+- [x] 定义 `VisionModelProvider` interface。
+- [x] 定义 `structureVisibleWindow` input schema。
+- [x] 定义 `structureVisibleWindow` output schema。
+- [x] 定义可选 `classifyWindow` input/output schema。
+- [x] 将 provider 错误归一为稳定 reasonCode。
 
 ### OpenAI-compatible provider
 
-- [ ] 实现 Chat Completions-compatible 请求。
+- [x] 实现 Chat Completions-compatible 请求。
 - [x] 支持 `model.baseUrl`。
 - [x] 支持 `model.name`。
-- [ ] 从 `model.apiKeyEnv` 读取 API key。
-- [ ] 支持 timeout。
-- [ ] 支持 JSON response parsing。
-- [ ] 去掉 markdown JSON fence。
-- [ ] 校验返回 JSON。
-- [ ] 归一化 visible messages。
+- [x] 从 `model.apiKeyEnv` 读取 API key。
+- [x] 支持 timeout。
+- [x] 支持 JSON response parsing。
+- [x] 去掉 markdown JSON fence。
+- [x] 校验返回 JSON。
+- [x] 归一化 visible messages。
 
 ### Prompt 与 schema
 
-- [ ] 添加 visible-window message structuring prompt。
-- [ ] 必要时添加 window classifier prompt。
-- [ ] 添加 text message schema 测试。
-- [ ] 添加 image message schema 测试。
-- [ ] 添加 file message schema 测试。
-- [ ] 添加 video-file vs video-card 区分测试。
-- [ ] 添加 invalid JSON 测试。
-- [ ] 添加 empty model response 测试。
+- [x] 添加 visible-window message structuring prompt。
+- [x] 必要时添加 window classifier prompt。
+- [x] 添加 text message schema 测试。
+- [x] 添加 image message schema 测试。
+- [x] 添加 file message schema 测试。
+- [x] 添加 video-file vs video-card 区分测试。
+- [x] 添加 invalid JSON 测试。
+- [x] 添加 empty model response 测试。
 
 ### Reason codes
 
-- [ ] `model_not_configured`。
-- [ ] `model_request_failed`。
-- [ ] `model_invalid_json`。
-- [ ] `model_no_messages`。
-- [ ] `model_timeout`。
+- [x] `model_not_configured`。
+- [x] `model_request_failed`。
+- [x] `model_invalid_json`。
+- [x] `model_no_messages`。
+- [x] `model_timeout`。
 
 验收：
 
-- [ ] 不需要调用神念服务端 VLM。
-- [ ] 用户可以指向 OpenAI、DashScope-compatible endpoint 或其他 OpenAI-compatible provider。
-- [ ] Prompt 和 schema 都在本仓库。
-- [ ] 单元测试覆盖成功和失败场景。
+- [x] 不需要调用神念服务端 VLM。
+- [x] 用户可以指向 OpenAI、DashScope-compatible endpoint 或其他 OpenAI-compatible provider。
+- [x] Prompt 和 schema 都在本仓库。
+- [x] 单元测试覆盖成功和失败场景。
 
 ## Phase 5 — 微信 read 首个正式版本
 
@@ -247,43 +247,43 @@
 
 ### 命令
 
-- [ ] 实现 `usechat read --app wechat --chat <name>`。
-- [ ] 支持 `--limit <n>`。
-- [ ] 支持 `--format markdown`。
-- [ ] 支持 `--format json`。
+- [x] 实现 `usechat read --app wechat --chat <name>`。
+- [x] 支持 `--limit <n>`。
+- [x] 支持 `--format markdown`。
+- [x] 支持 `--format json`。
 - [ ] 首个正式版本支持 `--download never`。
-- [ ] 添加人类可读失败输出。
-- [ ] 添加 JSON 失败输出。
+- [x] 添加人类可读失败输出。
+- [x] 添加 JSON 失败输出。
 
 ### Runtime 流程
 
-- [ ] UI 动作前运行 preflight。
-- [ ] 确保微信窗口 ready。
-- [ ] 通过搜索打开对话。
+- [x] UI 动作前运行 preflight。
+- [x] 确保微信窗口 ready。
+- [x] 通过搜索打开对话。
 - [ ] 尽可能确认目标对话标题。
-- [ ] 截取当前可见窗口。
-- [ ] 可用时收集 OCR/layout hints。
-- [ ] 调用 model provider。
-- [ ] 归一化消息。
+- [x] 截取当前可见窗口。
+- [x] 可用时收集 OCR/layout hints。
+- [x] 调用 model provider。
+- [x] 归一化消息。
 - [ ] 校验消息顺序和 bbox 基本合理性。
-- [ ] 按 `--limit` 截取。
-- [ ] 输出 Markdown。
-- [ ] 输出 JSON。
+- [x] 按 `--limit` 截取。
+- [x] 输出 Markdown。
+- [x] 输出 JSON。
 
 ### 测试与 smoke
 
-- [ ] 单元测试 read output formatting。
+- [x] 单元测试 read output formatting。
 - [ ] 单元测试 model-to-message normalization。
 - [ ] Mock helper read flow 测试。
-- [ ] macOS smoke：读取 `文件传输助手`。
+- [x] macOS smoke：读取 `文件传输助手`。
 - [ ] Windows smoke：读取一个已知对话。
 
 验收：
 
-- [ ] `usechat read --app wechat --chat "文件传输助手"` 在 macOS 可用。
+- [x] `usechat read --app wechat --chat "文件传输助手"` 在 macOS 可用。
 - [ ] Windows read smoke 通过，或产出明确 platform blocker。
-- [ ] preflight 失败后不执行危险点击或输入。
-- [ ] 默认不保存原始截图。
+- [x] preflight 失败后不执行危险点击或输入。
+- [x] 默认不保存原始截图。
 
 ## Phase 6 — 微信 write 首个正式版本
 
@@ -291,25 +291,25 @@
 
 ### 命令
 
-- [ ] 实现 `usechat write --app wechat --chat <name> --text <text>`。
-- [ ] 默认发送前确认。
-- [ ] 支持 `--yes` 给非交互 Agent 使用。
-- [ ] 支持 `--json` 输出。
-- [ ] 支持 `--dry-run`。
+- [x] 实现 `usechat write --app wechat --chat <name> --text <text>`。
+- [x] 默认发送前确认。
+- [x] 支持 `--yes` 给非交互 Agent 使用。
+- [x] 支持 `--json` 输出。
+- [x] 支持 `--dry-run`。
 
 ### Runtime 流程
 
-- [ ] UI 动作前运行 preflight。
-- [ ] 确保微信窗口 ready。
-- [ ] 通过搜索打开对话。
+- [x] UI 动作前运行 preflight。
+- [x] 确保微信窗口 ready。
+- [x] 通过搜索打开对话。
 - [ ] 尽可能确认目标对话标题。
-- [ ] snapshot 剪贴板。
-- [ ] 设置剪贴板文本。
-- [ ] 粘贴到消息输入框。
-- [ ] 提交消息。
-- [ ] restore 剪贴板。
-- [ ] 返回发送状态。
-- [ ] unknown status 后不自动重发。
+- [x] snapshot 剪贴板。
+- [x] 设置剪贴板文本。
+- [x] 粘贴到消息输入框。
+- [x] 提交消息。
+- [x] restore 剪贴板。
+- [x] 返回发送状态。
+- [x] unknown status 后不自动重发。
 
 ### 测试与 smoke
 
@@ -317,15 +317,15 @@
 - [ ] 单元测试 `--yes` 行为。
 - [ ] 单元测试 dry run。
 - [ ] Mock helper write flow 测试。
-- [ ] macOS smoke：写入 `文件传输助手`。
+- [x] macOS smoke：写入 `文件传输助手`。
 - [ ] Windows smoke：写入一个已知对话。
 
 验收：
 
-- [ ] 文本发送在 macOS 可用。
+- [x] 文本发送在 macOS 可用。
 - [ ] Windows write smoke 通过，或产出明确 platform blocker。
-- [ ] crash 或 unknown status 后不自动重发。
-- [ ] 剪贴板 restore 失败只作为 warning，不触发重发。
+- [x] crash 或 unknown status 后不自动重发。
+- [x] 剪贴板 restore 失败只作为 warning，不触发重发。
 
 ## Phase 7 — 完整连接器能力
 
@@ -366,7 +366,7 @@
 - [ ] 输出 trace summary JSON。
 - [ ] 输出 JSONL trace events。
 - [ ] 脱敏敏感字段。
-- [ ] 默认不保存原始截图。
+- [x] 默认不保存原始截图。
 
 验收：
 

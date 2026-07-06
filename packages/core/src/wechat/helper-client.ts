@@ -831,7 +831,9 @@ function macosHelperAppPathForExecutable(helperPath: string): string | null {
 }
 
 function defaultMacosHelperRuntimeDir(): string {
-  const explicit = getRuntimeEnv().SHENNIAN_HELPER_RUNTIME_DIR?.trim()
+  const env = getRuntimeEnv()
+  const explicit = env.USECHAT_HELPER_RUNTIME_DIR?.trim()
+    || env.SHENNIAN_HELPER_RUNTIME_DIR?.trim()
   if (explicit) return path.resolve(explicit)
   return path.join(os.homedir(), 'Library', 'Application Support', 'Shennian', 'Helper')
 }

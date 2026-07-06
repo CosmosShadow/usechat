@@ -17,7 +17,7 @@ import {
   runWeChatDoctor,
   type UseChatConfig,
 } from '@shennian/usechat-core'
-import { createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
+import { createOcrOnlyVisionProvider, createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
 
 const VERSION = '0.1.0'
 
@@ -37,12 +37,12 @@ type ParsedArgs = {
 async function main(argv = process.argv.slice(2)): Promise<number> {
   const parsed = parseArgs(argv)
   try {
-    if (!parsed.command || parsed.flags.help === true || parsed.flags.h === true) {
-      printHelp()
-      return 0
-    }
     if (parsed.flags.version === true || parsed.flags.v === true || parsed.command === '--version') {
       console.log(VERSION)
+      return 0
+    }
+    if (!parsed.command || parsed.flags.help === true || parsed.flags.h === true) {
+      printHelp()
       return 0
     }
     switch (parsed.command) {
@@ -173,6 +173,7 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
 function createProviderFromConfig(config: UseChatConfig) {
   const validation = validateUseChatConfig(config)
   if (!validation.ok) throw new Error(`model_not_configured: ${validation.issues.map((issue) => issue.path).join(', ')}`)
+  if (config.model.provider === 'ocr-only') return createOcrOnlyVisionProvider()
   return createOpenAICompatibleVisionProvider({
     baseUrl: config.model.baseUrl!,
     model: config.model.name!,
