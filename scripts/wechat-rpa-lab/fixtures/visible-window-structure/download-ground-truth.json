@@ -1,0 +1,389 @@
+{
+  "schemaVersion": 1,
+  "dataset": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/manifest.json",
+  "generatedAt": "1970-01-01T00:00:00.000Z",
+  "conversations": [
+    {
+      "conversation": "VideoIndustry",
+      "image": "01-VideoIndustry.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/01-VideoIndustry.json",
+      "messageCount": 8,
+      "downloadableCount": 2,
+      "skipReasons": {
+        "unsupported_media_kind": 6
+      },
+      "candidates": [
+        {
+          "index": 0,
+          "kind": "video-file",
+          "senderRole": "incoming",
+          "senderName": "未知",
+          "mediaStatus": "downloaded",
+          "bbox": {
+            "x": 817,
+            "y": 129,
+            "width": 354,
+            "height": 79
+          },
+          "downloadActionBbox": null,
+          "expected": {
+            "kind": "video-file",
+            "messageType": "video_file",
+            "name": "wechat-video-0",
+            "extension": "video"
+          },
+          "actions": [
+            {
+              "type": "right-click",
+              "target": {
+                "kind": "media-message",
+                "rect": {
+                  "x": 817,
+                  "y": 129,
+                  "width": 354,
+                  "height": 79
+                },
+                "point": {
+                  "x": 994,
+                  "y": 168.5
+                }
+              },
+              "reason": "open-video-file-message-menu"
+            },
+            {
+              "type": "ocr-click-menu-item",
+              "labels": [
+                "复制视频",
+                "复制文件",
+                "复制",
+                "拷贝",
+                "Copy"
+              ],
+              "reason": "copy-video-file-from-wechat-menu"
+            },
+            {
+              "type": "materialize-clipboard",
+              "target": {
+                "kind": "inbound-attachment-dir"
+              },
+              "expected": {
+                "kind": "video-file",
+                "messageType": "video_file",
+                "name": "wechat-video-0",
+                "extension": "video"
+              },
+              "reason": "materialize-system-clipboard-attachment"
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "kind": "video-file",
+          "senderRole": "incoming",
+          "senderName": "lcarry",
+          "mediaStatus": "downloaded",
+          "bbox": {
+            "x": 813,
+            "y": 1008,
+            "width": 204,
+            "height": 352
+          },
+          "downloadActionBbox": null,
+          "expected": {
+            "kind": "video-file",
+            "messageType": "video_file",
+            "name": "wechat-video-5",
+            "extension": "video"
+          },
+          "actions": [
+            {
+              "type": "right-click",
+              "target": {
+                "kind": "media-message",
+                "rect": {
+                  "x": 813,
+                  "y": 1008,
+                  "width": 204,
+                  "height": 352
+                },
+                "point": {
+                  "x": 915,
+                  "y": 1184
+                }
+              },
+              "reason": "open-video-file-message-menu"
+            },
+            {
+              "type": "ocr-click-menu-item",
+              "labels": [
+                "复制视频",
+                "复制文件",
+                "复制",
+                "拷贝",
+                "Copy"
+              ],
+              "reason": "copy-video-file-from-wechat-menu"
+            },
+            {
+              "type": "materialize-clipboard",
+              "target": {
+                "kind": "inbound-attachment-dir"
+              },
+              "expected": {
+                "kind": "video-file",
+                "messageType": "video_file",
+                "name": "wechat-video-5",
+                "extension": "video"
+              },
+              "reason": "materialize-system-clipboard-attachment"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "conversation": "华友汇AI群",
+      "image": "02-华友汇AI群.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/02-华友汇AI群.json",
+      "messageCount": 3,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_share_card": 3
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "GeneralAgent开源社区",
+      "image": "03-GeneralAgent开源社区.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/03-GeneralAgent开源社区.json",
+      "messageCount": 6,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 3,
+        "unsupported_share_card": 3
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "晒太阳",
+      "image": "04-晒太阳.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/04-晒太阳.json",
+      "messageCount": 6,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_share_card": 2,
+        "unsupported_media_kind": 4
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "傅氏后裔",
+      "image": "05-傅氏后裔.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/05-傅氏后裔.json",
+      "messageCount": 8,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 8
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "杨总华友汇AI合作群",
+      "image": "06-杨总华友汇AI合作群.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/06-杨总华友汇AI合作群.json",
+      "messageCount": 10,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 10
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "think big",
+      "image": "07-think big.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/07-think big.json",
+      "messageCount": 7,
+      "downloadableCount": 1,
+      "skipReasons": {
+        "unsupported_media_kind": 6
+      },
+      "candidates": [
+        {
+          "index": 1,
+          "kind": "image",
+          "senderRole": "incoming",
+          "senderName": "王树 王总朋友",
+          "mediaStatus": "downloaded",
+          "bbox": {
+            "x": 815,
+            "y": 490,
+            "width": 267,
+            "height": 357
+          },
+          "downloadActionBbox": null,
+          "expected": {
+            "kind": "image",
+            "messageType": "image",
+            "name": "wechat-image-1",
+            "extension": "image"
+          },
+          "actions": [
+            {
+              "type": "right-click",
+              "target": {
+                "kind": "media-message",
+                "rect": {
+                  "x": 815,
+                  "y": 490,
+                  "width": 267,
+                  "height": 357
+                },
+                "point": {
+                  "x": 948.5,
+                  "y": 668.5
+                }
+              },
+              "reason": "open-image-message-menu"
+            },
+            {
+              "type": "ocr-click-menu-item",
+              "labels": [
+                "复制图片",
+                "拷贝图片",
+                "复制图像",
+                "拷贝图像",
+                "复制",
+                "拷贝",
+                "Copy"
+              ],
+              "reason": "copy-image-from-wechat-menu"
+            },
+            {
+              "type": "materialize-clipboard",
+              "target": {
+                "kind": "inbound-attachment-dir"
+              },
+              "expected": {
+                "kind": "image",
+                "messageType": "image",
+                "name": "wechat-image-1",
+                "extension": "image"
+              },
+              "reason": "materialize-system-clipboard-attachment"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "conversation": "周总 风十四哥",
+      "image": "08-周总 风十四哥.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/08-周总 风十四哥.json",
+      "messageCount": 12,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 12
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "龚达理 物院同学",
+      "image": "09-龚达理 物院同学.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/09-龚达理 物院同学.json",
+      "messageCount": 12,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 12
+      },
+      "candidates": []
+    },
+    {
+      "conversation": "黄传捷",
+      "image": "10-黄传捷.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/10-黄传捷.json",
+      "messageCount": 11,
+      "downloadableCount": 1,
+      "skipReasons": {
+        "unsupported_media_kind": 10
+      },
+      "candidates": [
+        {
+          "index": 3,
+          "kind": "image",
+          "senderRole": "incoming",
+          "senderName": "黄传捷",
+          "mediaStatus": "downloaded",
+          "bbox": {
+            "x": 813,
+            "y": 607,
+            "width": 358,
+            "height": 227
+          },
+          "downloadActionBbox": null,
+          "expected": {
+            "kind": "image",
+            "messageType": "image",
+            "name": "wechat-image-3",
+            "extension": "image"
+          },
+          "actions": [
+            {
+              "type": "right-click",
+              "target": {
+                "kind": "media-message",
+                "rect": {
+                  "x": 813,
+                  "y": 607,
+                  "width": 358,
+                  "height": 227
+                },
+                "point": {
+                  "x": 992,
+                  "y": 720.5
+                }
+              },
+              "reason": "open-image-message-menu"
+            },
+            {
+              "type": "ocr-click-menu-item",
+              "labels": [
+                "复制图片",
+                "拷贝图片",
+                "复制图像",
+                "拷贝图像",
+                "复制",
+                "拷贝",
+                "Copy"
+              ],
+              "reason": "copy-image-from-wechat-menu"
+            },
+            {
+              "type": "materialize-clipboard",
+              "target": {
+                "kind": "inbound-attachment-dir"
+              },
+              "expected": {
+                "kind": "image",
+                "messageType": "image",
+                "name": "wechat-image-3",
+                "extension": "image"
+              },
+              "reason": "materialize-system-clipboard-attachment"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "conversation": "阳光明媚",
+      "image": "11-阳光明媚.png",
+      "expectedPath": "scripts/wechat-rpa-lab/fixtures/visible-window-structure/expected/11-阳光明媚.json",
+      "messageCount": 11,
+      "downloadableCount": 0,
+      "skipReasons": {
+        "unsupported_media_kind": 11
+      },
+      "candidates": []
+    }
+  ]
+}

@@ -348,6 +348,7 @@
 - [x] Windows：2026-07-07 同步最新 doctor 稳定性修复后，`pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707020611`，read 返回 `messageCount: 45`，read-back 返回 `markerFound: true`。
 - [x] macOS：2026-07-07 出站 sender copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test && node scripts/wechat-abc-smoke.mjs --chat ABC --marker "UseChatmacABCdoctorReady202607071055"` 通过；doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
 - [x] Windows：2026-07-07 出站 sender copy-out 后同步到 `C:\Users\simpl\usechat`，重新验证 `pnpm install && pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707025319`，doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
+- [x] macOS：2026-07-07 入站 ledger / media action plan / vector store 底座 copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
 
 ## Phase 7 — 完整连接器能力
 
@@ -365,8 +366,13 @@
 
 ### 入站媒体
 
+- [x] 拷贝入站媒体基础 schema / availability / trace phase 词表。
+- [x] 拷贝 stable message key 生成与 anchor metadata 归一化。
+- [x] 拷贝 Windows WeChat cache resolver 底座。
+- [x] 拷贝 cooldown 状态机。
+- [x] 拷贝 visual vector store 底座。
 - [ ] 识别当前可见媒体候选。
-- [ ] 生成 media action plan。
+- [x] 生成 media action plan（已从 Shennian `core/schema` / `core/media-action-plan` copy-out，并覆盖 Lab fixture 回放测试）。
 - [ ] 右键媒体 bbox。
 - [ ] OCR 菜单候选选择。
 - [ ] 读取剪贴板 file URL / bitmap。
@@ -377,11 +383,11 @@
 
 ### Ledger 与去重
 
-- [ ] 在 `~/.usechat/ledger/` 实现本机 ledger。
-- [ ] 实现 baseline scan。
-- [ ] 实现 dedupe。
-- [ ] 实现 local echo suppression。
-- [ ] 实现 recent window retention。
+- [x] 实现本机 ledger 状态机底座（已从 Shennian `ledger` copy-out；落盘目录接入 `~/.usechat/ledger/` 待 watch/read 集成时完成）。
+- [x] 实现 baseline scan。
+- [x] 实现 dedupe。
+- [x] 实现 local echo suppression。
+- [x] 实现 recent window retention。
 
 ### Trace
 

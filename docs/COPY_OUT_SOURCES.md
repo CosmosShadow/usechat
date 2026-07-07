@@ -1,4 +1,4 @@
-# Copy-out Sources
+# Copy-out 来源
 
 本文件记录 UseChat Phase 1 从 Shennian copy-out 的源码来源，便于后续 diff、归因和协议兼容检查。
 
@@ -36,6 +36,49 @@ packages/cli/src/channels/wechat-channel/outbound-sender.ts
 packages/cli/src/commands/external-attachments.ts
   -> packages/core/src/wechat/attachment.ts
 
+
+packages/cli/src/channels/wechat-channel/core/schema.ts
+  -> packages/core/src/wechat/core/schema.ts
+
+packages/cli/src/channels/wechat-channel/core/media-action-plan.ts
+  -> packages/core/src/wechat/core/media-action-plan.ts
+
+packages/cli/src/channels/wechat-channel/message-key.ts
+  -> packages/core/src/wechat/message-key.ts
+
+packages/cli/src/channels/wechat-channel/ledger.ts
+  -> packages/core/src/wechat/ledger.ts
+
+packages/cli/src/channels/wechat-channel/media-cache-resolver.ts
+  -> packages/core/src/wechat/media-cache-resolver.ts
+
+packages/cli/src/channels/wechat-channel/cooldown.ts
+  -> packages/core/src/wechat/cooldown.ts
+
+packages/cli/src/channels/wechat-channel/vector-store.ts
+  -> packages/core/src/wechat/vector-store.ts
+
+packages/cli/src/__tests__/wechat-channel-core-schema.test.ts
+  -> packages/core/src/__tests__/wechat-core-schema.test.ts
+
+packages/cli/src/__tests__/wechat-channel-media-action-plan.test.ts
+  -> packages/core/src/__tests__/wechat-media-action-plan.test.ts
+
+packages/cli/src/__tests__/wechat-channel-message-key.test.ts
+  -> packages/core/src/__tests__/wechat-message-key.test.ts
+
+packages/cli/src/__tests__/wechat-channel-ledger.test.ts
+  -> packages/core/src/__tests__/wechat-ledger.test.ts
+
+packages/cli/src/__tests__/wechat-channel-vector-store.test.ts
+  -> packages/core/src/__tests__/wechat-vector-store.test.ts
+
+packages/cli/src/__tests__/wechat-channel-cooldown.test.ts
+  -> packages/core/src/__tests__/wechat-cooldown.test.ts
+
+scripts/wechat-rpa-lab/fixtures/visible-window-structure/download-ground-truth.json
+  -> scripts/wechat-rpa-lab/fixtures/visible-window-structure/download-ground-truth.json
+
 packages/cli/native/wechat-channel-helper/macos/ShennianWeChatChannelHelper.swift
   -> native/macos/ShennianWeChatChannelHelper.swift
 
@@ -64,3 +107,13 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 ```
 
 这些二进制和发布产物后续需要在 UseChat 自己的构建、签名、notice 和 release 流程中重新生成。
+
+
+## UseChat 路径适配说明
+
+本轮 copy-out 只做路径、包名和本地存储约定适配，不重写微信能力：
+
+- `client.ts` 中的 `WeChatChannelObservedMessage` / `WeChatChannelVisualBlock` 类型，在 UseChat 中对应 `packages/core/src/wechat/types.ts`。
+- `WECHAT_CHANNEL_RECENT_MESSAGE_WINDOW` 沿用 Shennian 原值 `20`，由 UseChat `packages/core/src/wechat/runtime.ts` 导出，供 ledger / vector store 复用。
+- 测试 fixture 保留 Shennian 原始 `download-ground-truth.json`，测试中的读取路径只做 monorepo cwd 兼容。
+- 入站媒体 resolver、trace runtime、watch / serve 等仍待后续从 Shennian 对应模块继续 copy-out。

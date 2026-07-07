@@ -31,6 +31,8 @@ import type {
   WeChatWriteResult,
 } from './types.js'
 
+export const WECHAT_CHANNEL_RECENT_MESSAGE_WINDOW = 20
+
 export type HelperTransport = {
   request<T = unknown>(command: WeChatChannelHelperCommandName, params?: Record<string, unknown>, traceId?: string): Promise<WeChatChannelHelperResponse<T>>
 }
