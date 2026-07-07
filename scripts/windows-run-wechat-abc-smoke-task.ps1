@@ -84,3 +84,18 @@ if (Test-Path $outputPath) {
 } elseif (Test-Path "$outputPath.stdout") {
   Get-Content "$outputPath.stdout"
 }
+
+$exitCode = $null
+if (Test-Path $logPath) {
+  $exitLine = Get-Content $logPath -ErrorAction SilentlyContinue | Where-Object { $_ -match "^exit=" } | Select-Object -Last 1
+  if ($exitLine -match "^exit=([-0-9]+);") {
+    $exitCode = [int]$Matches[1]
+  }
+}
+if ($null -eq $exitCode) {
+  Write-Error "Smoke task did not finish before timeout: $TaskName"
+  exit 124
+}
+if ($exitCode -ne 0) {
+  exit $exitCode
+}
