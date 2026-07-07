@@ -48,10 +48,26 @@ export type WeChatObservedMessage = {
   kind: string
   normalizedText?: string | null
   anchorText?: string | null
+  anchorMetadata?: unknown
+  neighborContext?: unknown
   textExcerpt?: string | null
   bbox?: unknown
   mediaMetadata?: unknown
+  isBaseline?: boolean
+  deliveryStatus?: string
   observedAt?: string
+  visualBlocks?: Array<{
+    stableMessageKey?: string
+    blockId: string
+    blockKind: string
+    bbox?: unknown
+    model?: string
+    modelVersion?: string | null
+    dims?: number
+    vectorBase64?: string
+    vectorStoreKey?: string
+    signature?: string
+  }>
 }
 
 export type WeChatReadResult = {
@@ -80,6 +96,20 @@ export type WeChatWriteResult = {
   app: 'wechat'
   chat: string
   text: string
+  attachment?: {
+    kind: 'image' | 'video' | 'file'
+    name: string
+    mimeType: string
+    size: number
+    localPath: string
+  }
+  attachments: Array<{
+    kind: 'image' | 'video' | 'file'
+    name: string
+    mimeType: string
+    size: number
+    localPath: string
+  }>
   sent: boolean
   status: 'sent-unconfirmed' | 'dry-run'
   traceId: string

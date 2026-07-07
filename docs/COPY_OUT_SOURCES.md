@@ -21,6 +21,21 @@ packages/cli/src/channels/wechat-channel/helper-assets.ts
 packages/cli/src/channels/wechat-channel/human-coordination.ts
   -> packages/core/src/wechat/human-coordination.ts
 
+packages/cli/src/channels/wechat-channel/anchor.ts
+  -> packages/core/src/wechat/anchor.ts
+
+packages/cli/src/channels/wechat-channel/pacing.ts
+  -> packages/core/src/wechat/pacing.ts
+
+packages/cli/src/channels/wechat-channel/outbound-ledger.ts
+  -> packages/core/src/wechat/outbound-ledger.ts
+
+packages/cli/src/channels/wechat-channel/outbound-sender.ts
+  -> packages/core/src/wechat/outbound-sender.ts
+
+packages/cli/src/commands/external-attachments.ts
+  -> packages/core/src/wechat/attachment.ts
+
 packages/cli/native/wechat-channel-helper/macos/ShennianWeChatChannelHelper.swift
   -> native/macos/ShennianWeChatChannelHelper.swift
 

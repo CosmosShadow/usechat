@@ -51,6 +51,50 @@ describe('UseChat CLI', () => {
     })
   })
 
+  it('supports write --file --dry-run with local attachment metadata', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-attachment-'))
+    const filePath = path.join(dir, 'brief.txt')
+    fs.writeFileSync(filePath, 'brief')
+    const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
+    const output = await captureConsoleLog(async () => {
+      const code = await main([
+        '--config',
+        configPath,
+        'write',
+        '--app',
+        'wechat',
+        '--chat',
+        'ABC',
+        '--file',
+        filePath,
+        '--dry-run',
+        '--json',
+      ])
+      expect(code).toBe(0)
+    })
+    const parsed = JSON.parse(output)
+    expect(parsed).toMatchObject({
+      ok: true,
+      app: 'wechat',
+      chat: 'ABC',
+      text: '',
+      sent: false,
+      status: 'dry-run',
+      attachment: {
+        kind: 'file',
+        name: 'brief.txt',
+        localPath: filePath,
+      },
+      attachments: [
+        {
+          kind: 'file',
+          name: 'brief.txt',
+          localPath: filePath,
+        },
+      ],
+    })
+  })
+
   it('keeps async command errors in the JSON error contract', async () => {
     const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
     const output = await captureConsoleLog(async () => {

@@ -18,6 +18,7 @@ import {
   validateUseChatConfig,
   createWeChatRuntime,
   runWeChatDoctor,
+  readUseChatAttachment,
   type UseChatConfig,
 } from '@shennian/usechat-core'
 import { createOcrOnlyVisionProvider, createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
@@ -151,8 +152,10 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   if (app !== 'wechat') throw new Error(`unsupported_app: ${app}`)
   const chat = readStringFlag(parsed, 'chat')
   const text = readStringFlag(parsed, 'text')
-  if (!chat || text === undefined) throw new Error('usage: usechat write --app wechat --chat <name> --text <text> [--yes]')
+  const attachment = readWriteAttachmentFlags(parsed)
+  if (!chat || (text === undefined && !attachment)) throw new Error('usage: usechat write --app wechat --chat <name> (--text <text> | --file <path> | --image <path> | --video <path>) [--yes]')
   const loaded = loadUseChatConfig({ configPath: parsed.global.configPath })
+  const attachmentPayload = attachment ? readUseChatAttachment(attachment.path, attachment.kind) : undefined
   const dryRun = parsed.flags['dry-run'] === true
   if (shouldPromptBeforeSend({
     dryRun,
@@ -160,7 +163,7 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
     shortYesFlag: parsed.flags.y === true,
     sendRequiresConfirm: loaded.config.wechat.sendRequiresConfirm,
   })) {
-    const confirmed = await confirmSend(chat, text)
+    const confirmed = await confirmSend(chat, text ?? attachmentSummary(attachmentPayload))
     if (!confirmed) {
       if (parsed.global.json || parsed.flags.json === true) printJson({ ok: false, reasonCode: 'user_cancelled', sent: false })
       else console.error('已取消发送。')
@@ -169,7 +172,7 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   }
   const yes = parsed.flags.yes === true || parsed.flags.y === true || loaded.config.wechat.sendRequiresConfirm === false
   if (dryRun) {
-    const result = { ok: true, app: 'wechat', chat, text, sent: false, status: 'dry-run', traceId: `dry-run-${randomUUID()}` }
+    const result = { ok: true, app: 'wechat', chat, text: text ?? '', ...(attachmentPayload ? { attachment: attachmentPayload, attachments: [attachmentPayload] } : { attachments: [] }), sent: false, status: 'dry-run', traceId: `dry-run-${randomUUID()}` }
     if (parsed.global.json || parsed.flags.json === true) printJson(result)
     else console.log(`dry-run：不会发送到 ${chat}`)
     return 0
@@ -177,7 +180,7 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   const provider = maybeCreateProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
   try {
-    const result = await runtime.write({ chat, text, yes, dryRun })
+    const result = await runtime.write({ chat, text, ...attachmentPathFlags(parsed), yes, dryRun })
     if (parsed.global.json || parsed.flags.json === true) printJson(result)
     else console.log(dryRun ? `dry-run：不会发送到 ${chat}` : `已提交发送到 ${chat}。状态：${result.status}`)
     return 0
@@ -266,7 +269,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function flagRequiresValue(key: string): boolean {
-  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download'].includes(key)
+  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video'].includes(key)
 }
 
 function readStringFlag(parsed: ParsedArgs, key: string): string | undefined {
@@ -281,6 +284,27 @@ function readNumberFlag(parsed: ParsedArgs, key: string): number | undefined {
   const parsedValue = Number(value)
   if (!Number.isInteger(parsedValue) || parsedValue <= 0) throw new Error(`invalid_number: --${key}`)
   return parsedValue
+}
+
+function readWriteAttachmentFlags(parsed: ParsedArgs): { kind: 'file' | 'image' | 'video'; path: string } | undefined {
+  const entries = (['file', 'image', 'video'] as const)
+    .map((kind) => ({ kind, path: readStringFlag(parsed, kind) }))
+    .filter((entry): entry is { kind: 'file' | 'image' | 'video'; path: string } => Boolean(entry.path))
+  if (entries.length > 1) throw new Error('usage: usechat write accepts only one of --file, --image, or --video per command')
+  return entries[0]
+}
+
+function attachmentPathFlags(parsed: ParsedArgs): { file?: string; image?: string; video?: string } {
+  return {
+    file: readStringFlag(parsed, 'file'),
+    image: readStringFlag(parsed, 'image'),
+    video: readStringFlag(parsed, 'video'),
+  }
+}
+
+function attachmentSummary(attachment?: { kind: string; localPath: string }): string {
+  if (!attachment) return ''
+  return `[${attachment.kind}: ${attachment.localPath}]`
 }
 
 function printHelp(): void {

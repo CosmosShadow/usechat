@@ -276,7 +276,7 @@
 - [x] 单元测试 model-to-message normalization。
 - [x] Mock helper read flow 测试。
 - [x] macOS smoke：读取 `文件传输助手`。
-- [ ] Windows smoke：读取一个已知对话。
+- [x] Windows smoke：读取一个已知对话（ABC；2026-07-07 `pnpm smoke:wechat:abc:windows-task` 通过，marker `UseChat smoke 20260707020611` 可读回）。
 
 验收：
 
@@ -318,7 +318,7 @@
 - [x] 单元测试 dry run。
 - [x] Mock helper write flow 测试。
 - [x] macOS smoke：写入 `文件传输助手`。
-- [ ] Windows smoke：写入一个已知对话。
+- [x] Windows smoke：写入一个已知对话（ABC；2026-07-07 `pnpm smoke:wechat:abc:windows-task` 通过，marker `UseChat smoke 20260707020611` 发送并读回）。
 
 验收：
 
@@ -346,6 +346,8 @@
 - [x] Windows：用户重新登录微信后，2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 重新验证读取 ABC 成功；read 返回 `ok: true`、`messageCount: 47`、`containsChatName: true`。
 - [x] Windows：用户重新登录微信后，2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 重新验证发送 marker `UseChat smoke 20260707015546` 到 ABC 成功，随后 read-back 返回 `markerFound: true`。
 - [x] Windows：2026-07-07 同步最新 doctor 稳定性修复后，`pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707020611`，read 返回 `messageCount: 45`，read-back 返回 `markerFound: true`。
+- [x] macOS：2026-07-07 出站 sender copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test && node scripts/wechat-abc-smoke.mjs --chat ABC --marker "UseChatmacABCdoctorReady202607071055"` 通过；doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
+- [x] Windows：2026-07-07 出站 sender copy-out 后同步到 `C:\Users\simpl\usechat`，重新验证 `pnpm install && pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707025319`，doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
 
 ## Phase 7 — 完整连接器能力
 
@@ -353,13 +355,13 @@
 
 ### 出站附件
 
-- [ ] 支持 `usechat write --file <path>`。
-- [ ] 支持 `usechat write --image <path>`。
-- [ ] 支持 `usechat write --video <path>`。
-- [ ] 校验本机文件存在。
-- [ ] 校验文件大小限制。
-- [ ] 使用剪贴板文件操作。
-- [ ] 发送后 restore 剪贴板。
+- [x] 支持 `usechat write --file <path>`（从 Shennian `outbound-sender` / `external-attachments` copy-out）。
+- [x] 支持 `usechat write --image <path>`（从 Shennian `outbound-sender` / `external-attachments` copy-out）。
+- [x] 支持 `usechat write --video <path>`（从 Shennian `outbound-sender` / `external-attachments` copy-out）。
+- [x] 校验本机文件存在。
+- [x] 校验文件大小限制。
+- [x] 使用剪贴板文件操作。
+- [x] 发送后 restore 剪贴板。
 
 ### 入站媒体
 

@@ -90,7 +90,7 @@ export async function enrichDoctorPermissionResultWithWindowProbe(input: {
   result: Record<string, unknown>
   platform: NodeJS.Platform | string
   client: {
-    request<T = unknown>(command: 'windows.list', params?: Record<string, unknown>, traceId?: string): Promise<{ ok: boolean; result?: T }>
+    request<T = unknown>(command: 'windows.list' | 'windows.ensureReady', params?: Record<string, unknown>, traceId?: string): Promise<{ ok: boolean; result?: T }>
   }
   traceId?: string
 }): Promise<Record<string, unknown>> {
@@ -98,6 +98,10 @@ export async function enrichDoctorPermissionResultWithWindowProbe(input: {
   if (next.wechatWindowAvailable === true || next.wechatRunning === false) return next
   const probed = await probeWeChatWindowAvailable(input.client, input.traceId)
   if (probed === true) next.wechatWindowAvailable = true
+  if (next.wechatWindowAvailable !== true) {
+    const ready = await probeWeChatEnsureReady(input.client, input.platform, input.traceId)
+    if (ready === true) next.wechatWindowAvailable = true
+  }
   return next
 }
 
@@ -111,6 +115,25 @@ async function probeWeChatWindowAvailable(
     const listed = await client.request<{ windows?: unknown[] }>('windows.list', {}, traceId)
     if (!listed.ok) return null
     return (listed.result?.windows ?? []).some(isUsableWeChatWindow)
+  } catch {
+    return null
+  }
+}
+
+async function probeWeChatEnsureReady(
+  client: {
+    request<T = unknown>(command: 'windows.ensureReady', params?: Record<string, unknown>, traceId?: string): Promise<{ ok: boolean; result?: T }>
+  },
+  platform: NodeJS.Platform | string,
+  traceId?: string,
+): Promise<boolean | null> {
+  try {
+    const params = platform === 'win32'
+      ? { activate: false, allowRecovery: false, allowLaunch: false }
+      : { restore: true, focus: false }
+    const ready = await client.request<unknown>('windows.ensureReady', params, traceId)
+    if (!ready.ok) return null
+    return isUsableWeChatWindow(ready.result)
   } catch {
     return null
   }

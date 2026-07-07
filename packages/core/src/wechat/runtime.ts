@@ -17,6 +17,9 @@ import {
 import { applyMessageLimit, formatWeChatMessagesMarkdown } from './format.js'
 import { fallbackMessageInputPoint, fallbackSearchPoint, screenPointForClassifierRect } from './points.js'
 import { validateWeChatMessages } from './message-quality.js'
+import { readUseChatAttachment, type UseChatAttachmentPayload } from './attachment.js'
+import { enqueueWeChatOutboundReply, type WeChatChannelOutboundLedger } from './outbound-ledger.js'
+import { sendQueuedWeChatOutboundRecords, WeChatChannelOutboundSender } from './outbound-sender.js'
 import type {
   WeChatObservedMessage,
   WeChatOcrResult,
@@ -72,7 +75,7 @@ export type CreateWeChatRuntimeInput = {
 
 export type WeChatRuntime = {
   read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never'; traceId?: string }): Promise<WeChatReadResult>
-  write(input: { chat: string; text: string; yes?: boolean; dryRun?: boolean; traceId?: string }): Promise<WeChatWriteResult>
+  write(input: { chat: string; text?: string; file?: string; image?: string; video?: string; yes?: boolean; dryRun?: boolean; traceId?: string }): Promise<WeChatWriteResult>
   stop(): Promise<void>
 }
 
@@ -120,52 +123,78 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
     },
     async write(writeInput) {
       const traceId = writeInput.traceId ?? `write-${randomUUID()}`
+      const attachments = resolveWriteAttachments(writeInput, input.env)
+      const text = writeInput.text ?? ''
+      if (!text.trim() && attachments.length === 0) throw new Error('wechat_write_empty: text or attachment is required')
       if (writeInput.dryRun) {
-        return { ok: true, app: 'wechat', chat: writeInput.chat, text: writeInput.text, sent: false, status: 'dry-run', traceId }
+        return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: false, status: 'dry-run', traceId }
       }
-      const opened = await openConversation({ helper, chat: writeInput.chat, provider: input.provider, traceId, platform, needInputPoint: true })
-      const inputPoint = opened.inputPoint ?? fallbackMessageInputPoint(opened.window)
-      const snapshot = await helper.request('clipboard.snapshot', {}, traceId)
-      assertHelperOk(snapshot, 'clipboard.snapshot')
-      const warnings: string[] = []
-      let committed = false
-      try {
-        if (platform === 'win32') {
-          const submitted = await helper.request('wechat.pasteAndSubmit', {
-            text: writeInput.text,
+      const bindingId = `direct:${stableLocalKey(writeInput.chat)}`
+      const ledger: WeChatChannelOutboundLedger = { version: 1, runtimeId: 'usechat-direct', records: [] }
+      enqueueWeChatOutboundReply({
+        ledger,
+        replyId: traceId,
+        idempotencyKey: traceId,
+        bindingId,
+        runtimeId: 'usechat-direct',
+        sessionId: 'usechat-direct',
+        conversationName: writeInput.chat,
+        replyBaseRevision: 0,
+        text,
+        attachmentLocalRefs: attachments.map((attachment) => attachment.localPath),
+      })
+      const sender = new WeChatChannelOutboundSender({
+        helper,
+        traceId,
+        platform,
+        activityGatePolicy: {
+          mouseMovedThresholdMs: 0,
+          mouseClickThresholdMs: 0,
+          scrollWheelThresholdMs: 0,
+          keyDownThresholdMs: 0,
+        },
+        takeoverCheck: false,
+        openConversation: async (conversationName) => {
+          const opened = await openConversation({ helper, chat: conversationName, provider: input.provider, traceId, platform, needInputPoint: true })
+          return {
+            opened: true,
+            reason: 'current-conversation-title-confirmed',
             windowId: opened.window.windowId,
-            ...(inputPoint ? { inputPoint } : {}),
-            waitMs: 260,
-            pasteWaitMs: 900,
-          }, traceId)
-          assertHelperOk(submitted, 'wechat.pasteAndSubmit')
-        } else if (platform === 'darwin') {
-          const setText = await helper.request('clipboard.setText', { text: writeInput.text }, traceId)
-          assertHelperOk(setText, 'clipboard.setText')
-          await (input.macosSubmitText ?? macosPasteAndSubmitWithSystemEvents)({
-            text: writeInput.text,
-            window: opened.window,
-            inputPoint,
-            traceId,
-          })
-        } else {
-          throw new Error(`unsupported_platform: ${platform}`)
-        }
-        committed = true
-      } finally {
-        const restoreParams = snapshot.result && typeof snapshot.result === 'object' ? snapshot.result as Record<string, unknown> : {}
-        const restore = await helper.request('clipboard.restore', restoreParams, traceId)
-        if (!restore.ok) {
-          if (committed) warnings.push(`clipboard_restore_failed:${restore.errorSummary ?? restore.errorCode ?? 'unknown'}`)
-          else assertHelperOk(restore, 'clipboard.restore')
-        }
+            inputPoint: opened.inputPoint ?? fallbackMessageInputPoint(opened.window),
+          }
+        },
+      })
+      const result = await sendQueuedWeChatOutboundRecords({
+        ledger,
+        bindingId,
+        currentLastInboundRevision: 0,
+        sender,
+      })
+      const failed = result.failedRecords[0] ?? result.manualReviewRecords[0] ?? result.waitingRecords[0] ?? result.staleRecords[0]
+      if (failed) {
+        throw new Error(`${failed.failureCode ?? failed.deferReason ?? failed.sendStatus}: ${failed.lastErrorSummary ?? failed.sendStatus}`)
       }
-      return { ok: true, app: 'wechat', chat: writeInput.chat, text: writeInput.text, sent: true, status: 'sent-unconfirmed', traceId, ...(warnings.length ? { warnings } : {}) }
+      return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: true, status: 'sent-unconfirmed', traceId }
     },
     stop() {
       return helper.stop?.() ?? Promise.resolve()
     },
   }
+}
+
+function resolveWriteAttachments(
+  input: { file?: string; image?: string; video?: string },
+  env?: NodeJS.ProcessEnv,
+): UseChatAttachmentPayload[] {
+  const result: UseChatAttachmentPayload[] = []
+  if (input.file) result.push(readUseChatAttachment(input.file, 'file', { env }))
+  if (input.image) result.push(readUseChatAttachment(input.image, 'image', { env }))
+  if (input.video) result.push(readUseChatAttachment(input.video, 'video', { env }))
+  return result
+}
+
+function stableLocalKey(value: string): string {
+  return encodeURIComponent(value).replace(/%/g, '').slice(0, 80) || 'chat'
 }
 
 async function macosPasteAndSubmitWithSystemEvents(input: {

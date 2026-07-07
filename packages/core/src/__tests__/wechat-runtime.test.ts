@@ -1,5 +1,8 @@
 // @covers ../wechat/runtime.ts
 
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { createWeChatRuntime, openConversation, type HelperTransport, type WeChatVisionProvider } from '../wechat/runtime.js'
 import type { WeChatChannelHelperCommandName, WeChatChannelHelperResponse } from '../wechat/helper-protocol.js'
@@ -133,15 +136,19 @@ describe('wechat runtime read/write', () => {
 
   it('runs a Windows write flow with one atomic paste-and-submit helper call', async () => {
     const helper = new FakeHelper([
+      ok(activitySnapshot()),
+      ok({ leaseId: 'lease1' }),
       ok({ wechatRunning: true }),
       ok(windowInfo()),
       ok(captureAndOcr([
         { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
         { text: '发送', bbox: { x: 1030, y: 760, width: 60, height: 36 } },
       ])),
+      ok({ focused: true }),
       ok({ sequenceNumber: 1 }),
       ok({ submitted: true }),
       ok({ restored: true }),
+      ok({ released: true }),
     ])
     const runtime = createWeChatRuntime({ helperTransport: helper, platform: 'win32' })
 
@@ -149,12 +156,16 @@ describe('wechat runtime read/write', () => {
 
     expect(result).toMatchObject({ ok: true, sent: true, status: 'sent-unconfirmed' })
     expect(helper.commands()).toEqual([
+      'activity.snapshot',
+      'automation.lease.acquire',
       'permissions.check',
       'windows.ensureReady',
       'windows.captureAndOcr',
+      'wechat.focusMessageInput',
       'clipboard.snapshot',
       'wechat.pasteAndSubmit',
       'clipboard.restore',
+      'automation.lease.release',
     ])
     expect(helper.calls.find((call) => call.command === 'wechat.pasteAndSubmit')?.params).toMatchObject({
       text: 'hello',
@@ -163,42 +174,96 @@ describe('wechat runtime read/write', () => {
     })
   })
 
-  it('runs a macOS write flow through the System Events submit hook', async () => {
+  it('runs a macOS write flow through the copied Shennian outbound sender path', async () => {
     const helper = new FakeHelper([
+      ok(activitySnapshot()),
+      ok({ leaseId: 'lease1' }),
       ok({ wechatRunning: true }),
       ok(windowInfo()),
       ok(captureAndOcr([
         { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
         { text: '发送', bbox: { x: 1030, y: 760, width: 60, height: 36 } },
       ])),
+      ok({ focused: true }),
       ok({ sequenceNumber: 1 }),
+      ok({ key: 'a' }),
+      ok({ key: 'backspace' }),
       ok({ copied: true }),
+      ok({ key: 'v' }),
+      ok({ key: 'return' }),
       ok({ restored: true }),
+      ok({ released: true }),
     ])
-    const submitted: unknown[] = []
     const runtime = createWeChatRuntime({
       helperTransport: helper,
       platform: 'darwin',
-      macosSubmitText: async (input) => {
-        submitted.push(input)
-      },
     })
 
     const result = await runtime.write({ chat: 'ABC', text: 'hello', yes: true })
 
     expect(result).toMatchObject({ ok: true, sent: true, status: 'sent-unconfirmed' })
     expect(helper.commands()).toEqual([
+      'activity.snapshot',
+      'automation.lease.acquire',
       'permissions.check',
       'windows.ensureReady',
       'windows.captureAndOcr',
+      'wechat.focusMessageInput',
       'clipboard.snapshot',
+      'keyboard.shortcut',
+      'keyboard.shortcut',
       'clipboard.setText',
+      'keyboard.shortcut',
+      'keyboard.shortcut',
       'clipboard.restore',
+      'automation.lease.release',
     ])
-    expect(submitted[0]).toMatchObject({
-      text: 'hello',
-      window: { windowId: '100' },
-      inputPoint: { coordinateSpace: 'screen' },
+    expect(helper.calls.find((call) => call.command === 'clipboard.setText')?.params).toEqual({ text: 'hello' })
+    expect(helper.calls.filter((call) => call.command === 'keyboard.shortcut').map((call) => call.params)).toEqual([
+      { key: 'a', modifiers: ['command'] },
+      { key: 'backspace', modifiers: [] },
+      { key: 'v', modifiers: ['command'] },
+      { key: 'return', modifiers: [] },
+    ])
+  })
+
+  it('runs attachment writes through the copied Shennian clipboard file path', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-runtime-attachment-'))
+    const filePath = path.join(dir, 'brief.pdf')
+    fs.writeFileSync(filePath, 'brief')
+    const helper = new FakeHelper([
+      ok(activitySnapshot()),
+      ok({ leaseId: 'lease1' }),
+      ok({ wechatRunning: true }),
+      ok(windowInfo()),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+        { text: '发送', bbox: { x: 1030, y: 760, width: 60, height: 36 } },
+      ])),
+      ok({ focused: true }),
+      ok({ sequenceNumber: 1 }),
+      ok({ copiedFiles: true }),
+      ok({ key: 'v' }),
+      ok({ key: 'return' }),
+      ok({ restored: true }),
+      ok({ released: true }),
+    ])
+    const runtime = createWeChatRuntime({ helperTransport: helper, platform: 'darwin' })
+
+    const result = await runtime.write({ chat: 'ABC', file: filePath, yes: true })
+
+    expect(result).toMatchObject({
+      ok: true,
+      sent: true,
+      text: '',
+      attachment: {
+        kind: 'file',
+        name: 'brief.pdf',
+        localPath: filePath,
+      },
+    })
+    expect(helper.calls.find((call) => call.command === 'clipboard.setFiles')?.params).toEqual({
+      filePaths: [filePath],
     })
   })
 })
@@ -245,6 +310,22 @@ function captureAndOcr(blocks: Array<{ text: string; bbox: { x: number; y: numbe
     ocr: { blocks },
   }
 }
+
+function activitySnapshot() {
+  return {
+    keyDownSecondsAgo: 10,
+    mouseMovedSecondsAgo: 10,
+    leftMouseDownSecondsAgo: 10,
+    rightMouseDownSecondsAgo: 10,
+    scrollWheelSecondsAgo: 10,
+    permissions: {
+      accessibilityTrusted: true,
+      iohidListenGranted: true,
+      iohidPostGranted: true,
+    },
+  }
+}
+
 
 class FakeProvider implements WeChatVisionProvider {
   readonly calls: unknown[] = []
