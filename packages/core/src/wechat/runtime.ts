@@ -20,6 +20,7 @@ import { validateWeChatMessages } from './message-quality.js'
 import { readUseChatAttachment, type UseChatAttachmentPayload } from './attachment.js'
 import { enqueueWeChatOutboundReply, type WeChatChannelOutboundLedger } from './outbound-ledger.js'
 import { sendQueuedWeChatOutboundRecords, WeChatChannelOutboundSender } from './outbound-sender.js'
+import { resolveUseChatObservedMessageMedia } from './inbound-media.js'
 import type {
   WeChatObservedMessage,
   WeChatOcrResult,
@@ -76,7 +77,7 @@ export type CreateWeChatRuntimeInput = {
 }
 
 export type WeChatRuntime = {
-  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never'; traceId?: string }): Promise<WeChatReadResult>
+  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never' | 'auto'; traceId?: string }): Promise<WeChatReadResult>
   write(input: { chat: string; text?: string; file?: string; image?: string; video?: string; yes?: boolean; dryRun?: boolean; traceId?: string }): Promise<WeChatWriteResult>
   stop(): Promise<void>
 }
@@ -87,7 +88,7 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
   return {
     async read(readInput) {
       if (!input.provider) throw new Error('model_not_configured: read requires a VisionModelProvider')
-      if (readInput.download && readInput.download !== 'never') throw new Error(`download_mode_unsupported: ${readInput.download}`)
+      if (readInput.download && !['never', 'auto'].includes(readInput.download)) throw new Error(`download_mode_unsupported: ${readInput.download}`)
       const traceId = readInput.traceId ?? `read-${randomUUID()}`
       const opened = await openConversation({ helper, chat: readInput.chat, provider: input.provider, traceId, platform })
       const observation = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
@@ -104,7 +105,27 @@ export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeCha
         chatName: readInput.chat,
         traceId,
       })
-      const messages = applyMessageLimit(normalizeObservedMessages(structured.structuredMessages ?? structured.observedMessages ?? []), readInput.limit)
+      const structuredMessages = normalizeObservedMessages(structured.structuredMessages ?? structured.observedMessages ?? [])
+      const resolvedMessages = readInput.download === 'auto'
+        ? await resolveUseChatObservedMessageMedia({
+            helper,
+            messages: structuredMessages,
+            window: opened.window,
+            screenshot: observation.capture,
+            windowId: opened.window.windowId,
+            chatName: readInput.chat,
+            traceId,
+            platform,
+            verifyConversationTitle: async () => {
+              const verified = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
+              throwIfWeChatLoginRequired(verified)
+              return visibleTopTitleMatches(readInput.chat, verified)
+                ? { ok: true as const }
+                : { ok: false as const, reasonCode: 'conversation_title_not_confirmed' }
+            },
+          })
+        : structuredMessages
+      const messages = applyMessageLimit(resolvedMessages, readInput.limit)
       const quality = validateWeChatMessages({
         messages,
         windowBounds: {

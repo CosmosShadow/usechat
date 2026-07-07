@@ -56,6 +56,10 @@ packages/cli/src/channels/wechat-channel/media-cache-resolver.ts
 packages/cli/src/channels/wechat-channel/media-resolver.ts
   -> packages/core/src/wechat/media-resolver.ts
 
+
+packages/cli/src/channels/wechat-channel/observer.ts `resolveObservedMessageMedia` 相关候选识别 / mediaMetadata 合并逻辑
+  -> packages/core/src/wechat/inbound-media.ts
+
 packages/cli/src/channels/base.ts `ExternalMessageAttachment`
   -> packages/core/src/wechat/types.ts `ExternalMessageAttachment`
 
@@ -126,5 +130,5 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 - `client.ts` 中的 `WeChatChannelObservedMessage` / `WeChatChannelVisualBlock` 类型，在 UseChat 中对应 `packages/core/src/wechat/types.ts`。
 - `WECHAT_CHANNEL_RECENT_MESSAGE_WINDOW` 沿用 Shennian 原值 `20`，由 UseChat `packages/core/src/wechat/runtime.ts` 导出，供 ledger / vector store 复用。
 - 测试 fixture 保留 Shennian 原始 `download-ground-truth.json`，测试中的读取路径只做 monorepo cwd 兼容。
-- 入站媒体 resolver 已从 Shennian copy-out；后续仍需把 UseChat `read --download auto` / watch / serve 接到该 resolver。
+- 入站媒体 resolver 与 `read --download auto` 接入已从 Shennian observer 相关逻辑 copy-out；watch / serve 仍待后续接入。
 - Trace runtime、watch / serve 等仍待后续从 Shennian 对应模块继续 copy-out。

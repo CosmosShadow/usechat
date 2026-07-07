@@ -133,12 +133,12 @@ async function commandRead(parsed: ParsedArgs): Promise<number> {
   const limit = readNumberFlag(parsed, 'limit')
   const format = (readStringFlag(parsed, 'format') ?? 'markdown') as 'markdown' | 'json'
   const download = readStringFlag(parsed, 'download') ?? 'never'
-  if (download !== 'never') throw new Error(`download_mode_unsupported: ${download}`)
+  if (download !== 'never' && download !== 'auto') throw new Error(`download_mode_unsupported: ${download}`)
   const loaded = loadUseChatConfig({ configPath: parsed.global.configPath })
   const provider = createProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
   try {
-    const result = await runtime.read({ chat, limit, format, download: 'never' })
+    const result = await runtime.read({ chat, limit, format, download })
     if (format === 'json' || parsed.global.json || parsed.flags.json === true) printJson(result)
     else process.stdout.write(result.markdown)
     return 0
@@ -316,7 +316,7 @@ function printHelp(): void {
   usechat config set <key> <value>
   usechat config list [--json]
   usechat doctor [--json]
-  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never]
+  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto]
   usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json]
 
 全局选项：

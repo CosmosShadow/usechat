@@ -252,6 +252,7 @@
 - [x] 支持 `--format markdown`。
 - [x] 支持 `--format json`。
 - [x] 首个正式版本支持 `--download never`。
+- [x] 支持 `--download auto` 接入入站媒体 resolver。
 - [x] 添加人类可读失败输出。
 - [x] 添加 JSON 失败输出。
 
@@ -350,6 +351,7 @@
 - [x] Windows：2026-07-07 出站 sender copy-out 后同步到 `C:\Users\simpl\usechat`，重新验证 `pnpm install && pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707025319`，doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
 - [x] macOS：2026-07-07 入站 ledger / media action plan / vector store 底座 copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
 - [x] macOS：2026-07-07 入站 media-resolver copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过；Shennian media-resolver 42 个 copy/适配测试通过，core 总计 100 个测试通过。
+- [x] macOS：2026-07-07 `read --download auto` 接入后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过；core 101 个测试通过，CLI 6 个测试通过。
 
 ## Phase 7 — 完整连接器能力
 
@@ -372,7 +374,7 @@
 - [x] 拷贝 Windows WeChat cache resolver 底座。
 - [x] 拷贝 cooldown 状态机。
 - [x] 拷贝 visual vector store 底座。
-- [ ] 识别当前可见媒体候选。
+- [x] 识别当前可见媒体候选（已从 Shennian observer 的 `messageToVisibleMediaCandidate` 相关逻辑 copy-out）。
 - [x] 生成 media action plan（已从 Shennian `core/schema` / `core/media-action-plan` copy-out，并覆盖 Lab fixture 回放测试）。
 - [x] 右键媒体 bbox（已从 Shennian `media-resolver` copy-out，覆盖多点重试与安全点位测试）。
 - [x] OCR 菜单候选选择（已从 Shennian `media-resolver` copy-out，覆盖危险菜单过滤与 OCR 点击测试）。

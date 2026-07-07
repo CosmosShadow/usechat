@@ -124,6 +124,69 @@ describe('wechat runtime read/write', () => {
     })
   })
 
+
+  it('resolves inbound media during read --download auto through the copied Shennian media resolver', async () => {
+    const sourceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-inbound-source-'))
+    const sourcePath = path.join(sourceDir, 'photo.png')
+    fs.writeFileSync(sourcePath, 'png bytes')
+    const helper = new FakeHelper([
+      ok({ wechatRunning: true }),
+      ok(windowInfo()),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+      ])),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+        { text: 'photo', bbox: { x: 520, y: 320, width: 180, height: 120 } },
+      ])),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+      ])),
+      ok({ changeCount: 1 }),
+      ok({ clicked: true }),
+      ok({ mimeType: 'image/png', dataBase64: 'menu-png', width: 1200, height: 900 }),
+      ok({ blocks: [{ text: '复制图片', bbox: { x: 620, y: 360, width: 80, height: 24 } }] }),
+      ok({ clicked: true }),
+      ok({ filePaths: [sourcePath], changeCount: 2 }),
+      ok({ restored: true }),
+      ok(captureAndOcr([
+        { text: 'ABC(3)', bbox: { x: 480, y: 50, width: 90, height: 32 } },
+      ])),
+    ])
+    const provider = new FakeProvider([
+      {
+        stableMessageKey: 'img-1',
+        senderRole: 'contact',
+        kind: 'image',
+        anchorText: 'photo',
+        bbox: { x: 520, y: 320, width: 180, height: 120 },
+        mediaMetadata: {
+          attachment: { type: 'image', name: 'photo.png', availability: 'metadata-only' },
+        },
+      },
+    ])
+    const runtime = createWeChatRuntime({ helperTransport: helper, provider, platform: 'darwin' })
+
+    const result = await runtime.read({ chat: 'ABC', format: 'json', download: 'auto' })
+    expect(result.messages[0]?.mediaMetadata).toMatchObject({
+      mediaStatus: 'downloaded',
+      edgeResolveReasonCode: 'edge_local',
+      attachment: {
+        type: 'image',
+        name: 'photo.png',
+        availability: 'edge-local',
+        sourceAction: 'materialize-clipboard',
+        materializationKind: 'original-file',
+        isOriginal: true,
+      },
+    })
+    const metadata = result.messages[0]?.mediaMetadata as { attachment?: { localPath?: string } }
+    expect(metadata.attachment?.localPath).toContain('attachments')
+    expect(fs.existsSync(metadata.attachment?.localPath || '')).toBe(true)
+    expect(helper.commands()).toContain('mouse.rightClick')
+    expect(helper.commands()).toContain('clipboard.readAttachment')
+  })
+
   it('does not resolve or call helper during dry run writes', async () => {
     const helper = new FakeHelper([])
     const runtime = createWeChatRuntime({ helperTransport: helper, platform: 'win32' })

@@ -95,6 +95,34 @@ describe('UseChat CLI', () => {
     })
   })
 
+
+  it('accepts read --download auto and proceeds to model configuration checks', async () => {
+    const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
+    const output = await captureConsoleLog(async () => {
+      const code = await main([
+        '--config',
+        configPath,
+        '--json',
+        'read',
+        '--app',
+        'wechat',
+        '--chat',
+        'ABC',
+        '--format',
+        'json',
+        '--download',
+        'auto',
+      ])
+      expect(code).toBe(1)
+    })
+    const parsed = JSON.parse(output)
+    expect(parsed).toMatchObject({
+      ok: false,
+      reasonCode: 'model_not_configured',
+    })
+    expect(parsed.reasonCode).not.toBe('download_mode_unsupported')
+  })
+
   it('keeps async command errors in the JSON error contract', async () => {
     const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
     const output = await captureConsoleLog(async () => {
