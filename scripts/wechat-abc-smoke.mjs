@@ -41,7 +41,11 @@ if (!fs.existsSync(cliPath)) {
 
 runStep('init', ['--json', 'init'], { parseJson: true })
 runStep('config-provider', ['config', 'set', 'model.provider', options.provider], { parseJson: false })
-const doctor = runStep('doctor', ['--json', 'doctor'], { parseJson: true, timeoutMs: options.timeoutMs })
+let doctor = runStep('doctor', ['--json', 'doctor'], { parseJson: true, timeoutMs: options.timeoutMs })
+if (isRetryableDoctorWindowFailure(doctor)) {
+  sleepSync(1200)
+  doctor = runStep('doctor-retry', ['--json', 'doctor'], { parseJson: true, timeoutMs: options.timeoutMs })
+}
 const read = runStep('read-abc', [
   '--json',
   'read',
@@ -154,7 +158,7 @@ function compactResult(id, parsed, stderr = '') {
     if (!cliReasonCode) return null
     return { ok: false, reasonCode: cliReasonCode }
   }
-  if (id === 'doctor') {
+  if (id === 'doctor' || id === 'doctor-retry') {
     return {
       ok: parsed.ok === true,
       reasonCode: cliReasonCode,
@@ -205,6 +209,16 @@ function firstReasonCode(value) {
   if (value.verify?.reasonCode) return value.verify.reasonCode
   const failedDoctor = value.doctor?.failed?.[0]
   return failedDoctor?.reasonCode
+}
+
+function isRetryableDoctorWindowFailure(step) {
+  if (step.compact?.ok === true) return false
+  const failed = Array.isArray(step.compact?.failed) ? step.compact.failed : []
+  return failed.some((check) => check?.reasonCode === 'wechat_window_not_found' || check?.reasonCode === 'wechat_window_unavailable')
+}
+
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms)
 }
 
 function extractCliReasonCode(stderr) {

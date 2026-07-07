@@ -335,7 +335,7 @@
 - [x] macOS：`usechat write --app wechat --chat "ABC" --text "UseChat mac ABC ..." --yes --json` 成功提交，随后 read 能读回 marker。
 - [x] macOS：`pnpm smoke:wechat:abc` 通过，验证 marker 可读回。
 - [x] macOS：2026-07-07 重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
-- [x] macOS：2026-07-07 重新验证 `pnpm smoke:wechat:abc -- --marker "UseChatmacABC20260707035915"` 通过，发送后 read-back 找到 marker。
+- [x] macOS：2026-07-07 重新验证 `node scripts/wechat-abc-smoke.mjs --chat ABC --marker "UseChatmacABC20260707100523"` 通过；doctor 通过，read 返回 `ok: true`、`containsChatName: true`，write 返回 `sent: true`，发送后 read-back 返回 `markerFound: true`。
 - [x] Windows：`usechat doctor` 通过，Helper / 可见桌面 / 微信进程检查正常。
 - [x] Windows：已复现并收敛当前 blocker：微信显示“为了你的账号安全，请重新登录 / 扫码登录”，UseChat 现在会返回 `wechat_login_required`，不会继续搜索、点击、粘贴或发送。
 - [x] Windows：ABC 读写 smoke 入口已固化为 `pnpm smoke:wechat:abc:windows-task`，可在可见桌面会话里运行。
@@ -343,8 +343,9 @@
 - [x] Windows：2026-07-07 同步最新代码到 `C:\Users\simpl\usechat`，`pnpm build && pnpm typecheck && pnpm test` 通过。
 - [x] Windows：2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 再次验证；doctor 通过，read 仍返回 `wechat_login_required`，write 自动跳过。
 - [x] Windows：2026-07-07 再次通过 `pnpm smoke:wechat:abc:windows-task` 验证当前外部状态；doctor 通过，read 仍返回 `wechat_login_required`，write 自动跳过。
-- [ ] Windows：用户重新登录微信后，重新验证读取 ABC。
-- [ ] Windows：用户重新登录微信后，重新验证发送 marker 到 ABC 并读回。
+- [x] Windows：用户重新登录微信后，2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 重新验证读取 ABC 成功；read 返回 `ok: true`、`messageCount: 47`、`containsChatName: true`。
+- [x] Windows：用户重新登录微信后，2026-07-07 通过 `pnpm smoke:wechat:abc:windows-task` 重新验证发送 marker `UseChat smoke 20260707015546` 到 ABC 成功，随后 read-back 返回 `markerFound: true`。
+- [x] Windows：2026-07-07 同步最新 doctor 稳定性修复后，`pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707020611`，read 返回 `messageCount: 45`，read-back 返回 `markerFound: true`。
 
 ## Phase 7 — 完整连接器能力
 

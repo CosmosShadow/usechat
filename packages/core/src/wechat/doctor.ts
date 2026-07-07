@@ -69,7 +69,13 @@ export async function runWeChatDoctor(input: RunWeChatDoctorInput = {}): Promise
     if (!permissions.ok) {
       checks.push({ id: 'permissions', ok: false, reasonCode: normalizeDoctorReasonCode(permissions.errorCode, 'permission_missing'), message: permissions.errorSummary ?? '权限检查失败。' })
     } else {
-      const permissionChecks = permissionChecksFromResult(permissions.result ?? {}, platform)
+      const permissionResult = await enrichDoctorPermissionResultWithWindowProbe({
+        result: permissions.result ?? {},
+        platform,
+        client,
+        traceId: `doctor-window-probe-${Date.now().toString(36)}`,
+      })
+      const permissionChecks = permissionChecksFromResult(permissionResult, platform)
       checks.push(...permissionChecks)
     }
   } catch (error) {
@@ -78,6 +84,54 @@ export async function runWeChatDoctor(input: RunWeChatDoctorInput = {}): Promise
     await client.stop().catch(() => {})
   }
   return doctorResult(platform, checks, resolved)
+}
+
+export async function enrichDoctorPermissionResultWithWindowProbe(input: {
+  result: Record<string, unknown>
+  platform: NodeJS.Platform | string
+  client: {
+    request<T = unknown>(command: 'windows.list', params?: Record<string, unknown>, traceId?: string): Promise<{ ok: boolean; result?: T }>
+  }
+  traceId?: string
+}): Promise<Record<string, unknown>> {
+  const next = { ...input.result }
+  if (next.wechatWindowAvailable === true || next.wechatRunning === false) return next
+  const probed = await probeWeChatWindowAvailable(input.client, input.traceId)
+  if (probed === true) next.wechatWindowAvailable = true
+  return next
+}
+
+async function probeWeChatWindowAvailable(
+  client: {
+    request<T = unknown>(command: 'windows.list', params?: Record<string, unknown>, traceId?: string): Promise<{ ok: boolean; result?: T }>
+  },
+  traceId?: string,
+): Promise<boolean | null> {
+  try {
+    const listed = await client.request<{ windows?: unknown[] }>('windows.list', {}, traceId)
+    if (!listed.ok) return null
+    return (listed.result?.windows ?? []).some(isUsableWeChatWindow)
+  } catch {
+    return null
+  }
+}
+
+function isUsableWeChatWindow(value: unknown): boolean {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const record = value as Record<string, unknown>
+  if (record.visible === false || record.minimized === true) return false
+  const appName = String(record.appName ?? '').normalize('NFKC').toLowerCase()
+  const title = String(record.title ?? '').normalize('NFKC')
+  if (!appName.includes('wechat') && !appName.includes('微信') && title !== '微信' && !title.startsWith('微信 ')) return false
+  const bounds = record.bounds
+  if (bounds && typeof bounds === 'object' && !Array.isArray(bounds)) {
+    const boundsRecord = bounds as Record<string, unknown>
+    const width = Number(boundsRecord.width)
+    const height = Number(boundsRecord.height)
+    if (Number.isFinite(width) && width <= 0) return false
+    if (Number.isFinite(height) && height <= 0) return false
+  }
+  return true
 }
 
 function resolveDoctorHelper(input: RunWeChatDoctorInput): WeChatChannelHelperAssetResolution {
