@@ -219,6 +219,7 @@ async function callOpenAICompatibleJson(input: {
       body: JSON.stringify({
         model: input.config.model,
         temperature: 0,
+        ...(shouldDisableThinking(input.config) ? { enable_thinking: false } : {}),
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: input.systemPrompt },
@@ -275,6 +276,12 @@ function normalizeOpenAICompatibleConfig(config: OpenAICompatibleProviderConfig)
     fetchImpl: config.fetchImpl,
     env: config.env ?? process.env,
   }
+}
+
+function shouldDisableThinking(config: NormalizedOpenAICompatibleConfig): boolean {
+  const baseUrl = config.baseUrl.toLowerCase()
+  const model = config.model.toLowerCase()
+  return baseUrl.includes('dashscope.aliyuncs.com') || model.startsWith('qwen3')
 }
 
 function buildStructureWindowUserPrompt(input: UseChatStructureVisibleWindowInput): string {

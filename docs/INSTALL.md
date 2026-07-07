@@ -51,7 +51,7 @@ usechat setup-helper --from ./UseChat-Helper-Runtime-macos.zip --target /path/to
 
 ## 3. 配置视觉大模型
 
-UseChat 通过视觉大模型理解微信窗口截图。国内环境推荐使用阿里云百炼 / DashScope 的 Qwen-VL，并把 API key 留在环境变量里：
+UseChat 通过视觉大模型理解微信窗口截图。国内环境推荐使用阿里云百炼 / DashScope 的 `qwen3.5-flash`，并把 API key 留在环境变量里：
 
 ```bash
 export DASHSCOPE_API_KEY="你的 DashScope API Key"
@@ -59,7 +59,7 @@ export DASHSCOPE_API_KEY="你的 DashScope API Key"
 usechat init
 usechat config set model.provider openai-compatible
 usechat config set model.baseUrl https://dashscope.aliyuncs.com/compatible-mode/v1
-usechat config set model.name qwen-vl-plus
+usechat config set model.name qwen3.5-flash
 usechat config set model.apiKeyEnv DASHSCOPE_API_KEY
 usechat config set model.timeoutMs 60000
 ```

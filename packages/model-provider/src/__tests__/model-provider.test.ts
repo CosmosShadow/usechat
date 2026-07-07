@@ -46,4 +46,20 @@ describe('model provider utilities', () => {
     })
     await expect(provider.structureVisibleWindow({ screenshots: [] })).rejects.toMatchObject({ reasonCode: 'model_no_messages' })
   })
+
+  it('disables thinking for DashScope Qwen models', async () => {
+    let requestBody: Record<string, unknown> | null = null
+    const provider = createOpenAICompatibleVisionProvider({
+      baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      model: 'qwen3.5-flash',
+      apiKeyEnv: 'TEST_USECHAT_KEY',
+      env: { TEST_USECHAT_KEY: 'test-key' } as NodeJS.ProcessEnv,
+      fetchImpl: async (_url, init) => {
+        requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>
+        return new Response(JSON.stringify({ choices: [{ message: { content: '{"structuredMessages":[{"senderRole":"contact","kind":"text","normalizedText":"hi"}]}' } }] }), { status: 200 })
+      },
+    })
+    await provider.structureVisibleWindow({ screenshots: [] })
+    expect(requestBody).toMatchObject({ enable_thinking: false })
+  })
 })

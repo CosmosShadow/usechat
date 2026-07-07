@@ -77,10 +77,9 @@ usechat --config ./usechat.config.json init
 
 UseChat 的读取能力依赖视觉大模型：Helper 会截取微信桌面端的可见窗口，采集 OCR 和布局提示，然后把截图与这些 hints 一起交给支持图片输入的 OpenAI-compatible 模型。模型返回结构化 JSON 后，UseChat 再做校验、排序、去重和 Markdown / JSON 输出。
 
-国内环境推荐使用 **阿里云百炼 / DashScope 的 Qwen-VL**：
+国内环境推荐使用 **阿里云百炼 / DashScope 的 `qwen3.5-flash`**。这是神念微信 RPA 当前实测效果最好的默认结构化模型：速度快、成本低，对微信窗口截图 + OCR hints 的结构化效果稳定。
 
-- `qwen-vl-plus`：推荐默认选择，速度、成本和视觉理解效果比较均衡；
-- `qwen-vl-max`：更强的视觉理解能力，适合复杂窗口、图片/文件/卡片较多的对话；
+- `qwen3.5-flash`：推荐默认选择，用于把微信可见窗口结构化成消息 JSON；
 - `model.baseUrl` 填兼容模式根地址 `https://dashscope.aliyuncs.com/compatible-mode/v1`，不要加 `/chat/completions`，UseChat 会自动拼接。
 
 推荐把 API key 放在环境变量里，不写入配置文件：
@@ -90,7 +89,7 @@ export DASHSCOPE_API_KEY="你的 DashScope API Key"
 
 usechat config set model.provider openai-compatible
 usechat config set model.baseUrl https://dashscope.aliyuncs.com/compatible-mode/v1
-usechat config set model.name qwen-vl-plus
+usechat config set model.name qwen3.5-flash
 usechat config set model.apiKeyEnv DASHSCOPE_API_KEY
 usechat config set model.timeoutMs 60000
 ```
@@ -121,9 +120,9 @@ UseChat 的模型成本通常很低：
 - **发送消息不调用视觉模型**，`write` 主要通过本机 Helper 聚焦窗口、粘贴和发送，不产生模型 token 消耗；
 - **读取消息才调用视觉模型**，`read` / `watch` 需要把当前可见窗口结构化成消息列表；
 - Helper 会先在本机做 OCR 和布局提示，再把截图与精简 hints 交给视觉模型，减少模型需要“盲看整张图”的 token 消耗；
-- 国内用户可以直接使用 `qwen-vl-plus` 这类 Qwen 视觉模型，成本低、延迟可控，日常个人助理场景通常足够。
+- 国内用户可以直接使用 `qwen3.5-flash`，这是神念微信 RPA 当前默认结构化模型，效果稳定且成本很低。
 
-如果只做本机 Helper / OCR smoke，也可以临时使用 `model.provider=ocr-only`，但正式读取效果建议使用 Qwen-VL 这类视觉模型。
+如果只做本机 Helper / OCR smoke，也可以临时使用 `model.provider=ocr-only`，但正式读取效果建议使用 `qwen3.5-flash`。
 
 ### 4. 安装 UseChat Helper
 

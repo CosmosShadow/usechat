@@ -13,7 +13,7 @@ usechat config list
 ```bash
 usechat config set model.provider openai-compatible
 usechat config set model.baseUrl https://dashscope.aliyuncs.com/compatible-mode/v1
-usechat config set model.name qwen-vl-plus
+usechat config set model.name qwen3.5-flash
 usechat config set model.apiKeyEnv DASHSCOPE_API_KEY
 ```
 
