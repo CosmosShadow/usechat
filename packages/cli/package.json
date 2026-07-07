@@ -27,5 +27,15 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
-  }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CosmosShadow/usechat.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/CosmosShadow/usechat/issues"
+  },
+  "homepage": "https://github.com/CosmosShadow/usechat#readme"
 }

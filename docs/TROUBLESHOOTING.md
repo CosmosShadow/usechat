@@ -12,9 +12,9 @@ usechat config list
 
 ```bash
 usechat config set model.provider openai-compatible
-usechat config set model.baseUrl https://api.openai.com/v1
-usechat config set model.name gpt-4.1-mini
-usechat config set model.apiKeyEnv OPENAI_API_KEY
+usechat config set model.baseUrl https://dashscope.aliyuncs.com/compatible-mode/v1
+usechat config set model.name qwen-vl-plus
+usechat config set model.apiKeyEnv DASHSCOPE_API_KEY
 ```
 
 确认环境变量存在，但不要把 key 打印到日志里。
