@@ -8,12 +8,12 @@
 #
 # Defaults:
 #   Src           = %USERPROFILE%\helper-signed.exe
-#   InstalledDir  = %LOCALAPPDATA%\Programs\Shennian Helper\resources\wechat-channel\windows
+#   InstalledDir  = %LOCALAPPDATA%\Programs\UseChat Helper\resources\wechat-channel\windows
 #
 # Requires: daemon stopped beforehand (`shennian stop`), otherwise the exe is locked.
 param(
     [string]$Src = (Join-Path $env:USERPROFILE 'helper-signed.exe'),
-    [string]$InstalledDir = (Join-Path $env:LOCALAPPDATA 'Programs\Shennian Helper\resources\wechat-channel\windows')
+    [string]$InstalledDir = (Join-Path $env:LOCALAPPDATA 'Programs\UseChat Helper\resources\wechat-channel\windows')
 )
 
 $ErrorActionPreference = 'Stop'

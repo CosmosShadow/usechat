@@ -11,10 +11,10 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'wechat-channel', 'macos')
-const outputApp = path.resolve(process.env.USECHAT_HELPER_APP_OUTPUT || process.env.SHENNIAN_HELPER_APP_OUTPUT || path.join(root, 'dist', 'macos', 'Shennian Helper.app'))
+const outputApp = path.resolve(process.env.USECHAT_HELPER_APP_OUTPUT || process.env.SHENNIAN_HELPER_APP_OUTPUT || path.join(root, 'dist', 'macos', 'UseChat Helper.app'))
 const outputRoot = path.dirname(outputApp)
-const bundleId = process.env.USECHAT_HELPER_BUNDLE_ID || process.env.SHENNIAN_HELPER_BUNDLE_ID || 'ai.shennian.helper'
-const executableName = 'Shennian Helper'
+const bundleId = process.env.USECHAT_HELPER_BUNDLE_ID || process.env.SHENNIAN_HELPER_BUNDLE_ID || 'net.shennian.usechat.helper'
+const executableName = 'UseChat Helper'
 const helperVersionOverride = process.env.USECHAT_HELPER_RUNTIME_VERSION || process.env.SHENNIAN_HELPER_RUNTIME_VERSION
 const signingRequested = process.env.USECHAT_HELPER_APP_SIGN === '1' || process.env.SHENNIAN_HELPER_APP_SIGN === '1'
 const notarizationRequested = process.env.USECHAT_HELPER_APP_NOTARIZE === '1' || process.env.SHENNIAN_HELPER_APP_NOTARIZE === '1'
@@ -51,7 +51,7 @@ const appManifest = {
     ...sourceManifest.platforms,
     darwin: {
       ...sourceAsset,
-      executable: '../../../MacOS/Shennian Helper',
+      executable: '../../../MacOS/UseChat Helper',
       sha256: null,
       signed: signingRequested,
       notarized: notarizationRequested,
@@ -200,7 +200,7 @@ function renderInfoPlist(input) {
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>Shennian Helper</string>
+  <string>UseChat Helper</string>
   <key>CFBundleExecutable</key>
   <string>${escapedExecutableName}</string>
   <key>CFBundleIdentifier</key>
@@ -208,7 +208,7 @@ function renderInfoPlist(input) {
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>Shennian Helper</string>
+  <string>UseChat Helper</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
@@ -218,11 +218,11 @@ function renderInfoPlist(input) {
   <key>LSBackgroundOnly</key>
   <true/>
   <key>NSAppleEventsUsageDescription</key>
-  <string>Shennian Helper uses Apple Events only when you enable WeChat automation.</string>
+  <string>UseChat Helper uses Apple Events only when you enable WeChat automation.</string>
   <key>NSInputMonitoringUsageDescription</key>
-  <string>Shennian Helper checks whether you are using the keyboard or mouse so it can stop WeChat automation when you take over.</string>
+  <string>UseChat Helper checks whether you are using the keyboard or mouse so it can stop WeChat automation when you take over.</string>
   <key>NSScreenCaptureUsageDescription</key>
-  <string>Shennian Helper captures WeChat windows only when you enable WeChat automation.</string>
+  <string>UseChat Helper captures WeChat windows only when you enable WeChat automation.</string>
 </dict>
 </plist>
 `
@@ -263,7 +263,7 @@ function verifyCommand(command, args, options = {}) {
 }
 
 function tryCreateZip(outputRoot, outputApp, packageManifestPath, evidencePath) {
-  const zipPath = path.join(outputRoot, 'Shennian-Helper-Runtime-macos.zip')
+  const zipPath = path.join(outputRoot, 'UseChat-Helper-Runtime-macos.zip')
   const entries = [
     path.basename(outputApp),
     path.basename(packageManifestPath),

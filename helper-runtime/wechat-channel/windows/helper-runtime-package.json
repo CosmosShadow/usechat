@@ -6,24 +6,28 @@
   "protocolVersion": 1,
   "minCliVersion": "0.2.100",
   "sha256": {
-    "runtimeManifest": "02d99a7c4613fb7560b56f80e785aa357b3cebb76727511fb12ca12d94765f3c",
-    "entrypoint": "64ef718213045f99519d5a3a335bf903e312a3cba89957635dace9d99471ff16"
+    "runtimeManifest": "741cd947032b0cc424d33e00cc3622fec33a5aa4666c7984431058898266ce64",
+    "entrypoint": "8d28e7a122fe678210897d06ba03f50adeea836557ca82985a205a466d8cc5de"
   },
   "installTarget": {
     "kind": "directory",
-    "defaultPath": "%LOCALAPPDATA%\\Programs\\Shennian Helper"
+    "defaultPath": "%LOCALAPPDATA%\\Programs\\UseChat Helper"
   },
   "payload": {
     "kind": "windows-helper-runtime",
     "runtimeManifest": "resources\\wechat-channel\\windows\\manifest.json",
     "entrypoint": "resources\\wechat-channel\\windows\\shennian-wechat-channel-helper.exe",
-    "manifestSha256": "02d99a7c4613fb7560b56f80e785aa357b3cebb76727511fb12ca12d94765f3c",
+    "manifestSha256": "741cd947032b0cc424d33e00cc3622fec33a5aa4666c7984431058898266ce64",
     "target": "win-x64",
     "selfContained": true
   },
   "signature": {
     "requiredForRelease": true,
-    "signed": false,
-    "notarized": false
+    "signed": true,
+    "notarized": false,
+    "authenticode": {
+      "method": "pe-security-directory",
+      "signed": true
+    }
   }
 }

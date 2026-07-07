@@ -1,7 +1,6 @@
 {
   "name": "@shennian/usechat-model-provider",
   "version": "0.1.0",
-  "private": true,
   "description": "OpenAI-compatible vision model provider for UseChat.",
   "type": "module",
   "exports": {
@@ -10,10 +9,16 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url'
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'wechat-channel', 'windows')
 const outputRoot = path.resolve(process.env.USECHAT_HELPER_WINDOWS_OUTPUT || process.env.SHENNIAN_HELPER_WINDOWS_OUTPUT || path.join(root, 'dist', 'windows'))
-const runtimeDir = path.join(outputRoot, 'Shennian Helper')
+const runtimeDir = path.join(outputRoot, 'UseChat Helper')
 const resourcesDir = path.join(runtimeDir, 'resources', 'wechat-channel', 'windows')
 const manifestPath = path.join(sourceDir, 'manifest.json')
 if (!fs.existsSync(manifestPath)) fail(`missing Windows helper manifest: ${manifestPath}`)
@@ -142,11 +142,11 @@ console.log(JSON.stringify({
 }))
 
 function renderInstallerPowerShell() {
-  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "Shennian Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\Shennian Helper"\n$Target = if ($env:USECHAT_HELPER_INSTALL_DIR) { $env:USECHAT_HELPER_INSTALL_DIR } elseif ($env:SHENNIAN_HELPER_INSTALL_DIR) { $env:SHENNIAN_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed Shennian Helper Runtime to $Target"\n`
+  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "UseChat Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\UseChat Helper"\n$Target = if ($env:USECHAT_HELPER_INSTALL_DIR) { $env:USECHAT_HELPER_INSTALL_DIR } elseif ($env:SHENNIAN_HELPER_INSTALL_DIR) { $env:SHENNIAN_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed UseChat Helper Runtime to $Target"\n`
 }
 
 function tryCreateZip(outputRoot, runtimeDir) {
-  const zipPath = path.join(outputRoot, 'Shennian-Helper-Runtime-windows.zip')
+  const zipPath = path.join(outputRoot, 'UseChat-Helper-Runtime-windows.zip')
   const result = spawnSync('zip', ['-qr', zipPath, path.basename(runtimeDir), 'install-helper-runtime.ps1', 'helper-runtime-package.json', 'helper-runtime-evidence.json'], {
     cwd: outputRoot,
     stdio: 'ignore',

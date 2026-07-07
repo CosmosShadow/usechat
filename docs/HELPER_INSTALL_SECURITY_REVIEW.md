@@ -9,7 +9,7 @@ usechat setup-helper --from <helper-runtime.zip|app|dir> [--target <path>] [--fo
 ## 安全边界
 
 - 只接受本地路径，不从 URL 下载。
-- 解压到新建临时目录，再从临时目录中识别 `Shennian Helper.app` 或 `Shennian Helper` runtime root。
+- 解压到新建临时目录，再从临时目录中识别 `UseChat Helper.app` 或 `UseChat Helper` runtime root；同时兼容历史 `Shennian Helper` runtime root。
 - 只复制识别出的 helper runtime root 到目标路径。
 - 目标路径已存在时必须显式 `--force`。
 - Windows 替换前会停止 `shennian-wechat-channel-helper.exe`，沿用 Shennian installer 的行为，避免 DLL 占用导致半安装。

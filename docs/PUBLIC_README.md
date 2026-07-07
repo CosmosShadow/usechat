@@ -25,7 +25,7 @@ It lets AI agents use the messaging apps already running on your own computer th
 
 ```bash
 npm install -g @shennian/usechat
-usechat setup-helper --from ./Shennian-Helper-Runtime-macos.zip --force
+usechat setup-helper --from ./UseChat-Helper-Runtime-macos.zip --force
 usechat init
 usechat config set model.provider openai-compatible
 usechat config set model.baseUrl https://api.openai.com/v1

@@ -24,7 +24,7 @@ usechat config set model.apiKeyEnv OPENAI_API_KEY
 显式安装 helper runtime：
 
 ```bash
-usechat setup-helper --from ./Shennian-Helper-Runtime-macos.zip --force
+usechat setup-helper --from ./UseChat-Helper-Runtime-macos.zip --force
 usechat doctor --json
 ```
 
@@ -43,7 +43,7 @@ usechat config set helper.path /path/to/wechat-channel/macos
 - `permission-accessibility`
 - `permission-input-monitoring`
 
-到系统设置中给 `Shennian Helper.app` 或当前终端授予屏幕录制、辅助功能和输入监听权限。权限修改后通常需要重启 helper 或终端。
+到系统设置中给 `UseChat Helper.app` 或当前终端授予屏幕录制、辅助功能和输入监听权限。权限修改后通常需要重启 helper 或终端。
 
 ## Windows 可见桌面不可用
 

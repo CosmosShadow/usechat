@@ -263,12 +263,16 @@ function pushInstalledHelperRuntimeDirs(input: {
     const home = input.homedir || env.HOME
     const runtimeRoot = defaultHelperRuntimeRoot({ platform, env, homedir: input.homedir })
     if (runtimeRoot) {
+      push(path.join(runtimeRoot, 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(runtimeRoot, 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(runtimeRoot, 'wechat-channel', platformDir))
     }
     if (home) {
+      push(path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
+      push(path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper', 'wechat-channel', platformDir))
       push(path.join(home, '.usechat', 'helper', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(home, '.usechat', 'helper', 'wechat-channel', platformDir))
+      push(path.join(home, 'Applications', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(home, 'Applications', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
     }
     push(path.join('/Applications', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
@@ -285,10 +289,14 @@ function pushInstalledHelperRuntimeDirs(input: {
       push(path.join(localAppData, 'Programs', 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
       push(path.join(localAppData, 'Shennian', 'Helper', 'wechat-channel', platformDir))
     }
-    if (programFiles) push(path.join(programFiles, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
-    if (programFilesX86) push(path.join(programFilesX86, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
-    if (programFiles) push(path.join(programFiles, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
-    if (programFilesX86) push(path.join(programFilesX86, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
+    if (programFiles) {
+      push(path.join(programFiles, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
+      push(path.join(programFiles, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
+    }
+    if (programFilesX86) {
+      push(path.join(programFilesX86, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
+      push(path.join(programFilesX86, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
+    }
   }
 }
 
@@ -307,10 +315,11 @@ function resolveLegacyHelperDirCandidate(value: string, platformDir: string): st
 
 function resolveHelperRuntimeDirCandidates(value: string, platformDir: string): string[] {
   if (fs.existsSync(path.join(value, 'manifest.json'))) return [value]
+  const useChatAppCandidate = path.join(value, 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir)
   const appCandidate = path.join(value, 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir)
   const runtimeCandidate = path.join(value, 'wechat-channel', platformDir)
   const platformCandidate = path.join(value, platformDir)
-  return [appCandidate, runtimeCandidate, platformCandidate]
+  return [useChatAppCandidate, appCandidate, runtimeCandidate, platformCandidate]
 }
 
 function defaultHelperRuntimeRoot(input: {
@@ -322,15 +331,13 @@ function defaultHelperRuntimeRoot(input: {
   const explicit = env[USECHAT_HELPER_RUNTIME_DIR_ENV]?.trim()
     || env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
   if (explicit) return path.resolve(explicit)
-  // Keep compatibility with the first copy-out runtime: the already installed
-  // Helper.app still stores its macOS socket under Shennian's support dir.
   const home = input.homedir || (input.platform === 'win32' ? env.USERPROFILE : env.HOME)
   if (input.platform === 'darwin') {
-    return home ? path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper') : null
+    return home ? path.join(home, 'Library', 'Application Support', 'UseChat', 'Helper') : null
   }
   if (input.platform === 'win32') {
     const localAppData = env.LOCALAPPDATA || (home ? path.join(home, 'AppData', 'Local') : '')
-    return localAppData ? path.join(localAppData, 'Shennian', 'Helper') : null
+    return localAppData ? path.join(localAppData, 'UseChat', 'Helper') : null
   }
   return null
 }

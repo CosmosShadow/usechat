@@ -14,13 +14,16 @@
     "helper-runtime:build:native:win": "pnpm --dir helper-runtime build:native:win",
     "helper-runtime:build:win": "pnpm --dir helper-runtime build:win",
     "helper-runtime:validate": "pnpm --dir helper-runtime validate",
-    "release:private:packages": "node scripts/release-private-packages.mjs",
+    "release:private:packages": "pnpm release:npm:pack",
     "smoke:wechat:abc": "node scripts/wechat-abc-smoke.mjs --chat ABC",
     "smoke:wechat:abc:attachments": "node scripts/wechat-abc-attachment-smoke.mjs --chat ABC",
     "smoke:wechat:abc:attachments:windows-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-run-wechat-abc-smoke-task.ps1 -Chat ABC -TaskName UseChatWechatAbcAttachmentSmoke -ScriptName wechat-abc-attachment-smoke.mjs -WaitSeconds 360",
     "smoke:wechat:abc:windows-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-run-wechat-abc-smoke-task.ps1 -Chat ABC",
     "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "release:npm:pack": "node scripts/release-npm-packages.mjs",
+    "release:npm:dry-run": "node scripts/publish-npm-packages.mjs --dry-run",
+    "release:npm:publish": "node scripts/publish-npm-packages.mjs --publish"
   },
   "devDependencies": {
     "@types/node": "^20.19.9",

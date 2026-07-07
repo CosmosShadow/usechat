@@ -74,4 +74,4 @@ helper-runtime-evidence.json
 
 ## 兼容说明
 
-首个 UseChat release 保持 helper protocol、helper command、response shape 和 helper 名称兼容 Shennian。`Shennian Helper.app` / `Shennian Helper` 作为 runtime identity 暂时保留，避免同时大改 native 权限身份和 TypeScript 状态机。
+UseChat release 保持 helper protocol、helper command 和 response shape 兼容 Shennian copy-out 来源；对外 runtime identity 使用 `UseChat Helper.app` / `UseChat Helper`，resolver 保留历史 `Shennian Helper` fallback，避免已安装测试环境立刻失效。

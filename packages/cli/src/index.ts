@@ -403,11 +403,11 @@ export type InstallHelperRuntimeResult = {
 
 export function defaultHelperInstallTarget(platform: NodeJS.Platform | string, env: NodeJS.ProcessEnv = process.env): string {
   if (platform === 'darwin') {
-    return path.join(os.homedir(), 'Library', 'Application Support', 'Shennian', 'Helper', 'Shennian Helper.app')
+    return path.join(os.homedir(), 'Library', 'Application Support', 'UseChat', 'Helper', 'UseChat Helper.app')
   }
   if (platform === 'win32') {
     const localAppData = env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
-    return path.join(localAppData, 'Programs', 'Shennian Helper')
+    return path.join(localAppData, 'Programs', 'UseChat Helper')
   }
   throw new Error(`unsupported_platform: ${platform}`)
 }
@@ -437,7 +437,10 @@ export function installHelperRuntime(input: {
       }
       fs.mkdirSync(path.dirname(target), { recursive: true })
       fs.cpSync(sourceRoot, target, { recursive: true })
-      if (input.platform === 'darwin') ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'Shennian Helper'))
+      if (input.platform === 'darwin') {
+        ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'UseChat Helper'))
+        ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'Shennian Helper'))
+      }
       if (!fs.existsSync(manifestPath)) throw new Error(`helper_manifest_missing_after_install: ${manifestPath}`)
     }
     return {
@@ -480,11 +483,13 @@ function normalizeHelperRuntimeRoot(root: string, platform: NodeJS.Platform | st
   const candidates = platform === 'darwin'
     ? [
         root,
+        path.join(root, 'UseChat Helper.app'),
         path.join(root, 'Shennian Helper.app'),
         ...safeReaddir(root).filter((entry) => entry.endsWith('.app')).map((entry) => path.join(root, entry)),
       ]
     : [
         root,
+        path.join(root, 'UseChat Helper'),
         path.join(root, 'Shennian Helper'),
       ]
   for (const candidate of candidates) {
@@ -602,12 +607,12 @@ function printHelp(): void {
 
 function printSetupHelperHelp(): void {
   console.log(`用法：
-  usechat setup-helper --from <helper-runtime.zip|Shennian Helper.app|Shennian Helper dir> [--target <path>] [--force] [--json]
+  usechat setup-helper --from <helper-runtime.zip|UseChat Helper.app|dir> [--target <path>] [--force] [--json]
 
 说明：
   setup-helper 是显式安装动作，不会在 npm install/postinstall 阶段自动运行。
-  macOS 默认安装到 ~/Library/Application Support/Shennian/Helper/Shennian Helper.app
-  Windows 默认安装到 %LOCALAPPDATA%\\Programs\\Shennian Helper
+  macOS 默认安装到 ~/Library/Application Support/UseChat/Helper/UseChat Helper.app
+  Windows 默认安装到 %LOCALAPPDATA%\\Programs\\UseChat Helper
 `)
 }
 

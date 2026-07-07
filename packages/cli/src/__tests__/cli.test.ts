@@ -192,9 +192,9 @@ describe('UseChat CLI', () => {
 
   it('installs a macOS helper runtime only from an explicit source', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-helper-install-'))
-    const sourceApp = path.join(dir, 'Shennian Helper.app')
+    const sourceApp = path.join(dir, 'UseChat Helper.app')
     const helperDir = path.join(sourceApp, 'Contents', 'Resources', 'wechat-channel', 'macos')
-    const executable = path.join(sourceApp, 'Contents', 'MacOS', 'Shennian Helper')
+    const executable = path.join(sourceApp, 'Contents', 'MacOS', 'UseChat Helper')
     fs.mkdirSync(path.dirname(executable), { recursive: true })
     fs.mkdirSync(helperDir, { recursive: true })
     fs.writeFileSync(executable, '#!/bin/sh\n')
@@ -202,9 +202,9 @@ describe('UseChat CLI', () => {
       schemaVersion: 1,
       helperVersion: '0.1.0',
       protocolVersion: 1,
-      platforms: { darwin: { executable: '../../../MacOS/Shennian Helper', sha256: null, signed: false, notarized: false } },
+      platforms: { darwin: { executable: '../../../MacOS/UseChat Helper', sha256: null, signed: false, notarized: false } },
     }))
-    const target = path.join(dir, 'target', 'Shennian Helper.app')
+    const target = path.join(dir, 'target', 'UseChat Helper.app')
 
     const result = installHelperRuntime({
       source: sourceApp,
@@ -222,9 +222,9 @@ describe('UseChat CLI', () => {
     expect(fs.existsSync(path.join(result.helperDir, 'manifest.json'))).toBe(true)
   })
 
-  it('uses stable Shennian-compatible helper install targets', () => {
-    expect(defaultHelperInstallTarget('darwin')).toContain(path.join('Application Support', 'Shennian', 'Helper', 'Shennian Helper.app'))
-    expect(defaultHelperInstallTarget('win32', { LOCALAPPDATA: 'C:\\Users\\test\\AppData\\Local' } as NodeJS.ProcessEnv)).toBe('C:\\Users\\test\\AppData\\Local/Programs/Shennian Helper')
+  it('uses stable UseChat helper install targets', () => {
+    expect(defaultHelperInstallTarget('darwin')).toContain(path.join('Application Support', 'UseChat', 'Helper', 'UseChat Helper.app'))
+    expect(defaultHelperInstallTarget('win32', { LOCALAPPDATA: 'C:\\Users\\test\\AppData\\Local' } as NodeJS.ProcessEnv)).toBe('C:\\Users\\test\\AppData\\Local/Programs/UseChat Helper')
   })
 
   it('treats npm global bin symlinks as the CLI entrypoint', () => {

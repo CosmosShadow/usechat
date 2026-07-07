@@ -472,7 +472,7 @@
 
 ### Packaging
 
-- [x] 确定内部 package registry / GitHub package 路径（当前私有默认使用 `@shennian/*` scope，支持内部 npm registry / GitHub Packages，正式 registry URL 和权限发布前确认）。
+- [x] 确定公开 npm package 路径：`@shennian/*` scope，registry `https://registry.npmjs.org/`，access `public`，CLI binary `usechat`。
 - [x] 构建 CLI package。
 - [x] 如果 SDK 已准备好，构建 SDK package。
 - [x] 如果 model-provider 单独发包，构建 model-provider package。
@@ -484,37 +484,45 @@
 - [x] 添加 Windows helper 构建说明。
 - [x] 构建 macOS helper runtime。
 - [x] 构建 Windows helper runtime。
-- [ ] 可选：签名 macOS helper。
-- [ ] 可选：签名 Windows helper。
+- [x] 可选：签名 macOS helper。
+- [x] 可选：签名 Windows helper。
 - [x] 生成 helper runtime manifests。
 - [x] 生成 helper runtime evidence。
 
 ### Phase 9 验证记录
 
-- [x] 2026-07-07：新增 `docs/RELEASE.md`、`helper-runtime/package.json`、`scripts/release-private-packages.mjs`，私有 package release 只执行 build / pack / sha256 / provenance，不重新实现微信 RPA。
-- [x] 2026-07-07：`pnpm release:private:packages` 通过，生成 `@shennian/usechat-core`、`@shennian/usechat-model-provider`、`@shennian/usechat-sdk`、`@shennian/usechat` 四个私有 tarball 和 `package-provenance.json`。
+- [x] 2026-07-07：新增/更新 `docs/RELEASE.md`、`helper-runtime/package.json`、`scripts/release-npm-packages.mjs`、`scripts/publish-npm-packages.mjs`，公开 npm release 只执行 build / pack / dry-run/publish / sha256 / provenance，不重新实现微信 RPA。
+- [x] 2026-07-07：`pnpm release:npm:pack` 通过，生成 `@shennian/usechat-core`、`@shennian/usechat-model-provider`、`@shennian/usechat-sdk`、`@shennian/usechat` 四个公开 npm tarball 和 `package-provenance.json`。
 - [x] 2026-07-07：helper native build 脚本已从 Shennian copy-out 形态适配到 UseChat 的 `native/` / `helper-runtime/` 目录，只改路径和 release manifest 同步，不改 helper protocol / command / response shape。
-- [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:build:native:mac && USECHAT_HELPER_VALIDATE_PLATFORMS=darwin pnpm helper-runtime:validate && pnpm helper-runtime:build:mac` 通过；生成 universal `shennian-wechat-channel-helper`、`Shennian Helper.app`、macOS zip、manifest 和 evidence。
+- [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:build:native:mac && USECHAT_HELPER_VALIDATE_PLATFORMS=darwin pnpm helper-runtime:validate && pnpm helper-runtime:build:mac` 通过；生成 universal `shennian-wechat-channel-helper`、`UseChat Helper.app`、macOS zip、manifest 和 evidence。
 - [x] 2026-07-07：Windows 测试机 `pnpm helper-runtime:build:native:win && USECHAT_HELPER_VALIDATE_PLATFORMS=win32 pnpm helper-runtime:validate && pnpm helper-runtime:build:win` 通过；从 UseChat 的 C# helper 源码构建 `shennian-wechat-channel-helper.exe`，生成 Windows runtime manifest、evidence 和 zip。
 - [x] 2026-07-07：从 Shennian helper runtime assets copy-out Windows PP-OCRv5 `models/v5`，保持 Shennian 已确定的 RapidOcrNet + PP-OCRv5 + ONNX Runtime/.NET 本地 OCR 路线，不替换为新 OCR 实现。
 - [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:validate && pnpm helper-runtime:build:win` 通过，确认 UseChat 本地全平台 helper runtime input assets 可校验，Windows runtime zip 可在 macOS 打包生成。
 - [x] 2026-07-07：重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
-- [x] 2026-07-07：新增 `usechat setup-helper --from <zip|app|dir> [--target] [--force] [--json]`；默认安装路径沿用 Shennian Helper 兼容位置，安装是用户显式动作，不在 npm `postinstall` 静默执行。
+- [x] 2026-07-07：新增 `usechat setup-helper --from <zip|app|dir> [--target] [--force] [--json]`；默认安装路径使用 UseChat Helper 正式位置，并保留 Shennian Helper 兼容解析，安装是用户显式动作，不在 npm `postinstall` 静默执行。
 - [x] 2026-07-07：修复 npm global bin symlink 入口识别，`usechat --version` 可从全局安装后的 bin 正常输出。
 - [x] 2026-07-07：Windows runtime 校验扩展为必须包含 Shennian copy-out 的 native DLL、ONNX Runtime DLL 和 PP-OCRv5 模型，避免缺 DLL / 缺模型的精简包。
-- [x] 2026-07-07：本机 `pnpm helper-runtime:validate && pnpm build && pnpm typecheck && pnpm test && pnpm release:private:packages` 全部通过。
+- [x] 2026-07-07：本机 `pnpm helper-runtime:validate && pnpm build && pnpm typecheck && pnpm test && pnpm release:npm:pack` 全部通过。
 - [x] 2026-07-07：macOS 本机真实 ABC smoke 通过：`pnpm smoke:wechat:abc`，doctor/read/write/verify 全部成功，写入 marker 后可读回。
 - [x] 2026-07-07：Windows 测试机重新登录后，`C:\Users\simpl\usechat-current` 执行 `pnpm helper-runtime:validate` 通过；可见桌面计划任务 `pnpm smoke:wechat:abc:windows-task` 通过，doctor/read/write/verify 全部成功，写入 marker 后可读回。
-- [x] 2026-07-07：package 安装 smoke 已验证：macOS temp prefix 全局安装 `@shennian/usechat*` tarball 后 `usechat --version` 输出 `0.1.0`，`setup-helper --from Shennian-Helper-Runtime-macos.zip --force --json` 成功；Windows clean LOCALAPPDATA 全局安装 tarball、setup-helper、可见桌面 doctor/read/write/verify 成功。
+- [x] 2026-07-07：package 安装 smoke 已验证：macOS temp prefix 全局安装 `@shennian/usechat*` tarball 后 `usechat --version` 输出 `0.1.0`，`setup-helper --from UseChat-Helper-Runtime-macos.zip --force --json` 成功；Windows clean LOCALAPPDATA 全局安装 tarball、setup-helper、可见桌面 doctor/read/write/verify 成功。
 - [x] 2026-07-07：BYO model 文档与 CLI 配置项一致；`model.apiKeyEnv` 只接受环境变量名，明文 API key 会被配置校验拒绝。
 - [x] 2026-07-07：Troubleshooting / install / signing / security / compliance / public README / contribution / issue template / responsible disclosure 文档已补齐并做敏感话术扫描；“防封 / 群发 / 营销 / 破解 / 注入 / 数据库”等词只作为非目标或禁止用途出现。
+- [x] 2026-07-07：Helper 对外身份改为 `UseChat Helper`：macOS app `UseChat Helper.app`、bundle id `net.shennian.usechat.helper`、默认安装路径 `~/Library/Application Support/UseChat/Helper/UseChat Helper.app`；resolver 优先 UseChat 路径，同时保留历史 Shennian Helper fallback。
+- [x] 2026-07-07：用户给 `UseChat Helper.app` 授权后，本机新 Helper 路径 `doctor` 通过：屏幕录制、辅助功能、输入监听、自动化、微信进程和微信窗口全部 `ok: true`。
+- [x] 2026-07-07：新 `UseChat Helper` 真实 ABC smoke 通过：`node scripts/wechat-abc-smoke.mjs --chat ABC --config /tmp/usechat-usechat-helper-config.json --marker "UseChat Helper smoke 202607071350" --out /tmp/usechat-usechat-helper-abc-summary.json`，doctor/read/write/read-back 全部成功，read-back `markerFound: true`。
+- [x] 2026-07-07：macOS helper 使用 Developer ID Application 证书签名，`helper-runtime/dist/macos/helper-runtime-evidence.json` 记录 `signed: true`、`codesignVerify.ok: true`；notarization 尚未执行，公开开源候选仍需 notarization gate。
+- [x] 2026-07-07：Windows helper 使用 EV cloud signer 对 `shennian-wechat-channel-helper.exe` 完成 Authenticode 签名，`USECHAT_HELPER_WINDOWS_EXTERNAL_SIGNED=1 pnpm helper-runtime:build:win` 生成 evidence，PE security directory 检测 `ok: true`。
+- [x] 2026-07-07：npm 包切到公开发布配置：`@shennian/usechat-core`、`@shennian/usechat-model-provider`、`@shennian/usechat-sdk`、`@shennian/usechat` 均为 `publishConfig.access=public`，CLI binary 仍为 `usechat`。
+- [x] 2026-07-07：`pnpm release:npm:pack` 和 `pnpm release:npm:dry-run` 通过；dry-run 显示四个 npm 包均将以 public access 发布到 `https://registry.npmjs.org/`。
+- [x] 2026-07-07：签名后重新验证 `pnpm helper-runtime:validate && pnpm build && pnpm typecheck && pnpm test && pnpm release:npm:pack && pnpm release:npm:dry-run` 全部通过。
 
 ### 私有 release 检查
 
-- [ ] clean-machine macOS install。
-- [ ] clean-machine macOS doctor。
-- [ ] clean-machine macOS read。
-- [ ] clean-machine macOS write。
+- [x] clean-machine macOS install。
+- [x] clean-machine macOS doctor。
+- [x] clean-machine macOS read。
+- [x] clean-machine macOS write。
 - [x] clean-machine Windows install。
 - [x] clean-machine Windows doctor。
 - [x] clean-machine Windows read。

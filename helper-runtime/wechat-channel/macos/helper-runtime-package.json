@@ -11,13 +11,13 @@
   },
   "installTarget": {
     "kind": "app-bundle",
-    "defaultPath": "~/Library/Application Support/Shennian/Helper/Shennian Helper.app"
+    "defaultPath": "~/Library/Application Support/UseChat/Helper/UseChat Helper.app"
   },
   "payload": {
     "kind": "macos-helper-app",
-    "bundleId": "ai.shennian.helper",
+    "bundleId": "net.shennian.usechat.helper",
     "runtimeManifest": "Contents/Resources/wechat-channel/macos/manifest.json",
-    "entrypoint": "Contents/MacOS/Shennian Helper",
+    "entrypoint": "Contents/MacOS/UseChat Helper",
     "manifestSha256": "876f732a4830b8c5caeb77f35148633387b8a597591a806098b2f272e3fc78a6"
   },
   "signature": {

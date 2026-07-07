@@ -1,7 +1,6 @@
 {
   "name": "@shennian/usechat-core",
   "version": "0.1.0",
-  "private": true,
   "description": "UseChat connector core and local runtime primitives.",
   "type": "module",
   "exports": {
@@ -22,10 +21,16 @@
       "import": "./dist/wechat/helper-assets.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run --passWithNoTests"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

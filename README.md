@@ -44,7 +44,8 @@ pnpm smoke:wechat:abc:windows-task
 私有 release 打包入口：
 
 ```bash
-pnpm release:private:packages
+pnpm release:npm:pack
+pnpm release:npm:dry-run
 pnpm helper-runtime:build
 ```
 
@@ -192,4 +193,4 @@ UseChat 是从神念体系中独立出来的新私有项目。初期抽取过程
 
 当前状态：**私有正式 release 准备阶段**。
 
-已完成从 Shennian copy-out 的微信 read/write/watch、出站附件、入站媒体 resolver、ledger、trace 和 helper 源码基础迁移。下一步按 [PLAN.md](./PLAN.md) 推进私有 package、helper runtime artifacts、clean-machine 验收和公开开源前 gate。
+已完成从 Shennian copy-out 的微信 read/write/watch、出站附件、入站媒体 resolver、ledger、trace 和 helper 源码基础迁移。下一步按 [PLAN.md](./PLAN.md) 推进公开 npm package、UseChat Helper runtime artifacts、clean-machine 验收和公开开源前 gate。
