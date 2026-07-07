@@ -5,6 +5,7 @@ param(
   [string]$RepoRoot,
   [string]$Chat = "ABC",
   [string]$TaskName = "UseChatWechatAbcSmoke",
+  [string]$ScriptName = "wechat-abc-smoke.mjs",
   [string]$OutputDir,
   [string]$NodePath,
   [int]$WaitSeconds = 240
@@ -39,7 +40,10 @@ $runnerPath = Join-Path $OutputDir "run-wechat-abc-smoke.ps1"
 $outputPath = Join-Path $OutputDir "summary.json"
 $stderrPath = Join-Path $OutputDir "stderr.txt"
 $logPath = Join-Path $OutputDir "task.log"
-$scriptPath = Join-Path $RepoRoot "scripts\wechat-abc-smoke.mjs"
+$scriptPath = Join-Path (Join-Path $RepoRoot "scripts") $ScriptName
+if (-not (Test-Path $scriptPath)) {
+  throw "Smoke script not found: $scriptPath"
+}
 
 Remove-Item -Force -ErrorAction SilentlyContinue `
   $outputPath, `

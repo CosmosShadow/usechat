@@ -32,6 +32,7 @@ usechat serve --stdio
 ```bash
 pnpm build
 pnpm smoke:wechat:abc
+pnpm smoke:wechat:abc:attachments
 ```
 
 Windows 远程测试必须在已登录的可见桌面会话中执行；SSH Session 0 不能操作微信窗口。可用交互式计划任务入口：
@@ -99,6 +100,14 @@ pnpm smoke:wechat:abc:windows-task
 ```
 
 该命令会注册并触发一个交互式计划任务，让 smoke 在可见桌面会话中运行。
+
+附件发送 smoke 可用：
+
+```bash
+pnpm smoke:wechat:abc:attachments
+```
+
+它会调用现有 `usechat write --file/--image/--video` 能力向 ABC 发送本机测试文件、图片和视频，并校验 CLI 返回的 `localPath` / `size` 与本机原件一致；发送能力仍来自 Shennian copy-out 的 outbound sender，本脚本只做 smoke 编排。
 
 如果摘要里出现：
 

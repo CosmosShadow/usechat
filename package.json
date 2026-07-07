@@ -9,6 +9,8 @@
     "build": "pnpm -r build",
     "check": "pnpm typecheck && pnpm test",
     "smoke:wechat:abc": "node scripts/wechat-abc-smoke.mjs --chat ABC",
+    "smoke:wechat:abc:attachments": "node scripts/wechat-abc-attachment-smoke.mjs --chat ABC",
+    "smoke:wechat:abc:attachments:windows-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-run-wechat-abc-smoke-task.ps1 -Chat ABC -TaskName UseChatWechatAbcAttachmentSmoke -ScriptName wechat-abc-attachment-smoke.mjs -WaitSeconds 360",
     "smoke:wechat:abc:windows-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-run-wechat-abc-smoke-task.ps1 -Chat ABC",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck"

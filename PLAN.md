@@ -356,6 +356,9 @@
 - [x] macOS：2026-07-07 重新验证 `usechat read --app wechat --chat ABC --limit 20 --format json --download auto` 命令链路通过；ABC 当前可见窗口无媒体候选，返回 `ok: true`、`messageCount: 20`、`mediaCount: 0`、`qualityOk: true`。
 - [x] Windows：2026-07-07 用户重新登录后继续验证；同步最新代码到 `C:\Users\simpl\usechat`，清理测试机依赖/构建缓存后 `pnpm build && pnpm typecheck && pnpm test` 通过；Windows 侧 core 101 个测试通过，CLI 6 个测试通过。
 - [x] Windows：2026-07-07 用户重新登录后重新验证 `pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707034114`，read 返回 `ok: true`、`messageCount: 46`、`containsChatName: true`，write 返回 `sent: true`，read-back 返回 `markerFound: true`。
+- [x] macOS：2026-07-07 新增 `pnpm smoke:wechat:abc:attachments` 附件发送 smoke 入口；脚本只调用现有 `usechat write --file/--image/--video`，校验返回的 `localPath` / `size` 与本机原件一致，不重新实现微信发送能力。
+- [x] macOS：2026-07-07 附件发送 smoke 通过：`pnpm smoke:wechat:abc:attachments`；marker `UseChat attachment smoke 20260707042214`，text / file / image / video 全部 `sent: true`、`status: "sent-unconfirmed"`，file/image/video 返回的 `localPath` 与 `size` 均匹配本机原件。
+- [x] Windows：2026-07-07 固化附件发送计划任务入口 `pnpm smoke:wechat:abc:attachments:windows-task`，复用现有可见桌面 scheduled-task wrapper，仅切换 smoke script，不新建 Windows 自动化机制。
 
 ## Phase 7 — 完整连接器能力
 
@@ -370,6 +373,7 @@
 - [x] 校验文件大小限制。
 - [x] 使用剪贴板文件操作。
 - [x] 发送后 restore 剪贴板。
+- [x] 固化附件发送 smoke：`pnpm smoke:wechat:abc:attachments`。
 
 ### 入站媒体
 
