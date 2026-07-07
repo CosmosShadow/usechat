@@ -49,6 +49,15 @@ packages/cli/src/channels/wechat-channel/message-key.ts
 packages/cli/src/channels/wechat-channel/ledger.ts
   -> packages/core/src/wechat/ledger.ts
 
+packages/cli/src/channels/wechat-channel/scheduler.ts
+  -> packages/core/src/wechat/watch.ts
+
+packages/cli/src/channels/wechat-channel/runtime.ts
+  -> packages/core/src/wechat/watch.ts
+
+packages/cli/src/channels/wechat-rpa/product-channel.ts
+  -> packages/core/src/wechat/watch.ts
+
 packages/cli/src/channels/wechat-channel/media-cache-resolver.ts
   -> packages/core/src/wechat/media-cache-resolver.ts
 
@@ -130,8 +139,8 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 - `client.ts` 中的 `WeChatChannelObservedMessage` / `WeChatChannelVisualBlock` 类型，在 UseChat 中对应 `packages/core/src/wechat/types.ts`。
 - `WECHAT_CHANNEL_RECENT_MESSAGE_WINDOW` 沿用 Shennian 原值 `20`，由 UseChat `packages/core/src/wechat/runtime.ts` 导出，供 ledger / vector store 复用。
 - 测试 fixture 保留 Shennian 原始 `download-ground-truth.json`，测试中的读取路径只做 monorepo cwd 兼容。
-- 入站媒体 resolver 与 `read --download auto` 接入已从 Shennian observer 相关逻辑 copy-out；watch / serve 仍待后续接入。
+- 入站媒体 resolver 与 `read --download auto` 接入已从 Shennian observer 相关逻辑 copy-out。
 - Windows 单测只做 copy-out 兼容适配：`file://` 测试路径改用 Node 标准 `pathToFileURL()`，与 Shennian Windows helper 的 `new Uri(filePath).AbsoluteUri` 和 macOS helper 的 `URL(fileURLWithPath:)` 输出形态保持一致；不改变 resolver 行为。
 - 针对“不要把截图 preview 冒充视频原件”的测试，显式锁定非 Windows 平台，避免混入 Shennian 原有 Windows WeChat cache fallback 默认扫描分支；Windows cache fallback 由独立 cache 测试覆盖。
 - Trace phase 词表、media resolve trace 和 helper request trace hook 已从 Shennian copy-out；UseChat 新增薄层 trace recorder 负责 summary / JSONL / redaction，本身不重新实现微信 RPA。
-- Watch 等仍待后续从 Shennian 对应模块继续 copy-out。
+- Watch 已从 Shennian `scheduler` 的 start/tick/stop 轮询骨架、`runtime` 的 poll interval 常量、`product-channel` 的安全路径与 stable id 规则、以及已 copy-out 的 ledger baseline/dedupe 语义接入；UseChat 只输出本地 JSONL 事件，不接神念服务端 ingest。

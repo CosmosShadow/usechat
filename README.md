@@ -23,6 +23,7 @@ usechat doctor
 usechat read --app wechat --chat "ABC" --limit 10
 usechat write --app wechat --chat "ABC" --text "hello" --yes
 usechat read --app wechat --chat "ABC" --format json --trace-jsonl
+usechat watch --app wechat --chat "ABC" --emit jsonl
 usechat serve --stdio
 ```
 
@@ -79,6 +80,7 @@ usechat write --app wechat --chat "文件传输助手" --text "hello" --yes
 - 输出 Markdown 或 JSON。
 - 发送文本消息，默认确认，支持 `--yes` 跳过确认。
 - 输出 `traceSummary`，并可通过 `--trace-jsonl [path]` 显式保存脱敏 JSONL trace events。
+- `watch --emit jsonl` 可持续轮询指定对话，输出 baseline、message、error、paused 事件。
 
 ## 真实设备 smoke
 
@@ -117,7 +119,7 @@ pnpm smoke:wechat:abc:windows-task
 - 发送文件、图片、视频。
 - 下载当前可见媒体并物化为本机附件。
 - 本机 ledger、baseline、去重、echo suppression。
-- `watch` 模式输出 JSONL 事件。
+- `watch` 模式输出 JSONL 事件，复用本机 ledger 做 baseline 和去重。
 - 面向 Codex、Claude Code、Cursor、OpenCode 和自定义 Agent 的 `serve --stdio` 工具服务；未来可增加 MCP adapter。
 - 微信之后接入更多消息软件连接器。
 

@@ -413,7 +413,7 @@
 
 - [ ] 文本、文件、图片、视频发送在 macOS 和 Windows smoke 通过。
 - [ ] 文件 / 视频成功必须拿到真实本机原件，不允许 preview crop 冒充成功。
-- [ ] 本机 ledger 避免重复 read event。
+- [x] 本机 ledger 避免重复 read event。
 - [x] Trace 可定位 phase failure，默认不泄露内容。
 
 ## Phase 8 — Agent 接口
@@ -422,12 +422,12 @@
 
 ### Watch 模式
 
-- [ ] 实现 `usechat watch --app wechat --chat <name> --emit jsonl`。
-- [ ] 输出 initial baseline event。
-- [ ] 输出 new message event。
-- [ ] 输出 error / paused event。
-- [ ] 支持 poll interval config。
-- [ ] 支持 graceful shutdown。
+- [x] 实现 `usechat watch --app wechat --chat <name> --emit jsonl`。
+- [x] 输出 initial baseline event。
+- [x] 输出 new message event。
+- [x] 输出 error / paused event。
+- [x] 支持 poll interval config。
+- [x] 支持 graceful shutdown。
 
 ### 工具服务
 
@@ -457,6 +457,9 @@
 - [x] 2026-07-07：新增 `stdio-server` 单元测试，覆盖 invalid JSON、doctor、read、write 显式确认、JSONL streaming、secret-like 字段脱敏。
 - [x] 2026-07-07：`pnpm --filter @shennian/usechat typecheck && pnpm --filter @shennian/usechat test` 通过，CLI 共 12 个测试通过。
 - [x] 2026-07-07：构建后真实入口 smoke 通过：`node packages/cli/dist/index.js --config <tmp> serve --stdio` 输入 `doctor` JSONL，返回 `ok: true`、`tool: "doctor"`。
+- [x] 2026-07-07：新增 `usechat watch --app wechat --chat <name> --emit jsonl`，从 Shennian `scheduler` / `runtime` / `product-channel` / `ledger` copy-out 轮询、poll interval、路径安全和 baseline/dedupe 语义，只包装现有 read runtime，不重新实现微信 RPA。
+- [x] 2026-07-07：新增 watch 单元测试，覆盖 initial baseline、不重复回放历史消息、只输出新 contact message、self echo suppression、error / paused event、poll interval clamp 和 Windows-safe ledger path。
+- [x] 2026-07-07：构建后真实入口 smoke 通过：`node packages/cli/dist/index.js --config <tmp> watch --app wechat --chat ABC --emit jsonl --once --limit 5` 输出 `type: "baseline"`、`observedCount: 5`、`traceSummary.status: "ok"`。
 
 ## Phase 9 — 私有正式 release
 

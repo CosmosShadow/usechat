@@ -50,6 +50,16 @@ write(chat, text)
   -> report status
 ```
 
+```text
+watch(chat)
+  -> start / tick / stop 轮询骨架
+  -> read(chat, format=json)
+  -> ledger baseline / diff
+  -> 输出 JSONL baseline/message/error/paused 事件
+```
+
+Watch 模式从 Shennian `WeChatChannelScheduler` 的轮询骨架和 `WeChatChannelLedger` 的 baseline/dedupe 语义 copy-out。UseChat 版本不接神念服务端 ingest，只把事件输出到本地 stdout，供 Agent 或外部工具消费。
+
 ## 独立模式与平台模式
 
 ### 独立模式
@@ -100,6 +110,14 @@ write(chat, text)
 ```
 
 默认不保存原始截图、OCR 全文或剪贴板内容。read/write 结果会返回脱敏 `traceSummary`；只有显式传入 `--trace-jsonl [path]` 或 runtime trace path 时才写 JSONL trace events。诊断导出必须是用户显式动作。
+
+Watch ledger 默认保存在：
+
+```text
+~/.usechat/ledger/wechat-channel/<runtime>.ledger.json
+```
+
+第一轮 tick 只建立 baseline，不回放历史可见消息；后续 tick 只输出 ledger 判定为可投递的新消息。
 
 ## Model provider contract
 

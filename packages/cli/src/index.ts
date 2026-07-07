@@ -17,10 +17,12 @@ import {
   setConfigValue,
   validateUseChatConfig,
   createWeChatRuntime,
+  createUseChatWeChatWatchRunner,
   runWeChatDoctor,
   readUseChatAttachment,
   defaultUseChatTraceJsonlPath,
   type UseChatConfig,
+  type UseChatWeChatWatchRunner,
 } from '@shennian/usechat-core'
 import { createOcrOnlyVisionProvider, createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
 import { runUseChatStdioServer } from './stdio-server.js'
@@ -57,6 +59,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       case 'doctor': return await commandDoctor(parsed)
       case 'read': return await commandRead(parsed)
       case 'write': return await commandWrite(parsed)
+      case 'watch': return await commandWatch(parsed)
       case 'serve': return await commandServe(parsed)
       default:
         throw new Error(`unknown_command: ${parsed.command}`)
@@ -196,6 +199,45 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   }
 }
 
+async function commandWatch(parsed: ParsedArgs): Promise<number> {
+  const app = readStringFlag(parsed, 'app') ?? 'wechat'
+  if (app !== 'wechat') throw new Error(`unsupported_app: ${app}`)
+  const chat = readStringFlag(parsed, 'chat')
+  if (!chat) throw new Error('usage: usechat watch --app wechat --chat <name> --emit jsonl')
+  const emit = readStringFlag(parsed, 'emit') ?? 'jsonl'
+  if (emit !== 'jsonl') throw new Error(`emit_mode_unsupported: ${emit}`)
+  const download = readStringFlag(parsed, 'download') ?? 'never'
+  if (download !== 'never' && download !== 'auto') throw new Error(`download_mode_unsupported: ${download}`)
+  const loaded = loadUseChatConfig({ configPath: parsed.global.configPath })
+  const provider = createProviderFromConfig(loaded.config)
+  const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
+  const pollIntervalMs = readNumberFlag(parsed, 'poll-interval-ms') ?? loaded.config.wechat.pollIntervalMs
+  const limit = readNumberFlag(parsed, 'limit')
+  const runner = createUseChatWeChatWatchRunner({
+    runtime,
+    chat,
+    dataDir: loaded.config.dataDir,
+    pollIntervalMs,
+    limit,
+    download,
+    traceJsonlPath: traceJsonlPathForWatch(parsed),
+    onEvent: async (event) => {
+      process.stdout.write(`${JSON.stringify(redactSecrets(event))}\n`)
+    },
+  })
+  if (parsed.flags.once === true) {
+    try {
+      await runner.tick()
+      return 0
+    } finally {
+      await runner.stop().catch(() => {})
+    }
+  }
+  await runner.start()
+  await waitForWatchShutdown(runner)
+  return 0
+}
+
 async function commandServe(parsed: ParsedArgs): Promise<number> {
   const transport = readStringFlag(parsed, 'stdio') === undefined && parsed.flags.stdio !== true ? undefined : 'stdio'
   if (transport !== 'stdio') throw new Error('usage: usechat serve --stdio')
@@ -283,7 +325,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function flagRequiresValue(key: string): boolean {
-  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video', 'trace-jsonl', 'trace-id'].includes(key)
+  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video', 'trace-jsonl', 'trace-id', 'emit', 'poll-interval-ms'].includes(key)
 }
 
 function readStringFlag(parsed: ParsedArgs, key: string): string | undefined {
@@ -332,6 +374,31 @@ function traceJsonlPathFlag(parsed: ParsedArgs, fallbackTraceId: string): string
   return undefined
 }
 
+function traceJsonlPathForWatch(parsed: ParsedArgs): ((input: { traceId: string; tickIndex: number }) => string | null | undefined) | string | null | undefined {
+  if (parsed.flags['trace-jsonl'] === true) return ({ traceId }) => defaultUseChatTraceJsonlPath(traceId)
+  if (typeof parsed.flags['trace-jsonl'] === 'string') return parsed.flags['trace-jsonl']
+  if (parsed.flags['no-trace-jsonl'] === true) return null
+  return undefined
+}
+
+async function waitForWatchShutdown(runner: UseChatWeChatWatchRunner): Promise<void> {
+  await new Promise<void>((resolve) => {
+    let settled = false
+    const stop = () => {
+      if (settled) return
+      settled = true
+      cleanup()
+      void runner.stop().finally(resolve)
+    }
+    const cleanup = () => {
+      process.off('SIGINT', stop)
+      process.off('SIGTERM', stop)
+    }
+    process.once('SIGINT', stop)
+    process.once('SIGTERM', stop)
+  })
+}
+
 function printTraceSummary(summary: { status: string; traceId: string; jsonlPath?: string; failedPhase?: string; reasonCode?: string; eventCount?: number } | undefined): void {
   if (!summary) return
   const parts = [
@@ -356,6 +423,7 @@ function printHelp(): void {
   usechat doctor [--json]
   usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto] [--trace-id <id>] [--trace-jsonl [path]]
   usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json] [--trace-id <id>] [--trace-jsonl [path]]
+  usechat watch --app wechat --chat <name> --emit jsonl [--poll-interval-ms <ms>] [--download never|auto]
   usechat serve --stdio
 
 全局选项：
@@ -375,6 +443,7 @@ function printConfigHelp(): void {
   usechat config set model.name gpt-4.1-mini
   usechat config set model.apiKeyEnv OPENAI_API_KEY
   usechat config set helper.path /path/to/wechat-channel/macos
+  usechat config set wechat.pollIntervalMs 60000
 `)
 }
 

@@ -23,6 +23,7 @@ export type UseChatConfig = {
   }
   wechat: {
     sendRequiresConfirm: boolean
+    pollIntervalMs?: number
   }
   dataDir: string
 }
@@ -59,6 +60,7 @@ const DEFAULT_CONFIG: UseChatConfig = {
   },
   wechat: {
     sendRequiresConfirm: true,
+    pollIntervalMs: undefined,
   },
   dataDir: '~/.usechat',
 }
@@ -186,6 +188,9 @@ export function validateUseChatConfig(config: unknown, input: {
   if (normalized.output.defaultFormat !== 'markdown' && normalized.output.defaultFormat !== 'json') {
     issues.push({ path: 'output.defaultFormat', reasonCode: 'output_format_invalid', message: 'output.defaultFormat 只能是 markdown 或 json。' })
   }
+  if (normalized.wechat.pollIntervalMs !== undefined && (!Number.isInteger(normalized.wechat.pollIntervalMs) || normalized.wechat.pollIntervalMs <= 0)) {
+    issues.push({ path: 'wechat.pollIntervalMs', reasonCode: 'wechat_poll_interval_invalid', message: 'wechat.pollIntervalMs 必须是正整数毫秒。' })
+  }
   if (!normalized.dataDir.trim()) {
     issues.push({ path: 'dataDir', reasonCode: 'data_dir_missing', message: 'dataDir 不能为空。' })
   }
@@ -255,6 +260,7 @@ export function normalizeUseChatConfig(config: unknown, input: {
     },
     wechat: {
       sendRequiresConfirm: typeof wechat.sendRequiresConfirm === 'boolean' ? wechat.sendRequiresConfirm : defaults.wechat.sendRequiresConfirm,
+      pollIntervalMs: optionalPositiveInteger(wechat.pollIntervalMs ?? defaults.wechat.pollIntervalMs),
     },
     dataDir: expandHome(optionalString(record.dataDir) ?? defaults.dataDir, input.homedir),
   }
@@ -270,6 +276,7 @@ function assertAllowedConfigKey(key: string): void {
     'helper.path',
     'output.defaultFormat',
     'wechat.sendRequiresConfirm',
+    'wechat.pollIntervalMs',
     'dataDir',
   ])
   if (!allowed.has(key)) throw new Error(`config_key_unsupported: ${key}`)
@@ -277,10 +284,10 @@ function assertAllowedConfigKey(key: string): void {
 
 function parseConfigValue(key: string, rawValue: string): unknown {
   if (key === 'wechat.sendRequiresConfirm') return parseBoolean(rawValue)
-  if (key === 'model.timeoutMs') {
+  if (key === 'model.timeoutMs' || key === 'wechat.pollIntervalMs') {
     if (rawValue.trim() === '') return undefined
     const value = Number(rawValue)
-    if (!Number.isInteger(value) || value <= 0) throw new Error('config_value_invalid: model.timeoutMs must be a positive integer')
+    if (!Number.isInteger(value) || value <= 0) throw new Error(`config_value_invalid: ${key} must be a positive integer`)
     return value
   }
   if (key === 'output.defaultFormat') {
