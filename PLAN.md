@@ -359,6 +359,7 @@
 - [x] macOS：2026-07-07 新增 `pnpm smoke:wechat:abc:attachments` 附件发送 smoke 入口；脚本只调用现有 `usechat write --file/--image/--video`，校验返回的 `localPath` / `size` 与本机原件一致，不重新实现微信发送能力。
 - [x] macOS：2026-07-07 附件发送 smoke 通过：`pnpm smoke:wechat:abc:attachments`；marker `UseChat attachment smoke 20260707042214`，text / file / image / video 全部 `sent: true`、`status: "sent-unconfirmed"`，file/image/video 返回的 `localPath` 与 `size` 均匹配本机原件。
 - [x] Windows：2026-07-07 固化附件发送计划任务入口 `pnpm smoke:wechat:abc:attachments:windows-task`，复用现有可见桌面 scheduled-task wrapper，仅切换 smoke script，不新建 Windows 自动化机制。
+- [x] Windows：2026-07-07 附件发送 smoke 通过：同步最新代码到 `C:\Users\simpl\usechat` 后，`pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:attachments:windows-task` 通过；marker `UseChat attachment smoke 20260707043018`，text / file / image / video 全部 `sent: true`、`status: "sent-unconfirmed"`，file/image/video 返回的 `localPath` 与 `size` 均匹配 Windows 本机原件。
 
 ## Phase 7 — 完整连接器能力
 
@@ -415,8 +416,8 @@
 
 验收：
 
-- [ ] 文本、文件、图片、视频发送在 macOS 和 Windows smoke 通过。
-- [ ] 文件 / 视频成功必须拿到真实本机原件，不允许 preview crop 冒充成功。
+- [x] 文本、文件、图片、视频发送在 macOS 和 Windows smoke 通过。
+- [x] 文件 / 视频成功必须拿到真实本机原件，不允许 preview crop 冒充成功。
 - [x] 本机 ledger 避免重复 read event。
 - [x] Trace 可定位 phase failure，默认不泄露内容。
 
