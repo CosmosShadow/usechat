@@ -6,8 +6,8 @@
   "protocolVersion": 1,
   "minCliVersion": "0.2.100",
   "sha256": {
-    "runtimeManifest": "46d2dc7dd409fb4a58a7c1b5a1f80087459ed7192b7dcf319d47885436720f3f",
-    "entrypoint": "509823d6d1eb2c8640ced04768170153dedd5679b9cb70b53c8a5c0aca3c0f79"
+    "runtimeManifest": "1aa7c43074e2f45843e94f96050c9c2edc42a77ac1c31ca0b7b3c22301c03f06",
+    "entrypoint": "ab65d48e68a9a7b1d3e90e6a49b7f9ac9bb22c7ea39c970802ca6867f379e345"
   },
   "installTarget": {
     "kind": "app-bundle",
@@ -18,7 +18,7 @@
     "bundleId": "net.shennian.usechat.helper",
     "runtimeManifest": "Contents/Resources/wechat-channel/macos/manifest.json",
     "entrypoint": "Contents/MacOS/UseChat Helper",
-    "manifestSha256": "46d2dc7dd409fb4a58a7c1b5a1f80087459ed7192b7dcf319d47885436720f3f"
+    "manifestSha256": "1aa7c43074e2f45843e94f96050c9c2edc42a77ac1c31ca0b7b3c22301c03f06"
   },
   "signature": {
     "requiredForRelease": true,

@@ -102,8 +102,8 @@ packages/cli/src/__tests__/wechat-channel-cooldown.test.ts
 scripts/wechat-rpa-lab/fixtures/visible-window-structure/download-ground-truth.json
   -> scripts/wechat-rpa-lab/fixtures/visible-window-structure/download-ground-truth.json
 
-packages/cli/native/wechat-channel-helper/macos/ShennianWeChatChannelHelper.swift
-  -> native/macos/ShennianWeChatChannelHelper.swift
+packages/cli/native/wechat-channel-helper/macos/UseChatWeChatChannelHelper.swift
+  -> native/macos/UseChatWeChatChannelHelper.swift
 
 packages/cli/native/wechat-channel-helper/windows/*
   -> native/windows/*
@@ -118,10 +118,10 @@ packages/helper-runtime/wechat-channel/{macos,windows}/manifest.json
 packages/helper-runtime/wechat-channel/{macos,windows}/helper-runtime-package.json
   -> helper-runtime/wechat-channel/{macos,windows}/
 
-packages/helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper
+packages/helper-runtime/wechat-channel/macos/usechat-wechat-channel-helper
   -> helper-runtime/wechat-channel/macos/usechat-wechat-channel-helper
 
-packages/helper-runtime/wechat-channel/windows/shennian-wechat-channel-helper.exe
+packages/helper-runtime/wechat-channel/windows/usechat-wechat-channel-helper.exe
 packages/helper-runtime/wechat-channel/windows/*.dll
 packages/helper-runtime/wechat-channel/windows/models/v5/*
   -> helper-runtime/wechat-channel/windows/

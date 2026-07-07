@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Windows.Forms;
 
-namespace Shennian.WeChatChannel.Helper.Win;
+namespace UseChat.WeChatChannel.Helper.Win;
 
 internal static partial class Program
 {

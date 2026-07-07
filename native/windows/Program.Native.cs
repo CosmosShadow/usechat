@@ -4,7 +4,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Shennian.WeChatChannel.Helper.Win;
+namespace UseChat.WeChatChannel.Helper.Win;
 
 internal static partial class Program
 {

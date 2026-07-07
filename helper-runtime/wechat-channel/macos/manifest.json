@@ -5,7 +5,7 @@
   "platforms": {
     "darwin": {
       "executable": "usechat-wechat-channel-helper",
-      "sha256": "509823d6d1eb2c8640ced04768170153dedd5679b9cb70b53c8a5c0aca3c0f79",
+      "sha256": "ab65d48e68a9a7b1d3e90e6a49b7f9ac9bb22c7ea39c970802ca6867f379e345",
       "signed": false,
       "notarized": false
     }

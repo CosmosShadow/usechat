@@ -16,7 +16,7 @@ const repoRoot = path.resolve(helperRuntimeRoot, '..')
 const nativeRoot = path.join(repoRoot, 'native')
 const sourcePath = process.env.WECHAT_CHANNEL_HELPER_SOURCE
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_SOURCE)
-  : path.join(nativeRoot, 'macos', 'ShennianWeChatChannelHelper.swift')
+  : path.join(nativeRoot, 'macos', 'UseChatWeChatChannelHelper.swift')
 const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
   : path.join(helperRuntimeRoot, 'wechat-channel', 'macos')

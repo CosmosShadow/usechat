@@ -147,6 +147,7 @@ function renderInstallerPowerShell() {
 
 function tryCreateZip(outputRoot, runtimeDir) {
   const zipPath = path.join(outputRoot, 'UseChat-Helper-Runtime-windows.zip')
+  fs.rmSync(zipPath, { force: true })
   const result = spawnSync('zip', ['-qr', zipPath, path.basename(runtimeDir), 'install-helper-runtime.ps1', 'helper-runtime-package.json', 'helper-runtime-evidence.json'], {
     cwd: outputRoot,
     stdio: 'ignore',

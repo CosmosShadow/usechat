@@ -7,7 +7,7 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Text.Json;
 
-namespace Shennian.WeChatChannel.Helper.Win;
+namespace UseChat.WeChatChannel.Helper.Win;
 
 internal static partial class Program
 {

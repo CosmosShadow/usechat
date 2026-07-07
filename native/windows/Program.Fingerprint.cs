@@ -3,7 +3,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Shennian.WeChatChannel.Helper.Win;
+namespace UseChat.WeChatChannel.Helper.Win;
 
 internal static partial class Program
 {

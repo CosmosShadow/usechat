@@ -264,6 +264,7 @@ function verifyCommand(command, args, options = {}) {
 
 function tryCreateZip(outputRoot, outputApp, packageManifestPath, evidencePath) {
   const zipPath = path.join(outputRoot, 'UseChat-Helper-Runtime-macos.zip')
+  fs.rmSync(zipPath, { force: true })
   const entries = [
     path.basename(outputApp),
     path.basename(packageManifestPath),

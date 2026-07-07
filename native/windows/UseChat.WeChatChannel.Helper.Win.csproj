@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>usechat-wechat-channel-helper</AssemblyName>
-    <RootNamespace>Shennian.WeChatChannel.Helper.Win</RootNamespace>
+    <RootNamespace>UseChat.WeChatChannel.Helper.Win</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>

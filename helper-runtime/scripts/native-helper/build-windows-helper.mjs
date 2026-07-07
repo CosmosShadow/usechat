@@ -15,7 +15,7 @@ const repoRoot = path.resolve(helperRuntimeRoot, '..')
 const nativeRoot = path.join(repoRoot, 'native')
 const projectPath = process.env.WECHAT_CHANNEL_HELPER_PROJECT
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_PROJECT)
-  : path.join(nativeRoot, 'windows', 'Shennian.WeChatChannel.Helper.Win.csproj')
+  : path.join(nativeRoot, 'windows', 'UseChat.WeChatChannel.Helper.Win.csproj')
 const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
   : path.join(helperRuntimeRoot, 'wechat-channel', 'windows')

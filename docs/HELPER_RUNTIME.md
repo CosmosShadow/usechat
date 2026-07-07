@@ -73,7 +73,7 @@ usechat config set helper.path /path/to/helper
 
 开发者可以自编译，并让 UseChat 指向自己的 helper。
 
-macOS helper 从 `native/macos/ShennianWeChatChannelHelper.swift` 构建；Windows helper 从 `native/windows/Shennian.WeChatChannel.Helper.Win.csproj` 构建。两者都是 Shennian copy-out 源码，UseChat 只做目录、包名和 release evidence 适配。
+macOS helper 从 `native/macos/UseChatWeChatChannelHelper.swift` 构建；Windows helper 从 `native/windows/UseChat.WeChatChannel.Helper.Win.csproj` 构建。两者都是 Shennian copy-out 源码，UseChat 只做目录、包名和 release evidence 适配。
 
 完整 release 流程见 `docs/RELEASE.md`。
 

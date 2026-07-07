@@ -83,7 +83,7 @@ dist/release/packages/
 
 ## 构建 macOS helper runtime
 
-macOS helper 从 `native/macos/ShennianWeChatChannelHelper.swift` 构建，源码来自 Shennian copy-out。
+macOS helper 从 `native/macos/UseChatWeChatChannelHelper.swift` 构建，源码来自 Shennian copy-out。
 
 ```bash
 pnpm helper-runtime:build:native:mac
@@ -118,7 +118,7 @@ pnpm helper-runtime:build:mac
 
 ## 构建 Windows helper runtime
 
-Windows helper 从 `native/windows/Shennian.WeChatChannel.Helper.Win.csproj` 构建，源码来自 Shennian copy-out。
+Windows helper 从 `native/windows/UseChat.WeChatChannel.Helper.Win.csproj` 构建，源码来自 Shennian copy-out。
 
 Windows 构建机运行：
 
