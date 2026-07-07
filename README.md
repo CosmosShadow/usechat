@@ -22,6 +22,7 @@ AI Agent
 usechat doctor
 usechat read --app wechat --chat "ABC" --limit 10
 usechat write --app wechat --chat "ABC" --text "hello" --yes
+usechat read --app wechat --chat "ABC" --format json --trace-jsonl
 usechat serve --stdio
 ```
 
@@ -77,6 +78,7 @@ usechat write --app wechat --chat "文件传输助手" --text "hello" --yes
 - 使用用户配置的视觉模型结构化当前可见消息。
 - 输出 Markdown 或 JSON。
 - 发送文本消息，默认确认，支持 `--yes` 跳过确认。
+- 输出 `traceSummary`，并可通过 `--trace-jsonl [path]` 显式保存脱敏 JSONL trace events。
 
 ## 真实设备 smoke
 

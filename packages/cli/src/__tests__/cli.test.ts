@@ -96,6 +96,47 @@ describe('UseChat CLI', () => {
   })
 
 
+  it('supports write --dry-run with trace JSONL output', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-trace-'))
+    const configPath = path.join(dir, 'config.json')
+    const tracePath = path.join(dir, 'trace.jsonl')
+    const output = await captureConsoleLog(async () => {
+      const code = await main([
+        '--config',
+        configPath,
+        'write',
+        '--app',
+        'wechat',
+        '--chat',
+        'ABC',
+        '--text',
+        'hello',
+        '--dry-run',
+        '--json',
+        '--trace-id',
+        'cli-trace-test',
+        '--trace-jsonl',
+        tracePath,
+      ])
+      expect(code).toBe(0)
+    })
+    const parsed = JSON.parse(output)
+    expect(parsed).toMatchObject({
+      ok: true,
+      sent: false,
+      status: 'dry-run',
+      traceId: 'cli-trace-test',
+      traceSummary: {
+        traceId: 'cli-trace-test',
+        operation: 'write',
+        status: 'ok',
+        jsonlPath: tracePath,
+      },
+    })
+    const traceLines = fs.readFileSync(tracePath, 'utf8').trim().split(/\r?\n/).map((line) => JSON.parse(line))
+    expect(traceLines.map((line) => line.phase)).toEqual(['preflight', 'run_summary'])
+  })
+
   it('accepts read --download auto and proceeds to model configuration checks', async () => {
     const configPath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-')), 'config.json')
     const output = await captureConsoleLog(async () => {

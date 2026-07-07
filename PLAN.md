@@ -398,17 +398,23 @@
 
 ### Trace
 
-- [ ] 输出 trace summary JSON。
-- [ ] 输出 JSONL trace events。
-- [ ] 脱敏敏感字段。
+- [x] 输出 trace summary JSON。
+- [x] 输出 JSONL trace events。
+- [x] 脱敏敏感字段。
 - [x] 默认不保存原始截图。
+
+### Trace 验证记录
+
+- [x] 2026-07-07：新增 UseChat trace recorder，支持 read/write `traceSummary`、显式 JSONL trace events、phase / reasonCode / latency / hash / count 摘要。
+- [x] 2026-07-07：新增 `--trace-id`、`--trace-jsonl [path]`、`--trace-summary` CLI 参数；JSON 输出默认包含 `traceSummary`。
+- [x] 2026-07-07：新增 trace 单元测试，覆盖 JSONL 写入、phase failure summary、secret-like 字段脱敏、截图/base64 省略、稳定 hash。
 
 验收：
 
 - [ ] 文本、文件、图片、视频发送在 macOS 和 Windows smoke 通过。
 - [ ] 文件 / 视频成功必须拿到真实本机原件，不允许 preview crop 冒充成功。
 - [ ] 本机 ledger 避免重复 read event。
-- [ ] Trace 可定位 phase failure，默认不泄露内容。
+- [x] Trace 可定位 phase failure，默认不泄露内容。
 
 ## Phase 8 — Agent 接口
 

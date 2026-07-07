@@ -73,6 +73,7 @@ UseChat 采用本地优先和最小化数据原则：
 - 截图只用于当前识别流程，默认不长期保存。
 - 剪贴板内容不写日志。
 - OCR 全文默认不写日志。
+- Trace 默认只记录 phase、reasonCode、latency、hash 和计数；`dataBase64`、截图、长文本和 secret-like 字段会被省略或脱敏。
 - 附件默认保存在用户本机目录。
 - 诊断导出应由用户主动触发，并清楚说明包含哪些内容。
 
@@ -96,7 +97,7 @@ usechat config set model.name gpt-4.1-mini
 usechat config set model.apiKeyEnv OPENAI_API_KEY
 ```
 
-推荐使用 `apiKeyEnv`，让 API key 留在环境变量中。UseChat 不应在日志、trace、错误输出或诊断包中打印 API key、token 或 `.env` 明文内容。
+推荐使用 `apiKeyEnv`，让 API key 留在环境变量中。UseChat 不应在日志、trace、错误输出或诊断包中打印 API key、token 或 `.env` 明文内容。`--trace-jsonl` 是显式诊断能力，仍会经过脱敏。
 
 ## Helper Runtime
 

@@ -1,6 +1,7 @@
 // @arch ../../../docs/ARCHITECTURE.md
 // @test src/__tests__/wechat-format.test.ts
 
+import type { UseChatTraceSummary } from './trace.js'
 
 export type ExternalMessageAttachment = {
   type: string
@@ -99,6 +100,7 @@ export type WeChatReadResult = {
   markdown: string
   traceId: string
   window?: WeChatWindowInfo
+  traceSummary?: UseChatTraceSummary
   quality?: {
     ok: boolean
     warnings: Array<{
@@ -135,6 +137,7 @@ export type WeChatWriteResult = {
   status: 'sent-unconfirmed' | 'dry-run'
   traceId: string
   warnings?: string[]
+  traceSummary?: UseChatTraceSummary
 }
 
 export type WeChatDoctorCheck = {

@@ -18,6 +18,13 @@ import { applyMessageLimit, formatWeChatMessagesMarkdown } from './format.js'
 import { fallbackMessageInputPoint, fallbackSearchPoint, screenPointForClassifierRect } from './points.js'
 import { validateWeChatMessages } from './message-quality.js'
 import { readUseChatAttachment, type UseChatAttachmentPayload } from './attachment.js'
+import {
+  createUseChatTraceRecorder,
+  defaultUseChatTraceJsonlPath,
+  stableHash,
+  type UseChatTraceRecorder,
+  type UseChatTraceSummary,
+} from './trace.js'
 import { enqueueWeChatOutboundReply, type WeChatChannelOutboundLedger } from './outbound-ledger.js'
 import { sendQueuedWeChatOutboundRecords, WeChatChannelOutboundSender } from './outbound-sender.js'
 import { resolveUseChatObservedMessageMedia } from './inbound-media.js'
@@ -63,6 +70,7 @@ export type WeChatVisionProvider = {
 export type CreateWeChatRuntimeInput = {
   helperPath?: string
   helperTransport?: HelperTransport & { stop?: () => Promise<void> }
+  trace?: { enabled?: boolean; jsonlPath?: string | null }
   env?: NodeJS.ProcessEnv
   platform?: NodeJS.Platform | string
   verifyIntegrity?: boolean
@@ -77,132 +85,280 @@ export type CreateWeChatRuntimeInput = {
 }
 
 export type WeChatRuntime = {
-  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never' | 'auto'; traceId?: string }): Promise<WeChatReadResult>
-  write(input: { chat: string; text?: string; file?: string; image?: string; video?: string; yes?: boolean; dryRun?: boolean; traceId?: string }): Promise<WeChatWriteResult>
+  read(input: { chat: string; limit?: number; format?: 'markdown' | 'json'; download?: 'never' | 'auto'; traceId?: string; traceJsonlPath?: string | null }): Promise<WeChatReadResult>
+  write(input: { chat: string; text?: string; file?: string; image?: string; video?: string; yes?: boolean; dryRun?: boolean; traceId?: string; traceJsonlPath?: string | null }): Promise<WeChatWriteResult>
   stop(): Promise<void>
 }
 
 export function createWeChatRuntime(input: CreateWeChatRuntimeInput = {}): WeChatRuntime {
   const platform = input.platform ?? process.platform
-  const helper = input.helperTransport ?? createDefaultHelperTransport(input, platform)
+  const traceSink: { current?: UseChatTraceRecorder } = {}
+  const helper = input.helperTransport ?? createDefaultHelperTransport(input, platform, traceSink)
   return {
     async read(readInput) {
       if (!input.provider) throw new Error('model_not_configured: read requires a VisionModelProvider')
       if (readInput.download && !['never', 'auto'].includes(readInput.download)) throw new Error(`download_mode_unsupported: ${readInput.download}`)
       const traceId = readInput.traceId ?? `read-${randomUUID()}`
-      const opened = await openConversation({ helper, chat: readInput.chat, provider: input.provider, traceId, platform })
-      const observation = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
-      const structured = await input.provider.structureVisibleWindow({
-        screenshots: [{
-          mimeType: observation.capture.mimeType,
-          dataBase64: observation.capture.dataBase64,
-          width: observation.capture.width,
-          height: observation.capture.height,
-          windowId: opened.window.windowId,
-        }],
-        edgeOcrBlocks: observation.ocr.blocks ?? [],
-        visibleConversationFingerprints: observation.ocr.visibleConversationFingerprints ?? [],
-        chatName: readInput.chat,
-        traceId,
-      })
-      const structuredMessages = normalizeObservedMessages(structured.structuredMessages ?? structured.observedMessages ?? [])
-      const resolvedMessages = readInput.download === 'auto'
-        ? await resolveUseChatObservedMessageMedia({
-            helper,
-            messages: structuredMessages,
-            window: opened.window,
-            screenshot: observation.capture,
+      const trace = createRuntimeTraceRecorder(input, 'read', traceId, readInput.traceJsonlPath)
+      traceSink.current = trace
+      try {
+        trace.record({ phase: 'preflight', status: 'ok', details: { download: readInput.download ?? 'never', format: readInput.format ?? 'markdown' } })
+        const openStarted = Date.now()
+        const opened = await openConversation({ helper, chat: readInput.chat, provider: input.provider, traceId, platform })
+        trace.record({
+          phase: 'open_conversation',
+          status: 'ok',
+          latencyMs: Date.now() - openStarted,
+          details: { windowId: opened.window.windowId, hasBounds: Boolean(opened.window.bounds) },
+        })
+
+        const captureStarted = Date.now()
+        const observation = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
+        trace.record({
+          phase: 'capture_window',
+          status: 'ok',
+          latencyMs: Date.now() - captureStarted,
+          outputHash: stableHash({ width: observation.capture.width, height: observation.capture.height, ocrBlockCount: observation.ocr.blocks?.length ?? 0 }),
+          details: { width: observation.capture.width, height: observation.capture.height, ocrBlockCount: observation.ocr.blocks?.length ?? 0 },
+        })
+
+        trace.record({
+          phase: 'structure_window_request',
+          status: 'pending',
+          inputHash: stableHash({ chat: readInput.chat, width: observation.capture.width, height: observation.capture.height, ocrBlockCount: observation.ocr.blocks?.length ?? 0 }),
+        })
+        const structureStarted = Date.now()
+        const structured = await input.provider.structureVisibleWindow({
+          screenshots: [{
+            mimeType: observation.capture.mimeType,
+            dataBase64: observation.capture.dataBase64,
+            width: observation.capture.width,
+            height: observation.capture.height,
             windowId: opened.window.windowId,
-            chatName: readInput.chat,
-            traceId,
-            platform,
-            verifyConversationTitle: async () => {
-              const verified = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
-              throwIfWeChatLoginRequired(verified)
-              return visibleTopTitleMatches(readInput.chat, verified)
-                ? { ok: true as const }
-                : { ok: false as const, reasonCode: 'conversation_title_not_confirmed' }
-            },
+          }],
+          edgeOcrBlocks: observation.ocr.blocks ?? [],
+          visibleConversationFingerprints: observation.ocr.visibleConversationFingerprints ?? [],
+          chatName: readInput.chat,
+          traceId,
+        })
+        trace.record({
+          phase: 'structure_window_response',
+          status: 'ok',
+          latencyMs: Date.now() - structureStarted,
+          outputHash: stableHash({ structuredMessages: structured.structuredMessages ?? structured.observedMessages ?? [] }),
+        })
+
+        const structuredMessages = normalizeObservedMessages(structured.structuredMessages ?? structured.observedMessages ?? [])
+        trace.record({
+          phase: 'normalize_messages',
+          status: 'ok',
+          messageCount: structuredMessages.length,
+          outputHash: stableHash({ keys: structuredMessages.map((message) => message.stableMessageKey) }),
+        })
+
+        const mediaStarted = Date.now()
+        const resolvedMessages = readInput.download === 'auto'
+          ? await resolveUseChatObservedMessageMedia({
+              helper,
+              messages: structuredMessages,
+              window: opened.window,
+              screenshot: observation.capture,
+              windowId: opened.window.windowId,
+              chatName: readInput.chat,
+              traceId,
+              platform,
+              verifyConversationTitle: async () => {
+                const verified = await captureAndRecognizeWeChatWindow(helper, opened.window.windowId, traceId, opened.window.bounds)
+                throwIfWeChatLoginRequired(verified)
+                return visibleTopTitleMatches(readInput.chat, verified)
+                  ? { ok: true as const }
+                  : { ok: false as const, reasonCode: 'conversation_title_not_confirmed' }
+              },
+            })
+          : structuredMessages
+        if (readInput.download === 'auto') {
+          trace.record({
+            phase: 'media_resolve_attempt',
+            status: 'ok',
+            latencyMs: Date.now() - mediaStarted,
+            mediaCount: countMessagesWithMedia(resolvedMessages),
+            outputHash: stableHash(mediaTraceDigest(resolvedMessages)),
           })
-        : structuredMessages
-      const messages = applyMessageLimit(resolvedMessages, readInput.limit)
-      const quality = validateWeChatMessages({
-        messages,
-        windowBounds: {
-          width: observation.capture.width,
-          height: observation.capture.height,
-        },
-      })
-      return {
-        ok: true,
-        app: 'wechat',
-        chat: readInput.chat,
-        messages,
-        markdown: formatWeChatMessagesMarkdown(messages),
-        traceId,
-        window: opened.window,
-        quality,
+        } else {
+          trace.record({ phase: 'media_resolve_attempt', status: 'skipped', reasonCode: 'download_never' })
+        }
+
+        const messages = applyMessageLimit(resolvedMessages, readInput.limit)
+        const quality = validateWeChatMessages({
+          messages,
+          windowBounds: {
+            width: observation.capture.width,
+            height: observation.capture.height,
+          },
+        })
+        trace.record({
+          phase: 'validate_messages',
+          status: quality.ok ? 'ok' : 'failed',
+          reasonCode: quality.ok ? undefined : quality.warnings[0]?.code,
+          messageCount: messages.length,
+          details: { warningCount: quality.warnings.length, metrics: quality.metrics },
+        })
+        const traceSummary = trace.finish(quality.ok ? 'ok' : 'failed', quality.ok ? undefined : quality.warnings[0]?.code)
+        return {
+          ok: true,
+          app: 'wechat',
+          chat: readInput.chat,
+          messages,
+          markdown: formatWeChatMessagesMarkdown(messages),
+          traceId,
+          traceSummary,
+          window: opened.window,
+          quality,
+        }
+      } catch (error) {
+        trace.finish('failed', errorReasonCode(error))
+        throw error
+      } finally {
+        if (traceSink.current === trace) traceSink.current = undefined
       }
     },
+
     async write(writeInput) {
       const traceId = writeInput.traceId ?? `write-${randomUUID()}`
-      const attachments = resolveWriteAttachments(writeInput, input.env)
-      const text = writeInput.text ?? ''
-      if (!text.trim() && attachments.length === 0) throw new Error('wechat_write_empty: text or attachment is required')
-      if (writeInput.dryRun) {
-        return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: false, status: 'dry-run', traceId }
+      const trace = createRuntimeTraceRecorder(input, 'write', traceId, writeInput.traceJsonlPath)
+      traceSink.current = trace
+      try {
+        const attachments = resolveWriteAttachments(writeInput, input.env)
+        const text = writeInput.text ?? ''
+        if (!text.trim() && attachments.length === 0) throw new Error('wechat_write_empty: text or attachment is required')
+        trace.record({
+          phase: 'preflight',
+          status: 'ok',
+          attachmentCount: attachments.length,
+          details: { dryRun: Boolean(writeInput.dryRun), hasText: Boolean(text.trim()) },
+        })
+        if (writeInput.dryRun) {
+          const traceSummary = trace.finish('ok')
+          return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: false, status: 'dry-run', traceId, traceSummary }
+        }
+
+        const bindingId = `direct:${stableLocalKey(writeInput.chat)}`
+        const ledger: WeChatChannelOutboundLedger = { version: 1, runtimeId: 'usechat-direct', records: [] }
+        trace.record({
+          phase: 'send_enqueue',
+          status: 'pending',
+          attachmentCount: attachments.length,
+          inputHash: stableHash({ chat: writeInput.chat, hasText: Boolean(text.trim()), attachments: attachments.map((attachment) => ({ kind: attachment.kind, name: attachment.name, size: attachment.size })) }),
+        })
+        enqueueWeChatOutboundReply({
+          ledger,
+          replyId: traceId,
+          idempotencyKey: traceId,
+          bindingId,
+          runtimeId: 'usechat-direct',
+          sessionId: 'usechat-direct',
+          conversationName: writeInput.chat,
+          replyBaseRevision: 0,
+          text,
+          attachmentLocalRefs: attachments.map((attachment) => attachment.localPath),
+        })
+        trace.record({ phase: 'send_enqueue', status: 'ok', attachmentCount: attachments.length })
+
+        const sender = new WeChatChannelOutboundSender({
+          helper,
+          traceId,
+          platform,
+          activityGatePolicy: {
+            mouseMovedThresholdMs: 0,
+            mouseClickThresholdMs: 0,
+            scrollWheelThresholdMs: 0,
+            keyDownThresholdMs: 0,
+          },
+          takeoverCheck: false,
+          openConversation: async (conversationName) => {
+            const opened = await openConversation({ helper, chat: conversationName, provider: input.provider, traceId, platform, needInputPoint: true })
+            return {
+              opened: true,
+              reason: 'current-conversation-title-confirmed',
+              windowId: opened.window.windowId,
+              inputPoint: opened.inputPoint ?? fallbackMessageInputPoint(opened.window),
+            }
+          },
+        })
+        const submitStarted = Date.now()
+        const result = await sendQueuedWeChatOutboundRecords({
+          ledger,
+          bindingId,
+          currentLastInboundRevision: 0,
+          sender,
+        })
+        const failed = result.failedRecords[0] ?? result.manualReviewRecords[0] ?? result.waitingRecords[0] ?? result.staleRecords[0]
+        if (failed) {
+          const reasonCode = failed.failureCode ?? failed.deferReason ?? failed.sendStatus
+          trace.record({ phase: 'send_submit', status: 'failed', reasonCode, latencyMs: Date.now() - submitStarted, details: { sendStatus: failed.sendStatus } })
+          throw new Error(`${reasonCode}: ${failed.lastErrorSummary ?? failed.sendStatus}`)
+        }
+        trace.record({ phase: 'send_submit', status: 'ok', latencyMs: Date.now() - submitStarted, details: { sentCount: result.sentRecords.length } })
+        const traceSummary = trace.finish('ok')
+        return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: true, status: 'sent-unconfirmed', traceId, traceSummary }
+      } catch (error) {
+        trace.finish('failed', errorReasonCode(error))
+        throw error
+      } finally {
+        if (traceSink.current === trace) traceSink.current = undefined
       }
-      const bindingId = `direct:${stableLocalKey(writeInput.chat)}`
-      const ledger: WeChatChannelOutboundLedger = { version: 1, runtimeId: 'usechat-direct', records: [] }
-      enqueueWeChatOutboundReply({
-        ledger,
-        replyId: traceId,
-        idempotencyKey: traceId,
-        bindingId,
-        runtimeId: 'usechat-direct',
-        sessionId: 'usechat-direct',
-        conversationName: writeInput.chat,
-        replyBaseRevision: 0,
-        text,
-        attachmentLocalRefs: attachments.map((attachment) => attachment.localPath),
-      })
-      const sender = new WeChatChannelOutboundSender({
-        helper,
-        traceId,
-        platform,
-        activityGatePolicy: {
-          mouseMovedThresholdMs: 0,
-          mouseClickThresholdMs: 0,
-          scrollWheelThresholdMs: 0,
-          keyDownThresholdMs: 0,
-        },
-        takeoverCheck: false,
-        openConversation: async (conversationName) => {
-          const opened = await openConversation({ helper, chat: conversationName, provider: input.provider, traceId, platform, needInputPoint: true })
-          return {
-            opened: true,
-            reason: 'current-conversation-title-confirmed',
-            windowId: opened.window.windowId,
-            inputPoint: opened.inputPoint ?? fallbackMessageInputPoint(opened.window),
-          }
-        },
-      })
-      const result = await sendQueuedWeChatOutboundRecords({
-        ledger,
-        bindingId,
-        currentLastInboundRevision: 0,
-        sender,
-      })
-      const failed = result.failedRecords[0] ?? result.manualReviewRecords[0] ?? result.waitingRecords[0] ?? result.staleRecords[0]
-      if (failed) {
-        throw new Error(`${failed.failureCode ?? failed.deferReason ?? failed.sendStatus}: ${failed.lastErrorSummary ?? failed.sendStatus}`)
-      }
-      return { ok: true, app: 'wechat', chat: writeInput.chat, text, attachment: attachments[0], attachments, sent: true, status: 'sent-unconfirmed', traceId }
     },
+
     stop() {
       return helper.stop?.() ?? Promise.resolve()
     },
   }
+}
+
+function createRuntimeTraceRecorder(
+  input: CreateWeChatRuntimeInput,
+  operation: 'read' | 'write',
+  traceId: string,
+  explicitJsonlPath?: string | null,
+): UseChatTraceRecorder {
+  const enabled = input.trace?.enabled !== false
+  const configuredPath = explicitJsonlPath === null
+    ? undefined
+    : explicitJsonlPath || input.trace?.jsonlPath || undefined
+  return createUseChatTraceRecorder({
+    traceId,
+    operation,
+    enabled,
+    jsonlPath: configuredPath,
+  })
+}
+
+function errorReasonCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  const code = message.split(':', 1)[0]?.trim()
+  return /^[a-z0-9_]+$/i.test(code || '') ? code! : 'wechat_runtime_failed'
+}
+
+function countMessagesWithMedia(messages: WeChatObservedMessage[]): number {
+  return messages.filter((message) => Boolean((message.mediaMetadata as { attachment?: unknown } | undefined)?.attachment || message.mediaMetadata)).length
+}
+
+function mediaTraceDigest(messages: WeChatObservedMessage[]): unknown {
+  return messages.map((message) => {
+    const metadata = message.mediaMetadata as { attachment?: { availability?: string; materializationKind?: string; isOriginal?: boolean; mimeKindMatches?: boolean }; edgeResolveReasonCode?: string; edgeResolveAttemptReasonCodes?: string[]; edgeResolveTrace?: { finalReasonCode?: string; attempts?: unknown[]; attachmentValidation?: unknown } } | undefined
+    return {
+      key: message.stableMessageKey,
+      reasonCode: metadata?.edgeResolveReasonCode,
+      attemptReasonCodes: metadata?.edgeResolveAttemptReasonCodes,
+      availability: metadata?.attachment?.availability,
+      materializationKind: metadata?.attachment?.materializationKind,
+      isOriginal: metadata?.attachment?.isOriginal,
+      mimeKindMatches: metadata?.attachment?.mimeKindMatches,
+      finalReasonCode: metadata?.edgeResolveTrace?.finalReasonCode,
+      attemptCount: metadata?.edgeResolveTrace?.attempts?.length,
+      attachmentValidation: metadata?.edgeResolveTrace?.attachmentValidation,
+    }
+  })
 }
 
 function resolveWriteAttachments(
@@ -273,7 +429,7 @@ function assertProcessOk(result: ReturnType<typeof spawnSync>, reasonCode: strin
   if (result.signal) throw new Error(`${reasonCode}: signal ${result.signal}`)
 }
 
-function createDefaultHelperTransport(input: CreateWeChatRuntimeInput, platform: NodeJS.Platform | string): WeChatChannelHelperClient {
+function createDefaultHelperTransport(input: CreateWeChatRuntimeInput, platform: NodeJS.Platform | string, traceSink?: { current?: UseChatTraceRecorder }): WeChatChannelHelperClient {
   const resolved = resolveWeChatHelperOrThrow(input)
   const requiredCapabilities = platform === 'win32'
     ? requiredWindowsWeChatChannelHelperCapabilitiesForProfile('send')
@@ -284,6 +440,7 @@ function createDefaultHelperTransport(input: CreateWeChatRuntimeInput, platform:
     requiredCapabilities,
     guardUnsafeWindowsCommands: platform === 'win32',
     skipUserActivityGuard: input.skipUserActivityGuard,
+    requestLogger: (event) => traceSink?.current?.recordHelperEvent(event),
   })
 }
 

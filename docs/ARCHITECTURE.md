@@ -99,7 +99,7 @@ write(chat, text)
   helper/
 ```
 
-默认不保存原始截图、OCR 全文或剪贴板内容。诊断导出必须是用户显式动作。
+默认不保存原始截图、OCR 全文或剪贴板内容。read/write 结果会返回脱敏 `traceSummary`；只有显式传入 `--trace-jsonl [path]` 或 runtime trace path 时才写 JSONL trace events。诊断导出必须是用户显式动作。
 
 ## Model provider contract
 

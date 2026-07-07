@@ -82,10 +82,32 @@ describe('wechat runtime read/write', () => {
     ])
     const runtime = createWeChatRuntime({ helperTransport: helper, provider, platform: 'win32' })
 
-    const result = await runtime.read({ chat: 'ABC', limit: 10, format: 'json', download: 'never' })
+    const tracePath = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-runtime-trace-')), 'read.jsonl')
+
+    const result = await runtime.read({ chat: 'ABC', limit: 10, format: 'json', download: 'never', traceId: 'read-trace-test', traceJsonlPath: tracePath })
 
     expect(result.messages).toHaveLength(1)
     expect(result.markdown).toContain('ABC: hello from ABC')
+    expect(result.traceSummary).toMatchObject({
+      traceId: 'read-trace-test',
+      operation: 'read',
+      status: 'ok',
+      jsonlPath: tracePath,
+    })
+    expect(result.traceSummary?.phases.map((phase) => phase.phase)).toEqual(expect.arrayContaining([
+      'preflight',
+      'open_conversation',
+      'capture_window',
+      'structure_window_request',
+      'structure_window_response',
+      'normalize_messages',
+      'media_resolve_attempt',
+      'validate_messages',
+      'run_summary',
+    ]))
+    const traceLines = fs.readFileSync(tracePath, 'utf8').trim().split(/\r?\n/).map((line) => JSON.parse(line))
+    expect(traceLines.some((line) => line.phase === 'capture_window')).toBe(true)
+    expect(JSON.stringify(traceLines)).not.toContain('dataBase64')
     expect(helper.commands()).toEqual([
       'permissions.check',
       'windows.ensureReady',
@@ -191,9 +213,14 @@ describe('wechat runtime read/write', () => {
     const helper = new FakeHelper([])
     const runtime = createWeChatRuntime({ helperTransport: helper, platform: 'win32' })
 
-    const result = await runtime.write({ chat: 'ABC', text: 'hello', dryRun: true, yes: true })
+    const result = await runtime.write({ chat: 'ABC', text: 'hello', dryRun: true, yes: true, traceId: 'dry-run-write-trace' })
 
     expect(result).toMatchObject({ ok: true, sent: false, status: 'dry-run' })
+    expect(result.traceSummary).toMatchObject({
+      traceId: 'dry-run-write-trace',
+      operation: 'write',
+      status: 'ok',
+    })
     expect(helper.commands()).toEqual([])
   })
 

@@ -19,6 +19,7 @@ import {
   createWeChatRuntime,
   runWeChatDoctor,
   readUseChatAttachment,
+  defaultUseChatTraceJsonlPath,
   type UseChatConfig,
 } from '@shennian/usechat-core'
 import { createOcrOnlyVisionProvider, createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
@@ -140,9 +141,14 @@ async function commandRead(parsed: ParsedArgs): Promise<number> {
   const provider = createProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
   try {
-    const result = await runtime.read({ chat, limit, format, download })
+    const traceId = readStringFlag(parsed, 'trace-id') ?? (traceJsonlRequested(parsed) ? `read-${randomUUID()}` : undefined)
+    const traceJsonlPath = traceJsonlPathFlag(parsed, traceId ?? `read-${randomUUID()}`)
+    const result = await runtime.read({ chat, limit, format, download, ...(traceId ? { traceId } : {}), ...(traceJsonlPath !== undefined ? { traceJsonlPath } : {}) })
     if (format === 'json' || parsed.global.json || parsed.flags.json === true) printJson(result)
-    else process.stdout.write(result.markdown)
+    else {
+      process.stdout.write(result.markdown)
+      if (parsed.flags['trace-summary'] === true) printTraceSummary(result.traceSummary)
+    }
     return 0
   } finally {
     await runtime.stop().catch(() => {})
@@ -173,18 +179,17 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
     }
   }
   const yes = parsed.flags.yes === true || parsed.flags.y === true || loaded.config.wechat.sendRequiresConfirm === false
-  if (dryRun) {
-    const result = { ok: true, app: 'wechat', chat, text: text ?? '', ...(attachmentPayload ? { attachment: attachmentPayload, attachments: [attachmentPayload] } : { attachments: [] }), sent: false, status: 'dry-run', traceId: `dry-run-${randomUUID()}` }
-    if (parsed.global.json || parsed.flags.json === true) printJson(result)
-    else console.log(`dry-run：不会发送到 ${chat}`)
-    return 0
-  }
   const provider = maybeCreateProviderFromConfig(loaded.config)
   const runtime = createWeChatRuntime({ helperPath: loaded.config.helper.path, provider })
   try {
-    const result = await runtime.write({ chat, text, ...attachmentPathFlags(parsed), yes, dryRun })
+    const traceId = readStringFlag(parsed, 'trace-id') ?? (traceJsonlRequested(parsed) ? `write-${randomUUID()}` : undefined)
+    const traceJsonlPath = traceJsonlPathFlag(parsed, traceId ?? `write-${randomUUID()}`)
+    const result = await runtime.write({ chat, text, ...attachmentPathFlags(parsed), yes, dryRun, ...(traceId ? { traceId } : {}), ...(traceJsonlPath !== undefined ? { traceJsonlPath } : {}) })
     if (parsed.global.json || parsed.flags.json === true) printJson(result)
-    else console.log(dryRun ? `dry-run：不会发送到 ${chat}` : `已提交发送到 ${chat}。状态：${result.status}`)
+    else {
+      console.log(dryRun ? `dry-run：不会发送到 ${chat}` : `已提交发送到 ${chat}。状态：${result.status}`)
+      if (parsed.flags['trace-summary'] === true) printTraceSummary(result.traceSummary)
+    }
     return 0
   } finally {
     await runtime.stop().catch(() => {})
@@ -278,7 +283,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function flagRequiresValue(key: string): boolean {
-  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video'].includes(key)
+  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video', 'trace-jsonl', 'trace-id'].includes(key)
 }
 
 function readStringFlag(parsed: ParsedArgs, key: string): string | undefined {
@@ -316,6 +321,30 @@ function attachmentSummary(attachment?: { kind: string; localPath: string }): st
   return `[${attachment.kind}: ${attachment.localPath}]`
 }
 
+function traceJsonlRequested(parsed: ParsedArgs): boolean {
+  return parsed.flags['trace-jsonl'] === true || typeof parsed.flags['trace-jsonl'] === 'string'
+}
+
+function traceJsonlPathFlag(parsed: ParsedArgs, fallbackTraceId: string): string | null | undefined {
+  if (parsed.flags['trace-jsonl'] === true) return defaultUseChatTraceJsonlPath(fallbackTraceId)
+  if (typeof parsed.flags['trace-jsonl'] === 'string') return parsed.flags['trace-jsonl']
+  if (parsed.flags['no-trace-jsonl'] === true) return null
+  return undefined
+}
+
+function printTraceSummary(summary: { status: string; traceId: string; jsonlPath?: string; failedPhase?: string; reasonCode?: string; eventCount?: number } | undefined): void {
+  if (!summary) return
+  const parts = [
+    `trace=${summary.traceId}`,
+    `status=${summary.status}`,
+    typeof summary.eventCount === 'number' ? `events=${summary.eventCount}` : null,
+    summary.failedPhase ? `failedPhase=${summary.failedPhase}` : null,
+    summary.reasonCode ? `reason=${summary.reasonCode}` : null,
+    summary.jsonlPath ? `jsonl=${summary.jsonlPath}` : null,
+  ].filter(Boolean)
+  console.error(`Trace summary: ${parts.join(' ')}`)
+}
+
 function printHelp(): void {
   console.log(`UseChat ${VERSION}
 
@@ -325,8 +354,8 @@ function printHelp(): void {
   usechat config set <key> <value>
   usechat config list [--json]
   usechat doctor [--json]
-  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto]
-  usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json]
+  usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto] [--trace-id <id>] [--trace-jsonl [path]]
+  usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json] [--trace-id <id>] [--trace-jsonl [path]]
   usechat serve --stdio
 
 全局选项：
