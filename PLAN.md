@@ -352,6 +352,10 @@
 - [x] macOS：2026-07-07 入站 ledger / media action plan / vector store 底座 copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
 - [x] macOS：2026-07-07 入站 media-resolver copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过；Shennian media-resolver 42 个 copy/适配测试通过，core 总计 100 个测试通过。
 - [x] macOS：2026-07-07 `read --download auto` 接入后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过；core 101 个测试通过，CLI 6 个测试通过。
+- [x] macOS：2026-07-07 `read --download auto` 接入后重新验证 `node scripts/wechat-abc-smoke.mjs --chat ABC --marker "UseChatmacABCautoBase202607071125"` 通过；doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
+- [x] macOS：2026-07-07 重新验证 `usechat read --app wechat --chat ABC --limit 20 --format json --download auto` 命令链路通过；ABC 当前可见窗口无媒体候选，返回 `ok: true`、`messageCount: 20`、`mediaCount: 0`、`qualityOk: true`。
+- [x] Windows：2026-07-07 用户重新登录后继续验证；同步最新代码到 `C:\Users\simpl\usechat`，清理测试机依赖/构建缓存后 `pnpm build && pnpm typecheck && pnpm test` 通过；Windows 侧 core 101 个测试通过，CLI 6 个测试通过。
+- [x] Windows：2026-07-07 用户重新登录后重新验证 `pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707034114`，read 返回 `ok: true`、`messageCount: 46`、`containsChatName: true`，write 返回 `sent: true`，read-back 返回 `markerFound: true`。
 
 ## Phase 7 — 完整连接器能力
 

@@ -131,4 +131,6 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 - `WECHAT_CHANNEL_RECENT_MESSAGE_WINDOW` 沿用 Shennian 原值 `20`，由 UseChat `packages/core/src/wechat/runtime.ts` 导出，供 ledger / vector store 复用。
 - 测试 fixture 保留 Shennian 原始 `download-ground-truth.json`，测试中的读取路径只做 monorepo cwd 兼容。
 - 入站媒体 resolver 与 `read --download auto` 接入已从 Shennian observer 相关逻辑 copy-out；watch / serve 仍待后续接入。
+- Windows 单测只做 copy-out 兼容适配：`file://` 测试路径改用 Node 标准 `pathToFileURL()`，与 Shennian Windows helper 的 `new Uri(filePath).AbsoluteUri` 和 macOS helper 的 `URL(fileURLWithPath:)` 输出形态保持一致；不改变 resolver 行为。
+- 针对“不要把截图 preview 冒充视频原件”的测试，显式锁定非 Windows 平台，避免混入 Shennian 原有 Windows WeChat cache fallback 默认扫描分支；Windows cache fallback 由独立 cache 测试覆盖。
 - Trace runtime、watch / serve 等仍待后续从 Shennian 对应模块继续 copy-out。

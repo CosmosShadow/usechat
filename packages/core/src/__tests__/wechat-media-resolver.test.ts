@@ -1,6 +1,7 @@
 // @covers ../wechat/media-resolver.ts
 
 import fs from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
@@ -63,11 +64,14 @@ describe('WeChat channel media resolver', () => {
     const targetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wechat-media-target-'))
     const sourcePath = path.join(sourceDir, 'photo.png')
     fs.writeFileSync(sourcePath, 'png bytes')
+    const clipboardPayload = process.platform === 'win32'
+      ? { filePaths: [sourcePath], fileUrls: [pathToFileURL(sourcePath).href], changeCount: 2 }
+      : { fileUrls: [pathToFileURL(sourcePath).href], changeCount: 2 }
     const helper = scriptedHelper([
       ['clipboard.snapshot', ok('snapshot', { changeCount: 1 })],
       ['mouse.rightClick', ok('right-click', { clicked: true })],
       ...ocrMenu('复制图片'),
-      ['clipboard.readAttachment', ok('files', { fileUrls: [`file://${sourcePath}`], changeCount: 2 })],
+      ['clipboard.readAttachment', ok('files', clipboardPayload)],
       ['clipboard.restore', ok('restore', { restored: true })],
     ])
 
@@ -553,6 +557,7 @@ describe('WeChat channel media resolver', () => {
       helper,
       attachmentsDir: targetDir,
       windowId: 'win1',
+      platform: 'darwin',
       screenshot: { mimeType: 'image/png', dataBase64: sourcePngBase64, width: 2, height: 2 },
       candidates: [{
         messageKey: 'video-preview',
@@ -601,6 +606,7 @@ describe('WeChat channel media resolver', () => {
       helper,
       attachmentsDir: targetDir,
       windowId: 'win1',
+      platform: 'darwin',
       screenshot: { mimeType: 'image/png', dataBase64: sourcePngBase64, width: 2, height: 2 },
       candidates: [{
         messageKey: 'video-stale-clipboard',
