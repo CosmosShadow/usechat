@@ -75,7 +75,7 @@ usechat config set helper.path /path/to/helper
 
 macOS helper 从 `native/macos/ShennianWeChatChannelHelper.swift` 构建；Windows helper 从 `native/windows/Shennian.WeChatChannel.Helper.Win.csproj` 构建。两者都是 Shennian copy-out 源码，UseChat 只做目录、包名和 release evidence 适配。
 
-完整私有 release 流程见 `docs/RELEASE.md`。
+完整 release 流程见 `docs/RELEASE.md`。
 
 ## Windows 可见桌面要求
 

@@ -74,4 +74,4 @@ helper-runtime-evidence.json
 
 ## 兼容说明
 
-UseChat release 保持 helper protocol、helper command 和 response shape 兼容 Shennian copy-out 来源；对外 runtime identity 使用 `UseChat Helper.app` / `UseChat Helper`，resolver 保留历史 `Shennian Helper` fallback，避免已安装测试环境立刻失效。
+UseChat release 保持 helper protocol、helper command 和 response shape 兼容 copy-out 来源；对外 runtime identity 统一使用 `UseChat Helper.app` / `UseChat Helper`。

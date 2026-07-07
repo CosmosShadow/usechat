@@ -20,7 +20,7 @@ const sourcePath = process.env.WECHAT_CHANNEL_HELPER_SOURCE
 const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
   : path.join(helperRuntimeRoot, 'wechat-channel', 'macos')
-const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'shennian-wechat-channel-helper'
+const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'usechat-wechat-channel-helper'
 const outputPath = path.join(outputDir, executableName)
 const macosTarget = process.env.WECHAT_CHANNEL_HELPER_MACOS_TARGET || '13.0'
 const helperVersion = process.env.WECHAT_CHANNEL_HELPER_VERSION || '0.1.12'

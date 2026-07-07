@@ -14,7 +14,7 @@ if (process.platform === 'win32' || process.env.WECHAT_CHANNEL_HELPER_ALLOW_CROS
 } else {
   console.warn('Skipping Windows native helper build on non-Windows host. Run pnpm helper-runtime:build:native:win on Windows before a full Windows release.')
 }
-const hasWindowsHelper = fsExists(path.join(root, 'wechat-channel', 'windows', 'shennian-wechat-channel-helper.exe'))
+const hasWindowsHelper = fsExists(path.join(root, 'wechat-channel', 'windows', 'usechat-wechat-channel-helper.exe'))
 run('node', [path.join(root, 'scripts', 'validate-runtime-assets.mjs')], {
   env: {
     ...process.env,

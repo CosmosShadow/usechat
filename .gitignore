@@ -8,6 +8,16 @@ build/
 coverage/
 *.tsbuildinfo
 
+# Helper runtime build output / large runtime assets
+helper-runtime/dist/
+helper-runtime/wechat-channel/macos/usechat-wechat-channel-helper
+helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper
+helper-runtime/wechat-channel/windows/usechat-wechat-channel-helper.exe
+helper-runtime/wechat-channel/windows/shennian-wechat-channel-helper.exe
+helper-runtime/wechat-channel/windows/*.dll
+helper-runtime/wechat-channel/windows/models/v5/*.onnx
+helper-runtime/wechat-channel/windows/models/v5/*.txt
+
 # Runtime / local state
 .usechat/
 .dev-runtime/

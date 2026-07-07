@@ -22,7 +22,7 @@ const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
 const modelSourceDir = process.env.WECHAT_CHANNEL_HELPER_MODEL_SOURCE_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_MODEL_SOURCE_DIR)
   : path.join(helperRuntimeRoot, 'wechat-channel', 'windows', 'models', 'v5')
-const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'shennian-wechat-channel-helper.exe'
+const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'usechat-wechat-channel-helper.exe'
 const helperVersion = process.env.WECHAT_CHANNEL_HELPER_VERSION || '0.1.26'
 const protocolVersion = Number(process.env.WECHAT_CHANNEL_HELPER_PROTOCOL_VERSION || '1')
 const runtime = process.env.WECHAT_CHANNEL_HELPER_RUNTIME || 'win-x64'

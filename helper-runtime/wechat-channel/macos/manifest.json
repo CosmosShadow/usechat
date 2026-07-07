@@ -4,7 +4,7 @@
   "protocolVersion": 1,
   "platforms": {
     "darwin": {
-      "executable": "shennian-wechat-channel-helper",
+      "executable": "usechat-wechat-channel-helper",
       "sha256": "509823d6d1eb2c8640ced04768170153dedd5679b9cb70b53c8a5c0aca3c0f79",
       "signed": false,
       "notarized": false

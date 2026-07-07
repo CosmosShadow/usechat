@@ -1,17 +1,17 @@
 # 安装与首次配置
 
-UseChat 当前是私有正式项目。安装分两步：先安装 JS 包，再由用户显式安装 native Helper runtime。UseChat 不会在 npm `postinstall` 阶段静默安装 GUI helper。
+UseChat 安装分两步：先安装公开 npm JS 包，再由用户显式安装 native Helper runtime。UseChat 不会在 npm `postinstall` 阶段静默安装或下载 GUI helper。
 
 ## 1. 安装 CLI package
 
-公开 npm 发布后：
+从 npm 安装：
 
 ```bash
 npm install -g @shennian/usechat
 usechat --version
 ```
 
-本地私有 tarball 验证：
+本地 tarball 验证：
 
 ```bash
 npm install -g ./dist/release/packages/shennian-usechat-core-0.1.0.tgz \
@@ -21,6 +21,8 @@ npm install -g ./dist/release/packages/shennian-usechat-core-0.1.0.tgz \
 ```
 
 ## 2. 安装 Helper runtime
+
+Helper runtime 不随 npm 包分发。正式发布时从 GitHub Releases 下载 `UseChat-Helper-Runtime-<platform>.zip`；源码用户也可以在本仓库运行 `pnpm helper-runtime:build` 自行构建。当前 CLI 支持显式 `--from` 安装，后续会补 `setup-helper --download` 从 release manifest 下载。
 
 从 release artifact 显式安装：
 

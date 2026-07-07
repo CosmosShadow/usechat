@@ -11,13 +11,13 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'wechat-channel', 'macos')
-const outputApp = path.resolve(process.env.USECHAT_HELPER_APP_OUTPUT || process.env.SHENNIAN_HELPER_APP_OUTPUT || path.join(root, 'dist', 'macos', 'UseChat Helper.app'))
+const outputApp = path.resolve(process.env.USECHAT_HELPER_APP_OUTPUT || path.join(root, 'dist', 'macos', 'UseChat Helper.app'))
 const outputRoot = path.dirname(outputApp)
-const bundleId = process.env.USECHAT_HELPER_BUNDLE_ID || process.env.SHENNIAN_HELPER_BUNDLE_ID || 'net.shennian.usechat.helper'
+const bundleId = process.env.USECHAT_HELPER_BUNDLE_ID || 'net.shennian.usechat.helper'
 const executableName = 'UseChat Helper'
-const helperVersionOverride = process.env.USECHAT_HELPER_RUNTIME_VERSION || process.env.SHENNIAN_HELPER_RUNTIME_VERSION
-const signingRequested = process.env.USECHAT_HELPER_APP_SIGN === '1' || process.env.SHENNIAN_HELPER_APP_SIGN === '1'
-const notarizationRequested = process.env.USECHAT_HELPER_APP_NOTARIZE === '1' || process.env.SHENNIAN_HELPER_APP_NOTARIZE === '1'
+const helperVersionOverride = process.env.USECHAT_HELPER_RUNTIME_VERSION
+const signingRequested = process.env.USECHAT_HELPER_APP_SIGN === '1'
+const notarizationRequested = process.env.USECHAT_HELPER_APP_NOTARIZE === '1'
 let cleanupBuildOutputOnFail = false
 let notarizationZipPath = null
 
@@ -84,7 +84,7 @@ const appPackageManifest = {
   },
 }
 writeJson(path.join(contentsDir, 'Resources', 'helper-runtime-package.json'), appPackageManifest)
-fs.writeFileSync(path.join(contentsDir, 'Resources', 'shennian-helper-runtime.json'), `${JSON.stringify({
+fs.writeFileSync(path.join(contentsDir, 'Resources', 'usechat-helper-runtime.json'), `${JSON.stringify({
   schemaVersion: 1,
   runtimeKind: 'macos-helper-app',
   bundleId,
@@ -94,8 +94,8 @@ fs.writeFileSync(path.join(contentsDir, 'Resources', 'shennian-helper-runtime.js
 }, null, 2)}\n`)
 
 if (signingRequested) {
-  const identity = process.env.USECHAT_HELPER_APP_SIGN_IDENTITY || process.env.SHENNIAN_HELPER_APP_SIGN_IDENTITY || process.env.CSC_NAME
-  if (!identity) fail('USECHAT_HELPER_APP_SIGN=1 requires USECHAT_HELPER_APP_SIGN_IDENTITY, SHENNIAN_HELPER_APP_SIGN_IDENTITY, or CSC_NAME')
+  const identity = process.env.USECHAT_HELPER_APP_SIGN_IDENTITY || process.env.CSC_NAME
+  if (!identity) fail('USECHAT_HELPER_APP_SIGN=1 requires USECHAT_HELPER_APP_SIGN_IDENTITY or CSC_NAME')
   run('codesign', ['--force', '--options', 'runtime', '--timestamp', '--sign', identity, outputApp])
 } else if (process.platform === 'darwin') {
   run('codesign', ['--force', '--deep', '--sign', '-', outputApp])
@@ -106,7 +106,7 @@ if (notarizationRequested) {
   notarizationZipPath = zipPath
   fs.rmSync(zipPath, { force: true })
   run('ditto', ['-c', '-k', '--keepParent', outputApp, zipPath])
-  const profile = process.env.USECHAT_NOTARYTOOL_PROFILE || process.env.SHENNIAN_NOTARYTOOL_PROFILE || process.env.APPLE_NOTARYTOOL_PROFILE
+  const profile = process.env.USECHAT_NOTARYTOOL_PROFILE || process.env.APPLE_NOTARYTOOL_PROFILE
   if (profile) {
     run('xcrun', ['notarytool', 'submit', zipPath, '--keychain-profile', profile, '--wait'])
   } else {
@@ -114,7 +114,7 @@ if (notarizationRequested) {
     const password = process.env.APPLE_APP_SPECIFIC_PASSWORD || process.env.APPLE_PASSWORD
     const teamId = process.env.APPLE_TEAM_ID
     if (!appleId || !password || !teamId) {
-      fail('USECHAT_HELPER_APP_NOTARIZE=1 requires USECHAT_NOTARYTOOL_PROFILE, SHENNIAN_NOTARYTOOL_PROFILE, or APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID')
+      fail('USECHAT_HELPER_APP_NOTARIZE=1 requires USECHAT_NOTARYTOOL_PROFILE or APPLE_ID + APPLE_APP_SPECIFIC_PASSWORD + APPLE_TEAM_ID')
     }
     run('xcrun', ['notarytool', 'submit', zipPath, '--apple-id', appleId, '--password', password, '--team-id', teamId, '--wait'], {
       redactArgsAfter: new Set(['--apple-id', '--password', '--team-id']),

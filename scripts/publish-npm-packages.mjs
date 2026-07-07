@@ -23,7 +23,7 @@ const packageOrder = [
 
 const provenancePath = path.join(outDir, 'package-provenance.json')
 if (!fs.existsSync(provenancePath)) {
-  run('node', ['scripts/release-npm-packages.mjs'], { cwd: repoRoot })
+  runNode(['scripts/release-npm-packages.mjs'], { cwd: repoRoot })
 }
 const provenance = JSON.parse(fs.readFileSync(provenancePath, 'utf8'))
 const packages = new Map((provenance.packages || []).map((pkg) => [pkg.name, pkg]))
@@ -39,6 +39,10 @@ for (const name of packageOrder) {
   results.push({ name, version: pkg.version, tarball: pkg.tarball, dryRun })
 }
 console.log(JSON.stringify({ ok: true, dryRun, published: publish, results }, null, 2))
+
+function runNode(args, options = {}) {
+  return run(process.execPath, args, options)
+}
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {

@@ -3,7 +3,7 @@
 
 import {
   resolveWeChatChannelHelperAsset,
-  WECHAT_CHANNEL_HELPER_DIR_ENV,
+  USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV,
   type WeChatChannelHelperAssetResolution,
 } from './helper-assets.js'
 import { WeChatChannelHelperClient } from './helper-client.js'
@@ -171,7 +171,7 @@ function resolveDoctorHelper(input: RunWeChatDoctorInput): WeChatChannelHelperAs
     verifyIntegrity: input.verifyIntegrity,
     env: {
       ...(input.env ?? process.env),
-      ...(input.helperPath ? { [WECHAT_CHANNEL_HELPER_DIR_ENV]: input.helperPath } : {}),
+      ...(input.helperPath ? { [USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV]: input.helperPath } : {}),
     },
     includeInstalledDesktop: true,
   })

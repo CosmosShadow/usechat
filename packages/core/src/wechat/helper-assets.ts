@@ -9,8 +9,6 @@ import crypto from 'node:crypto'
 export const WECHAT_CHANNEL_HELPER_VERSION = '0.1.12'
 export const USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV = 'USECHAT_HELPER_DIR'
 export const USECHAT_HELPER_RUNTIME_DIR_ENV = 'USECHAT_HELPER_RUNTIME_DIR'
-export const WECHAT_CHANNEL_HELPER_DIR_ENV = 'SHENNIAN_WECHAT_CHANNEL_HELPER_DIR'
-export const SHENNIAN_HELPER_RUNTIME_DIR_ENV = 'SHENNIAN_HELPER_RUNTIME_DIR'
 export const WECHAT_CHANNEL_HELPER_RUNTIME_REQUIRED_REASON = 'helper_runtime_required'
 const RUNTIME_ENV_PROPERTY = ['en', 'v'].join('')
 
@@ -39,7 +37,7 @@ export type WeChatChannelHelperAssetManifest = {
 
 export type WeChatChannelHelperRuntimePackageManifest = {
   schemaVersion: 1
-  packageKind: 'shennian-helper-runtime'
+  packageKind: 'usechat-helper-runtime'
   platform: 'darwin' | 'win32'
   helperVersion: string
   protocolVersion: number
@@ -207,13 +205,13 @@ function defaultHelperAssetBaseDirs(input: {
   }
 
   const explicit = env[USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV]?.trim()
-    || env[WECHAT_CHANNEL_HELPER_DIR_ENV]?.trim()
+
   if (explicit) {
     push(resolveLegacyHelperDirCandidate(explicit, platformDir))
   }
 
   const helperRuntimeRoot = env[USECHAT_HELPER_RUNTIME_DIR_ENV]?.trim()
-    || env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
+
   if (helperRuntimeRoot) {
     for (const candidate of resolveHelperRuntimeDirCandidates(helperRuntimeRoot, platformDir)) push(candidate)
   }
@@ -228,25 +226,6 @@ function defaultHelperAssetBaseDirs(input: {
   pushLocalBuildHelperRuntimeDirs({ platformDir, push })
 
   if (input.includeInstalledDesktop === false) return candidates
-
-  if (platform === 'darwin') {
-    const home = input.homedir || env.HOME
-    if (home) push(path.join(home, 'Applications', 'Shennian.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-    push(path.join('/Applications', 'Shennian.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-  } else if (platform === 'win32') {
-    const home = input.homedir || env.USERPROFILE
-    const localAppData = env.LOCALAPPDATA || (home ? path.join(home, 'AppData', 'Local') : '')
-    const programFiles = env.ProgramFiles || env.PROGRAMFILES
-    const programFilesX86 = env['ProgramFiles(x86)'] || env['PROGRAMFILES(X86)']
-    for (const root of [
-      localAppData ? path.join(localAppData, 'Programs', 'Shennian') : '',
-      localAppData ? path.join(localAppData, 'Programs', 'shennian') : '',
-      programFiles ? path.join(programFiles, 'Shennian') : '',
-      programFilesX86 ? path.join(programFilesX86, 'Shennian') : '',
-    ]) {
-      if (root) push(path.join(root, 'resources', 'wechat-channel', platformDir))
-    }
-  }
 
   return candidates
 }
@@ -264,20 +243,14 @@ function pushInstalledHelperRuntimeDirs(input: {
     const runtimeRoot = defaultHelperRuntimeRoot({ platform, env, homedir: input.homedir })
     if (runtimeRoot) {
       push(path.join(runtimeRoot, 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-      push(path.join(runtimeRoot, 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(runtimeRoot, 'wechat-channel', platformDir))
     }
     if (home) {
-      push(path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-      push(path.join(home, 'Library', 'Application Support', 'Shennian', 'Helper', 'wechat-channel', platformDir))
       push(path.join(home, '.usechat', 'helper', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
       push(path.join(home, '.usechat', 'helper', 'wechat-channel', platformDir))
       push(path.join(home, 'Applications', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-      push(path.join(home, 'Applications', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
     }
     push(path.join('/Applications', 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-    push(path.join('/Applications', 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir))
-    push(path.join('/Library', 'Application Support', 'Shennian', 'Helper', 'wechat-channel', platformDir))
   } else if (platform === 'win32') {
     const home = input.homedir || env.USERPROFILE
     const localAppData = env.LOCALAPPDATA || (home ? path.join(home, 'AppData', 'Local') : '')
@@ -286,16 +259,12 @@ function pushInstalledHelperRuntimeDirs(input: {
     if (localAppData) {
       push(path.join(localAppData, 'Programs', 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
       push(path.join(localAppData, 'UseChat', 'Helper', 'wechat-channel', platformDir))
-      push(path.join(localAppData, 'Programs', 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
-      push(path.join(localAppData, 'Shennian', 'Helper', 'wechat-channel', platformDir))
     }
     if (programFiles) {
       push(path.join(programFiles, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
-      push(path.join(programFiles, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
     }
     if (programFilesX86) {
       push(path.join(programFilesX86, 'UseChat Helper', 'resources', 'wechat-channel', platformDir))
-      push(path.join(programFilesX86, 'Shennian Helper', 'resources', 'wechat-channel', platformDir))
     }
   }
 }
@@ -316,10 +285,9 @@ function resolveLegacyHelperDirCandidate(value: string, platformDir: string): st
 function resolveHelperRuntimeDirCandidates(value: string, platformDir: string): string[] {
   if (fs.existsSync(path.join(value, 'manifest.json'))) return [value]
   const useChatAppCandidate = path.join(value, 'UseChat Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir)
-  const appCandidate = path.join(value, 'Shennian Helper.app', 'Contents', 'Resources', 'wechat-channel', platformDir)
   const runtimeCandidate = path.join(value, 'wechat-channel', platformDir)
   const platformCandidate = path.join(value, platformDir)
-  return [useChatAppCandidate, appCandidate, runtimeCandidate, platformCandidate]
+  return [useChatAppCandidate, runtimeCandidate, platformCandidate]
 }
 
 function defaultHelperRuntimeRoot(input: {
@@ -329,7 +297,7 @@ function defaultHelperRuntimeRoot(input: {
 }): string | null {
   const env = input.env
   const explicit = env[USECHAT_HELPER_RUNTIME_DIR_ENV]?.trim()
-    || env[SHENNIAN_HELPER_RUNTIME_DIR_ENV]?.trim()
+
   if (explicit) return path.resolve(explicit)
   const home = input.homedir || (input.platform === 'win32' ? env.USERPROFILE : env.HOME)
   if (input.platform === 'darwin') {
@@ -418,7 +386,7 @@ export function validateWeChatChannelHelperRuntimePackageManifest(
   if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return { ok: false, message: 'manifest must be an object' }
   const record = manifest as Partial<WeChatChannelHelperRuntimePackageManifest>
   if (record.schemaVersion !== 1) return { ok: false, message: 'schemaVersion must be 1' }
-  if (record.packageKind !== 'shennian-helper-runtime') return { ok: false, message: 'packageKind must be shennian-helper-runtime' }
+  if (record.packageKind !== 'usechat-helper-runtime') return { ok: false, message: 'packageKind must be usechat-helper-runtime' }
   if (record.platform !== platform) return { ok: false, message: `platform must be ${platform}` }
   if (!record.helperVersion) return { ok: false, message: 'helperVersion is required' }
   if (!Number.isInteger(record.protocolVersion) || Number(record.protocolVersion) <= 0) return { ok: false, message: 'protocolVersion must be a positive integer' }
@@ -460,7 +428,7 @@ function shouldVerifyHelperIntegrity(input: {
 function isDesktopPackagedHelperDir(platform: NodeJS.Platform | string, baseDir: string): boolean {
   const normalized = baseDir.replace(/[\\/]+/g, '/')
   if (platform === 'darwin') {
-    return /\/Shennian\.app\/Contents\/Resources\/wechat-channel\/macos$/i.test(normalized)
+    return /\/UseChat Helper\.app\/Contents\/Resources\/wechat-channel\/macos$/i.test(normalized)
   }
   if (platform === 'win32') {
     return /\/resources\/wechat-channel\/windows$/i.test(normalized)

@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'wechat-channel', 'windows')
-const outputRoot = path.resolve(process.env.USECHAT_HELPER_WINDOWS_OUTPUT || process.env.SHENNIAN_HELPER_WINDOWS_OUTPUT || path.join(root, 'dist', 'windows'))
+const outputRoot = path.resolve(process.env.USECHAT_HELPER_WINDOWS_OUTPUT || path.join(root, 'dist', 'windows'))
 const runtimeDir = path.join(outputRoot, 'UseChat Helper')
 const resourcesDir = path.join(runtimeDir, 'resources', 'wechat-channel', 'windows')
 const manifestPath = path.join(sourceDir, 'manifest.json')
@@ -26,7 +26,7 @@ const sourceAsset = manifest.platforms.win32
 fs.rmSync(outputRoot, { recursive: true, force: true })
 fs.mkdirSync(resourcesDir, { recursive: true })
 fs.cpSync(sourceDir, resourcesDir, { recursive: true })
-fs.writeFileSync(path.join(runtimeDir, 'resources', 'shennian-helper-runtime.json'), `${JSON.stringify({
+fs.writeFileSync(path.join(runtimeDir, 'resources', 'usechat-helper-runtime.json'), `${JSON.stringify({
   schemaVersion: 1,
   runtimeKind: 'windows-helper-runtime',
   installScope: 'user',
@@ -36,16 +36,16 @@ fs.writeFileSync(path.join(runtimeDir, 'resources', 'shennian-helper-runtime.jso
 }, null, 2)}\n`)
 fs.writeFileSync(path.join(outputRoot, 'install-helper-runtime.ps1'), renderInstallerPowerShell())
 
-const signWithSigntool = process.env.USECHAT_HELPER_WINDOWS_SIGN === '1' || process.env.SHENNIAN_HELPER_WINDOWS_SIGN === '1'
+const signWithSigntool = process.env.USECHAT_HELPER_WINDOWS_SIGN === '1'
 // External signing (evsign cloud signer) runs out-of-band before packaging, so the
 // exe already carries an Authenticode blob. We verify it portably here instead of
 // invoking Windows-only signtool.
-const externalSigned = process.env.USECHAT_HELPER_WINDOWS_EXTERNAL_SIGNED === '1' || process.env.SHENNIAN_HELPER_WINDOWS_EXTERNAL_SIGNED === '1'
+const externalSigned = process.env.USECHAT_HELPER_WINDOWS_EXTERNAL_SIGNED === '1'
 
 if (signWithSigntool) {
   const signtool = process.env.SIGNTOOL || 'signtool.exe'
   const exe = path.join(resourcesDir, manifest.platforms.win32.executable)
-  const signArgsText = process.env.USECHAT_HELPER_WINDOWS_SIGN_ARGS || process.env.SHENNIAN_HELPER_WINDOWS_SIGN_ARGS
+  const signArgsText = process.env.USECHAT_HELPER_WINDOWS_SIGN_ARGS
   const args = signArgsText
     ? signArgsText.split(/\s+/).filter(Boolean)
     : ['sign', '/fd', 'SHA256', '/tr', 'http://timestamp.digicert.com', '/td', 'SHA256']
@@ -142,7 +142,7 @@ console.log(JSON.stringify({
 }))
 
 function renderInstallerPowerShell() {
-  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "UseChat Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\UseChat Helper"\n$Target = if ($env:USECHAT_HELPER_INSTALL_DIR) { $env:USECHAT_HELPER_INSTALL_DIR } elseif ($env:SHENNIAN_HELPER_INSTALL_DIR) { $env:SHENNIAN_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed UseChat Helper Runtime to $Target"\n`
+  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "UseChat Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\UseChat Helper"\n$Target = if ($env:USECHAT_HELPER_INSTALL_DIR) { $env:USECHAT_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "usechat-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed UseChat Helper Runtime to $Target"\n`
 }
 
 function tryCreateZip(outputRoot, runtimeDir) {

@@ -6,7 +6,7 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>shennian-wechat-channel-helper</AssemblyName>
+    <AssemblyName>usechat-wechat-channel-helper</AssemblyName>
     <RootNamespace>Shennian.WeChatChannel.Helper.Win</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>

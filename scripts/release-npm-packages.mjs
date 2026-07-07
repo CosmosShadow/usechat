@@ -24,7 +24,7 @@ const git = gitInfo()
 fs.rmSync(outDir, { recursive: true, force: true })
 fs.mkdirSync(outDir, { recursive: true })
 
-run('pnpm', ['build'], { cwd: repoRoot })
+runPnpm(['build'], { cwd: repoRoot })
 
 const packages = []
 for (const relDir of packageDirs) {
@@ -32,7 +32,7 @@ for (const relDir of packageDirs) {
   const packageJsonPath = path.join(packageDir, 'package.json')
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
   const before = new Set(fs.readdirSync(outDir))
-  run('pnpm', ['pack', '--pack-destination', outDir], { cwd: packageDir })
+  runPnpm(['pack', '--pack-destination', outDir], { cwd: packageDir })
   const after = fs.readdirSync(outDir).filter((name) => name.endsWith('.tgz'))
   const created = after.filter((name) => !before.has(name))
   if (created.length !== 1) fail(`expected exactly one tarball from ${relDir}, got ${created.join(', ') || '(none)'}`)
@@ -71,6 +71,14 @@ const provenance = {
 const provenancePath = path.join(outDir, 'package-provenance.json')
 writeJson(provenancePath, provenance)
 console.log(JSON.stringify({ ok: true, outDir, packageCount: packages.length, provenancePath, packages }, null, 2))
+
+function runPnpm(args, options = {}) {
+  const npmExecPath = process.env.npm_execpath || ''
+  if (npmExecPath && /pnpm/i.test(path.basename(npmExecPath))) {
+    return run(process.execPath, [npmExecPath, ...args], options)
+  }
+  return run('corepack', ['pnpm', ...args], options)
+}
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {

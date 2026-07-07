@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import {
   resolveWeChatChannelHelperAsset,
-  WECHAT_CHANNEL_HELPER_DIR_ENV,
+  USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV,
 } from './helper-assets.js'
 import { WeChatChannelHelperClient } from './helper-client.js'
 import {
@@ -622,7 +622,7 @@ function resolveWeChatHelperOrThrow(input: CreateWeChatRuntimeInput): Extract<Re
         platform: input.platform,
         env: {
           ...(input.env ?? process.env),
-          ...(input.helperPath ? { [WECHAT_CHANNEL_HELPER_DIR_ENV]: input.helperPath } : {}),
+          ...(input.helperPath ? { [USECHAT_WECHAT_CHANNEL_HELPER_DIR_ENV]: input.helperPath } : {}),
         },
         includeInstalledDesktop: true,
         verifyIntegrity: input.verifyIntegrity,

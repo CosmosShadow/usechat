@@ -439,7 +439,6 @@ export function installHelperRuntime(input: {
       fs.cpSync(sourceRoot, target, { recursive: true })
       if (input.platform === 'darwin') {
         ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'UseChat Helper'))
-        ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'Shennian Helper'))
       }
       if (!fs.existsSync(manifestPath)) throw new Error(`helper_manifest_missing_after_install: ${manifestPath}`)
     }
@@ -459,9 +458,8 @@ export function installHelperRuntime(input: {
 
 function stopRunningHelperBeforeReplace(platform: NodeJS.Platform | string): void {
   if (platform !== 'win32') return
-  // Mirrors the Shennian Windows helper-runtime installer behavior:
-  // Stop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue
-  spawnSync('taskkill.exe', ['/IM', 'shennian-wechat-channel-helper.exe', '/F', '/T'], {
+  // Stop a running UseChat helper before replacing its runtime directory.
+  spawnSync('taskkill.exe', ['/IM', 'usechat-wechat-channel-helper.exe', '/F', '/T'], {
     stdio: 'ignore',
     windowsHide: true,
   })
@@ -484,13 +482,11 @@ function normalizeHelperRuntimeRoot(root: string, platform: NodeJS.Platform | st
     ? [
         root,
         path.join(root, 'UseChat Helper.app'),
-        path.join(root, 'Shennian Helper.app'),
         ...safeReaddir(root).filter((entry) => entry.endsWith('.app')).map((entry) => path.join(root, entry)),
       ]
     : [
         root,
         path.join(root, 'UseChat Helper'),
-        path.join(root, 'Shennian Helper'),
       ]
   for (const candidate of candidates) {
     if (fs.existsSync(path.join(helperDirForInstalledTarget(candidate, platform), 'manifest.json'))) return candidate

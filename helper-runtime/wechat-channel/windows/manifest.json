@@ -4,7 +4,7 @@
   "protocolVersion": 1,
   "platforms": {
     "win32": {
-      "executable": "shennian-wechat-channel-helper.exe",
+      "executable": "usechat-wechat-channel-helper.exe",
       "sha256": "8d28e7a122fe678210897d06ba03f50adeea836557ca82985a205a466d8cc5de",
       "signed": true,
       "notarized": false,

@@ -846,9 +846,8 @@ function macosHelperAppPathForExecutable(helperPath: string): string | null {
 function defaultMacosHelperRuntimeDir(): string {
   const env = getRuntimeEnv()
   const explicit = env.USECHAT_HELPER_RUNTIME_DIR?.trim()
-    || env.SHENNIAN_HELPER_RUNTIME_DIR?.trim()
   if (explicit) return path.resolve(explicit)
-  return path.join(os.homedir(), 'Library', 'Application Support', 'Shennian', 'Helper')
+  return path.join(os.homedir(), 'Library', 'Application Support', 'UseChat', 'Helper')
 }
 
 async function terminateHelperChild(child: ChildProcessWithoutNullStreams): Promise<void> {

@@ -1,6 +1,6 @@
 # Signing / Notarization / SmartScreen 方案
 
-UseChat helper runtime 首个私有 release 可以分发未正式签名产物，但 evidence 必须明确标记 `signed: false` / `notarized: false`。公开 release 前必须完成签名链路。
+UseChat Helper runtime 是本机 GUI 自动化能力层。公开分发时，release evidence 必须明确记录签名、notarization、Gatekeeper 或 Authenticode 验证状态。
 
 ## macOS
 
@@ -51,7 +51,8 @@ pnpm helper-runtime:build:win
 - SmartScreen 预热策略和下载域名 reputation 方案；
 - evidence 写入 `helper-runtime-evidence.json`。
 
-## 当前私有 release 状态
+## 当前状态
 
-- macOS ad-hoc codesign 可验证，但 Gatekeeper assessment 未通过，公开前必须 Developer ID + notarization。
-- Windows helper 当前可构建/运行，但私有 evidence 标记 `signed: false`，公开前必须 Authenticode + SmartScreen 方案落地。
+- macOS helper 已支持 Developer ID 签名和 notarization 流程；公开 artifact 应优先使用 notarized zip。
+- Windows helper 已支持外部 EV / 云签名后打包，并在 evidence 中记录 PE security directory 检测结果。
+- 如果某个测试 artifact 未 notarized 或未完成 SmartScreen 预热，必须在 evidence 和 release notes 中显式标记。

@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "packageKind": "shennian-helper-runtime",
+  "packageKind": "usechat-helper-runtime",
   "platform": "win32",
   "helperVersion": "0.1.26",
   "protocolVersion": 1,
   "minCliVersion": "0.2.100",
   "sha256": {
-    "runtimeManifest": "741cd947032b0cc424d33e00cc3622fec33a5aa4666c7984431058898266ce64",
+    "runtimeManifest": "1439a7ef1171908fcd417b0b3d1a75c0795ca30336fbcc766b5d7da6d418e4d2",
     "entrypoint": "8d28e7a122fe678210897d06ba03f50adeea836557ca82985a205a466d8cc5de"
   },
   "installTarget": {
@@ -16,8 +16,8 @@
   "payload": {
     "kind": "windows-helper-runtime",
     "runtimeManifest": "resources\\wechat-channel\\windows\\manifest.json",
-    "entrypoint": "resources\\wechat-channel\\windows\\shennian-wechat-channel-helper.exe",
-    "manifestSha256": "741cd947032b0cc424d33e00cc3622fec33a5aa4666c7984431058898266ce64",
+    "entrypoint": "resources\\wechat-channel\\windows\\usechat-wechat-channel-helper.exe",
+    "manifestSha256": "1439a7ef1171908fcd417b0b3d1a75c0795ca30336fbcc766b5d7da6d418e4d2",
     "target": "win-x64",
     "selfContained": true
   },

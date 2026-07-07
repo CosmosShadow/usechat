@@ -1,4 +1,4 @@
-# Deploy a signed Windows helper.exe to the local Shennian Helper install dir.
+# Deploy a signed Windows helper.exe to the local UseChat Helper install dir.
 # @arch ../../docs/HELPER_RUNTIME.md
 # @arch ../../docs/COPY_OUT_SOURCES.md
 #
@@ -20,7 +20,7 @@ $ErrorActionPreference = 'Stop'
 if (-not (Test-Path $Src)) { throw "Source exe not found: $Src" }
 if (-not (Test-Path $InstalledDir)) { throw "Installed helper dir not found: $InstalledDir" }
 
-$dst = Join-Path $InstalledDir 'shennian-wechat-channel-helper.exe'
+$dst = Join-Path $InstalledDir 'usechat-wechat-channel-helper.exe'
 $manifest = Join-Path $InstalledDir 'manifest.json'
 if (-not (Test-Path $manifest)) { throw "manifest.json missing at $manifest" }
 

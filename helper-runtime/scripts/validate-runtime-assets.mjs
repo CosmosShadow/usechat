@@ -36,7 +36,7 @@ function validatePlatform(platform, dir) {
   const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'))
   const packageManifest = JSON.parse(fs.readFileSync(path.join(dir, 'helper-runtime-package.json'), 'utf8'))
   if (manifest.schemaVersion !== 1) fail(`invalid schemaVersion in ${dir}`)
-  if (packageManifest.schemaVersion !== 1 || packageManifest.packageKind !== 'shennian-helper-runtime') fail(`invalid helper-runtime-package.json in ${dir}`)
+  if (packageManifest.schemaVersion !== 1 || packageManifest.packageKind !== 'usechat-helper-runtime') fail(`invalid helper-runtime-package.json in ${dir}`)
   if (packageManifest.platform !== platform) fail(`package manifest platform mismatch in ${dir}`)
   if (packageManifest.helperVersion !== manifest.helperVersion) fail(`package helperVersion mismatch in ${dir}`)
   if (packageManifest.protocolVersion !== manifest.protocolVersion) fail(`package protocolVersion mismatch in ${dir}`)
