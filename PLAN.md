@@ -349,6 +349,7 @@
 - [x] macOS：2026-07-07 出站 sender copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test && node scripts/wechat-abc-smoke.mjs --chat ABC --marker "UseChatmacABCdoctorReady202607071055"` 通过；doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
 - [x] Windows：2026-07-07 出站 sender copy-out 后同步到 `C:\Users\simpl\usechat`，重新验证 `pnpm install && pnpm build && pnpm typecheck && pnpm test && pnpm smoke:wechat:abc:windows-task` 通过；本次 marker 为 `UseChat smoke 20260707025319`，doctor / read / write / read-back 全部 `ok: true`，read-back `markerFound: true`。
 - [x] macOS：2026-07-07 入站 ledger / media action plan / vector store 底座 copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
+- [x] macOS：2026-07-07 入站 media-resolver copy-out 后重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过；Shennian media-resolver 42 个 copy/适配测试通过，core 总计 100 个测试通过。
 
 ## Phase 7 — 完整连接器能力
 
@@ -373,13 +374,13 @@
 - [x] 拷贝 visual vector store 底座。
 - [ ] 识别当前可见媒体候选。
 - [x] 生成 media action plan（已从 Shennian `core/schema` / `core/media-action-plan` copy-out，并覆盖 Lab fixture 回放测试）。
-- [ ] 右键媒体 bbox。
-- [ ] OCR 菜单候选选择。
-- [ ] 读取剪贴板 file URL / bitmap。
-- [ ] 尽可能物化本机原始文件。
-- [ ] 入站附件保存到 `~/.usechat/attachments/inbound/`。
-- [ ] 区分原始文件和 preview crop。
-- [ ] 无法确认原件时返回 `pending-download` / `metadata-only`，不要假成功。
+- [x] 右键媒体 bbox（已从 Shennian `media-resolver` copy-out，覆盖多点重试与安全点位测试）。
+- [x] OCR 菜单候选选择（已从 Shennian `media-resolver` copy-out，覆盖危险菜单过滤与 OCR 点击测试）。
+- [x] 读取剪贴板 file URL / bitmap（已从 Shennian `media-resolver` copy-out，覆盖 filePaths/fileUrls/image data）。
+- [x] 尽可能物化本机原始文件（已从 Shennian `media-resolver` copy-out，含 Windows cache fallback）。
+- [x] 入站附件保存到 `~/.usechat/attachments/inbound/`（resolver 默认目录已适配 UseChat 数据目录）。
+- [x] 区分原始文件和 preview crop（copy-out 测试覆盖不以 screenshot preview 冒充原件）。
+- [x] 无法确认原件时返回 `pending-download` / `metadata-only`，不要假成功。
 
 ### Ledger 与去重
 

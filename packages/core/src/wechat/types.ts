@@ -1,6 +1,27 @@
 // @arch ../../../docs/ARCHITECTURE.md
 // @test src/__tests__/wechat-format.test.ts
 
+
+export type ExternalMessageAttachment = {
+  type: string
+  name?: string
+  url?: string
+  mimeType?: string
+  size?: number
+  extension?: string
+  localPath?: string
+  thumbnailPath?: string
+  hash?: string
+  availability?: 'edge-local' | 'edge-preview' | 'server-url' | 'pending-download' | 'metadata-only' | 'unavailable-large' | 'failed'
+  machineId?: string
+  expiresAt?: string
+  providerError?: string
+  sourceAction?: string
+  materializationKind?: 'original-file' | 'clipboard-image' | 'preview-crop' | 'metadata'
+  isOriginal?: boolean
+  mimeKindMatches?: boolean
+}
+
 export type WeChatWindowInfo = {
   windowId: string
   appName?: string | null
