@@ -24,6 +24,19 @@ usechat serve --stdio
 - **本地 Helper**：UseChat Helper 负责桌面窗口、OCR、点击、剪贴板和文件物化。
 - **可诊断**：稳定 `reasonCode`、`traceSummary`、JSONL trace，失败时便于定位。
 
+## 与神念的关系
+
+UseChat 来自 [神念](https://shennian.net) 的微信 RPA / Computer Use 能力，是神念把本地微信连接器独立开源出来后的项目。你可以把 UseChat 当作一个轻量的本地 CLI 和 Agent 工具；如果你还需要跨设备、多机器、多 Agent 的统一控制面，可以直接使用神念。
+
+神念可以从手机、浏览器或桌面端接入，统一查看、调度和接管运行在多台机器上的 Claude、Codex、Gemini、Cursor、OpenCode、Nian 与自定义 Agent。UseChat 解决“让 Agent 使用本机微信”的连接器问题；神念解决“随时随地掌控你的 Agent 网络”的控制面问题。
+
+- 官网：[https://shennian.net](https://shennian.net)
+- 交流 / 商务合作：扫码加入神念企业微信
+
+<p align="left">
+  <img src="./docs/assets/wechat-group-qr.jpg" alt="神念企业微信二维码" width="220" />
+</p>
+
 ## 快速开始
 
 ### 1. 安装 CLI
