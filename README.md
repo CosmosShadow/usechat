@@ -114,6 +114,17 @@ usechat config list
 
 UseChat 不会把 API key 打印到 CLI 输出、日志或 trace 中。`model.apiKeyEnv` 应该是环境变量名，不是 key 明文。
 
+#### 模型 token 与成本
+
+UseChat 的模型成本通常很低：
+
+- **发送消息不调用视觉模型**，`write` 主要通过本机 Helper 聚焦窗口、粘贴和发送，不产生模型 token 消耗；
+- **读取消息才调用视觉模型**，`read` / `watch` 需要把当前可见窗口结构化成消息列表；
+- Helper 会先在本机做 OCR 和布局提示，再把截图与精简 hints 交给视觉模型，减少模型需要“盲看整张图”的 token 消耗；
+- 国内用户可以直接使用 `qwen-vl-plus` 这类 Qwen 视觉模型，成本低、延迟可控，日常个人助理场景通常足够。
+
+如果只做本机 Helper / OCR smoke，也可以临时使用 `model.provider=ocr-only`，但正式读取效果建议使用 Qwen-VL 这类视觉模型。
+
 ### 4. 安装 UseChat Helper
 
 UseChat Helper 是本机原生运行时。它负责：
