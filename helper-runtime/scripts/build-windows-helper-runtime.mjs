@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// @arch docs/architecture/local-runtime.md
-// @test src/__tests__/helper-runtime-packaging.test.ts
+// @arch ../docs/HELPER_RUNTIME.md
+// @arch ../docs/COPY_OUT_SOURCES.md
+// @test node helper-runtime/scripts/build-windows-helper-runtime.mjs
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -10,7 +11,7 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const sourceDir = path.join(root, 'wechat-channel', 'windows')
-const outputRoot = path.resolve(process.env.SHENNIAN_HELPER_WINDOWS_OUTPUT || path.join(root, 'dist', 'windows'))
+const outputRoot = path.resolve(process.env.USECHAT_HELPER_WINDOWS_OUTPUT || process.env.SHENNIAN_HELPER_WINDOWS_OUTPUT || path.join(root, 'dist', 'windows'))
 const runtimeDir = path.join(outputRoot, 'Shennian Helper')
 const resourcesDir = path.join(runtimeDir, 'resources', 'wechat-channel', 'windows')
 const manifestPath = path.join(sourceDir, 'manifest.json')
@@ -35,17 +36,18 @@ fs.writeFileSync(path.join(runtimeDir, 'resources', 'shennian-helper-runtime.jso
 }, null, 2)}\n`)
 fs.writeFileSync(path.join(outputRoot, 'install-helper-runtime.ps1'), renderInstallerPowerShell())
 
-const signWithSigntool = process.env.SHENNIAN_HELPER_WINDOWS_SIGN === '1'
+const signWithSigntool = process.env.USECHAT_HELPER_WINDOWS_SIGN === '1' || process.env.SHENNIAN_HELPER_WINDOWS_SIGN === '1'
 // External signing (evsign cloud signer) runs out-of-band before packaging, so the
 // exe already carries an Authenticode blob. We verify it portably here instead of
 // invoking Windows-only signtool.
-const externalSigned = process.env.SHENNIAN_HELPER_WINDOWS_EXTERNAL_SIGNED === '1'
+const externalSigned = process.env.USECHAT_HELPER_WINDOWS_EXTERNAL_SIGNED === '1' || process.env.SHENNIAN_HELPER_WINDOWS_EXTERNAL_SIGNED === '1'
 
 if (signWithSigntool) {
   const signtool = process.env.SIGNTOOL || 'signtool.exe'
   const exe = path.join(resourcesDir, manifest.platforms.win32.executable)
-  const args = process.env.SHENNIAN_HELPER_WINDOWS_SIGN_ARGS
-    ? process.env.SHENNIAN_HELPER_WINDOWS_SIGN_ARGS.split(/\s+/).filter(Boolean)
+  const signArgsText = process.env.USECHAT_HELPER_WINDOWS_SIGN_ARGS || process.env.SHENNIAN_HELPER_WINDOWS_SIGN_ARGS
+  const args = signArgsText
+    ? signArgsText.split(/\s+/).filter(Boolean)
     : ['sign', '/fd', 'SHA256', '/tr', 'http://timestamp.digicert.com', '/td', 'SHA256']
   run(signtool, [...args, exe])
 }
@@ -140,7 +142,7 @@ console.log(JSON.stringify({
 }))
 
 function renderInstallerPowerShell() {
-  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "Shennian Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\Shennian Helper"\n$Target = if ($env:SHENNIAN_HELPER_INSTALL_DIR) { $env:SHENNIAN_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed Shennian Helper Runtime to $Target"\n`
+  return `$ErrorActionPreference = "Stop"\n$Source = Join-Path $PSScriptRoot "Shennian Helper"\n$DefaultTarget = Join-Path $env:LOCALAPPDATA "Programs\\Shennian Helper"\n$Target = if ($env:USECHAT_HELPER_INSTALL_DIR) { $env:USECHAT_HELPER_INSTALL_DIR } elseif ($env:SHENNIAN_HELPER_INSTALL_DIR) { $env:SHENNIAN_HELPER_INSTALL_DIR } else { $DefaultTarget }\nif (!(Test-Path $Source)) { throw "Missing runtime payload: $Source" }\nStop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue\n$Temp = "$Target.tmp.$PID"\nif (Test-Path $Temp) { Remove-Item $Temp -Recurse -Force }\nNew-Item -ItemType Directory -Force -Path (Split-Path $Temp) | Out-Null\nCopy-Item $Source $Temp -Recurse -Force\nif (Test-Path $Target) { Remove-Item $Target -Recurse -Force }\nMove-Item $Temp $Target\n$Manifest = Join-Path $Target "resources\\wechat-channel\\windows\\manifest.json"\nif (!(Test-Path $Manifest)) { throw "Install failed: manifest missing at $Manifest" }\nWrite-Output "Installed Shennian Helper Runtime to $Target"\n`
 }
 
 function tryCreateZip(outputRoot, runtimeDir) {
@@ -149,7 +151,31 @@ function tryCreateZip(outputRoot, runtimeDir) {
     cwd: outputRoot,
     stdio: 'ignore',
   })
-  return result.status === 0 ? zipPath : null
+  if (result.status === 0) return zipPath
+  if (process.platform === 'win32') {
+    fs.rmSync(zipPath, { force: true })
+    const ps = spawnSync('powershell.exe', [
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      [
+        '$ErrorActionPreference = "Stop"',
+        `$files = @(${[
+          path.basename(runtimeDir),
+          'install-helper-runtime.ps1',
+          'helper-runtime-package.json',
+          'helper-runtime-evidence.json',
+        ].map((value) => JSON.stringify(value)).join(', ')})`,
+        `Compress-Archive -Path $files -DestinationPath ${JSON.stringify(zipPath)} -Force`,
+      ].join('; '),
+    ], {
+      cwd: outputRoot,
+      stdio: 'ignore',
+    })
+    if (ps.status === 0) return zipPath
+  }
+  return null
 }
 
 function sha256File(filePath) {

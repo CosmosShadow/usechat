@@ -1,5 +1,6 @@
 # Deploy a signed Windows helper.exe to the local Shennian Helper install dir.
-# @arch docs/features/wechat-rpa/windows-runtime/signing.md
+# @arch ../../docs/HELPER_RUNTIME.md
+# @arch ../../docs/COPY_OUT_SOURCES.md
 #
 # Usage:
 #   scp helper-signed.exe windows:helper-signed.exe

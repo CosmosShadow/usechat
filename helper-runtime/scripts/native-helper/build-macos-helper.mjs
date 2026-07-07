@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// @arch docs/features/wechat-rpa/macos-runtime.md
-// @test src/__tests__/wechat-channel-native-helper.test.ts
+// @arch ../../docs/HELPER_RUNTIME.md
+// @arch ../../docs/COPY_OUT_SOURCES.md
+// @test node helper-runtime/scripts/native-helper/build-macos-helper.mjs
 
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -9,13 +10,16 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const nativeRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const cliRoot = path.resolve(nativeRoot, '../..')
-const repoRoot = path.resolve(cliRoot, '../..')
-const sourcePath = path.join(nativeRoot, 'macos', 'ShennianWeChatChannelHelper.swift')
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const helperRuntimeRoot = path.resolve(scriptDir, '../..')
+const repoRoot = path.resolve(helperRuntimeRoot, '..')
+const nativeRoot = path.join(repoRoot, 'native')
+const sourcePath = process.env.WECHAT_CHANNEL_HELPER_SOURCE
+  ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_SOURCE)
+  : path.join(nativeRoot, 'macos', 'ShennianWeChatChannelHelper.swift')
 const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
-  : path.join(repoRoot, 'packages', 'helper-runtime', 'wechat-channel', 'macos')
+  : path.join(helperRuntimeRoot, 'wechat-channel', 'macos')
 const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'shennian-wechat-channel-helper'
 const outputPath = path.join(outputDir, executableName)
 const macosTarget = process.env.WECHAT_CHANNEL_HELPER_MACOS_TARGET || '13.0'
@@ -31,6 +35,8 @@ if (!fs.existsSync(sourcePath)) fail(`missing helper source: ${sourcePath}`)
 if (architectures.length === 0) fail('WECHAT_CHANNEL_HELPER_ARCHS cannot be empty')
 
 fs.mkdirSync(outputDir, { recursive: true })
+const manifestPath = path.join(outputDir, 'manifest.json')
+const packageManifestPath = path.join(outputDir, 'helper-runtime-package.json')
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'shennian-wechat-helper-'))
 try {
   const binaries = architectures.map((arch) => buildArch(arch, tmpDir))
@@ -41,7 +47,7 @@ try {
   }
   fs.chmodSync(outputPath, 0o755)
   const sha256 = crypto.createHash('sha256').update(fs.readFileSync(outputPath)).digest('hex')
-  fs.writeFileSync(path.join(outputDir, 'manifest.json'), `${JSON.stringify({
+  fs.writeFileSync(manifestPath, `${JSON.stringify({
     schemaVersion: 1,
     helperVersion,
     protocolVersion,
@@ -56,7 +62,7 @@ try {
   }, null, 2)}\n`)
   let finalSha256 = sha256
   if (shouldSign) {
-    run(process.execPath, [path.join(nativeRoot, 'scripts', 'sign-macos-helper.mjs')], {
+    run(process.execPath, [path.join(scriptDir, 'sign-macos-helper.mjs')], {
       env: {
         ...process.env,
         WECHAT_CHANNEL_HELPER_OUTPUT_DIR: outputDir,
@@ -64,9 +70,50 @@ try {
     })
     finalSha256 = crypto.createHash('sha256').update(fs.readFileSync(outputPath)).digest('hex')
   }
+  updateRuntimePackageManifest({
+    packageManifestPath,
+    manifestPath,
+    outputPath,
+    platform: 'darwin',
+    helperVersion,
+    protocolVersion,
+  })
   console.log(JSON.stringify({ ok: true, outputPath, sha256: finalSha256, architectures, signed: shouldSign }))
 } finally {
   fs.rmSync(tmpDir, { recursive: true, force: true })
+}
+
+function updateRuntimePackageManifest(input) {
+  if (!fs.existsSync(input.packageManifestPath)) return
+  const packageManifest = JSON.parse(fs.readFileSync(input.packageManifestPath, 'utf8'))
+  const manifest = JSON.parse(fs.readFileSync(input.manifestPath, 'utf8'))
+  const asset = manifest.platforms?.[input.platform] || {}
+  const manifestSha256 = sha256File(input.manifestPath)
+  const entrypointSha256 = sha256File(input.outputPath)
+  const updated = {
+    ...packageManifest,
+    helperVersion: input.helperVersion,
+    protocolVersion: input.protocolVersion,
+    sha256: {
+      ...packageManifest.sha256,
+      runtimeManifest: manifestSha256,
+      entrypoint: entrypointSha256,
+    },
+    payload: {
+      ...packageManifest.payload,
+      manifestSha256,
+    },
+    signature: {
+      ...packageManifest.signature,
+      signed: asset.signed === true,
+      notarized: asset.notarized === true,
+    },
+  }
+  fs.writeFileSync(input.packageManifestPath, `${JSON.stringify(updated, null, 2)}\n`)
+}
+
+function sha256File(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
 }
 
 function buildArch(arch, tmpDir) {

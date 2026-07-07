@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// @arch docs/features/wechat-rpa/windows-runtime/signing.md
+// @arch ../../docs/HELPER_RUNTIME.md
+// @arch ../../docs/COPY_OUT_SOURCES.md
 //
 // Sign a locally-built Windows helper .exe with the Shennian Windows code-signing
 // license via the `evsign-client` cloud signer, then update the helper manifest
@@ -14,7 +15,7 @@
 //     `node --env-file=.env.local scripts/sign-windows-helper.mjs ...`)
 //
 // Usage:
-//   node --env-file=.env.local packages/cli/native/wechat-channel-helper/scripts/sign-windows-helper.mjs \
+//   node --env-file=.env.local helper-runtime/scripts/native-helper/sign-windows-helper.mjs \
 //     --exe <path/to/helper.exe> [--manifest <path/to/manifest.json>]
 //
 // If --manifest is omitted, the script looks for manifest.json alongside the exe.

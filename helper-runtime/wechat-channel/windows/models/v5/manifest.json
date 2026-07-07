@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "modelFamily": "PP-OCRv5",
+  "runtime": "RapidOcrNet + ONNX Runtime/.NET",
+  "defaultLanguage": "zh",
+  "license": "Apache-2.0",
+  "source": "PaddleOCR / RapidOcrNet-compatible PP-OCRv5 ONNX assets",
+  "updatePolicy": "Update only with helperVersion bump and sha256 manifest review; keep prior latin fallback unless package size policy changes.",
+  "assets": [
+    {
+      "file": "ch_PP-OCRv5_mobile_det.onnx",
+      "role": "detection",
+      "language": "multilingual",
+      "bytes": 4819576,
+      "sha256": "4d97c44a20d30a81aad087d6a396b08f786c4635742afc391f6621f5c6ae78ae"
+    },
+    {
+      "file": "ch_ppocr_mobile_v2.0_cls_infer.onnx",
+      "role": "angle-classification",
+      "language": "multilingual",
+      "bytes": 585532,
+      "sha256": "e47acedf663230f8863ff1ab0e64dd2d82b838fceb5957146dab185a89d6215c"
+    },
+    {
+      "file": "ch_PP-OCRv5_rec_mobile.onnx",
+      "role": "recognition",
+      "language": "zh",
+      "bytes": 16631306,
+      "sha256": "5825fc7ebf84ae7a412be049820b4d86d77620f204a041697b0494669b1742c5"
+    },
+    {
+      "file": "ppocrv5_dict.txt",
+      "role": "dictionary",
+      "language": "zh",
+      "bytes": 74012,
+      "sha256": "d1979e9f794c464c0d2e0b70a7fe14dd978e9dc644c0e71f14158cdf8342af1b"
+    },
+    {
+      "file": "latin_PP-OCRv5_rec_mobile_infer.onnx",
+      "role": "recognition-fallback",
+      "language": "latin",
+      "bytes": 7904513,
+      "sha256": "b20bd37c168a570f583afbc8cd7925603890efbcdc000a59e22c269d160b5f5a"
+    },
+    {
+      "file": "ppocrv5_latin_dict.txt",
+      "role": "dictionary-fallback",
+      "language": "latin",
+      "bytes": 1634,
+      "sha256": "3c0a8a79b612653c25f765271714f71281e4e955962c153e272b7b8c1d2b13ff"
+    }
+  ],
+  "licenseUrls": [
+    "https://github.com/PaddlePaddle/PaddleOCR/blob/main/LICENSE",
+    "https://www.apache.org/licenses/LICENSE-2.0"
+  ],
+  "sourceUrls": [
+    "https://github.com/PaddlePaddle/PaddleOCR",
+    "https://github.com/BobLd/RapidOcrNet"
+  ]
+}

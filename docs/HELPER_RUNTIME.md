@@ -64,12 +64,18 @@ usechat doctor
 ### 开发者
 
 ```bash
-pnpm build:helper:mac
-pnpm build:helper:win
+pnpm helper-runtime:build:native:mac
+pnpm helper-runtime:build:mac
+pnpm helper-runtime:build:native:win
+pnpm helper-runtime:build:win
 usechat config set helper.path /path/to/helper
 ```
 
 开发者可以自编译，并让 UseChat 指向自己的 helper。
+
+macOS helper 从 `native/macos/ShennianWeChatChannelHelper.swift` 构建；Windows helper 从 `native/windows/Shennian.WeChatChannel.Helper.Win.csproj` 构建。两者都是 Shennian copy-out 源码，UseChat 只做目录、包名和 release evidence 适配。
+
+完整私有 release 流程见 `docs/RELEASE.md`。
 
 ## Windows 可见桌面要求
 
@@ -101,6 +107,8 @@ pnpm smoke:wechat:abc:windows-task
 - 必要时包含签名 / notarization / Authenticode evidence；
 - third-party notices；
 - source revision。
+
+Windows runtime 还必须包含 Shennian 既定的本地 OCR 运行资产：RapidOcrNet / ONNX Runtime 相关 native DLL 和 PP-OCRv5 模型。不能改成云 OCR，也不能为了精简包体替换成另一套实现。
 
 ## 安全规则
 

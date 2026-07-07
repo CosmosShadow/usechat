@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// @arch docs/features/wechat-rpa/windows-runtime.md
-// @test src/__tests__/wechat-channel-windows-helper-build.test.ts
+// @arch ../../docs/HELPER_RUNTIME.md
+// @arch ../../docs/COPY_OUT_SOURCES.md
+// @test node helper-runtime/scripts/native-helper/build-windows-helper.mjs
 
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -8,16 +9,19 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const nativeRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const cliRoot = path.resolve(nativeRoot, '../..')
-const repoRoot = path.resolve(cliRoot, '../..')
-const projectPath = path.join(nativeRoot, 'windows', 'Shennian.WeChatChannel.Helper.Win.csproj')
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const helperRuntimeRoot = path.resolve(scriptDir, '../..')
+const repoRoot = path.resolve(helperRuntimeRoot, '..')
+const nativeRoot = path.join(repoRoot, 'native')
+const projectPath = process.env.WECHAT_CHANNEL_HELPER_PROJECT
+  ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_PROJECT)
+  : path.join(nativeRoot, 'windows', 'Shennian.WeChatChannel.Helper.Win.csproj')
 const outputDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
-  : path.join(repoRoot, 'packages', 'helper-runtime', 'wechat-channel', 'windows')
+  : path.join(helperRuntimeRoot, 'wechat-channel', 'windows')
 const modelSourceDir = process.env.WECHAT_CHANNEL_HELPER_MODEL_SOURCE_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_MODEL_SOURCE_DIR)
-  : path.join(repoRoot, 'packages', 'helper-runtime', 'wechat-channel', 'windows', 'models', 'v5')
+  : path.join(helperRuntimeRoot, 'wechat-channel', 'windows', 'models', 'v5')
 const executableName = process.env.WECHAT_CHANNEL_HELPER_EXECUTABLE || 'shennian-wechat-channel-helper.exe'
 const helperVersion = process.env.WECHAT_CHANNEL_HELPER_VERSION || '0.1.26'
 const protocolVersion = Number(process.env.WECHAT_CHANNEL_HELPER_PROTOCOL_VERSION || '1')
@@ -29,8 +33,10 @@ if (process.platform !== 'win32' && process.env.WECHAT_CHANNEL_HELPER_ALLOW_CROS
 }
 if (!fs.existsSync(projectPath)) fail(`missing helper project: ${projectPath}`)
 
-removeAppleDoubleFiles(path.join(nativeRoot, 'windows'))
+removeAppleDoubleFiles(path.dirname(projectPath))
 fs.mkdirSync(outputDir, { recursive: true })
+const manifestPath = path.join(outputDir, 'manifest.json')
+const packageManifestPath = path.join(outputDir, 'helper-runtime-package.json')
 
 const publishArgs = [
   'publish',
@@ -54,7 +60,7 @@ const outputPath = path.join(outputDir, executableName)
 if (!fs.existsSync(outputPath)) fail(`expected helper was not published: ${outputPath}`)
 
 const sha256 = crypto.createHash('sha256').update(fs.readFileSync(outputPath)).digest('hex')
-fs.writeFileSync(path.join(outputDir, 'manifest.json'), `${JSON.stringify({
+fs.writeFileSync(manifestPath, `${JSON.stringify({
   schemaVersion: 1,
   helperVersion,
   protocolVersion,
@@ -69,8 +75,51 @@ fs.writeFileSync(path.join(outputDir, 'manifest.json'), `${JSON.stringify({
     },
   },
 }, null, 2)}\n`)
+updateRuntimePackageManifest({
+  packageManifestPath,
+  manifestPath,
+  outputPath,
+  platform: 'win32',
+  helperVersion,
+  protocolVersion,
+})
 
 console.log(JSON.stringify({ ok: true, outputPath, sha256, runtime, selfContained }))
+
+function updateRuntimePackageManifest(input) {
+  if (!fs.existsSync(input.packageManifestPath)) return
+  const packageManifest = JSON.parse(fs.readFileSync(input.packageManifestPath, 'utf8'))
+  const manifest = JSON.parse(fs.readFileSync(input.manifestPath, 'utf8'))
+  const asset = manifest.platforms?.[input.platform] || {}
+  const manifestSha256 = sha256File(input.manifestPath)
+  const entrypointSha256 = sha256File(input.outputPath)
+  const updated = {
+    ...packageManifest,
+    helperVersion: input.helperVersion,
+    protocolVersion: input.protocolVersion,
+    sha256: {
+      ...packageManifest.sha256,
+      runtimeManifest: manifestSha256,
+      entrypoint: entrypointSha256,
+    },
+    payload: {
+      ...packageManifest.payload,
+      manifestSha256,
+      target: asset.target,
+      selfContained: asset.selfContained,
+    },
+    signature: {
+      ...packageManifest.signature,
+      signed: asset.signed === true,
+      notarized: asset.notarized === true,
+    },
+  }
+  fs.writeFileSync(input.packageManifestPath, `${JSON.stringify(updated, null, 2)}\n`)
+}
+
+function sha256File(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex')
+}
 
 function run(command, args) {
   const result = spawnSync(command, args, { encoding: 'utf8', stdio: 'inherit' })

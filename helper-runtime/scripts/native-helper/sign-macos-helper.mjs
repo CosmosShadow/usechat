@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// @arch docs/features/wechat-rpa/macos-runtime.md
-// @test src/__tests__/wechat-channel-native-helper.test.ts
+// @arch ../../docs/HELPER_RUNTIME.md
+// @arch ../../docs/COPY_OUT_SOURCES.md
+// @test node helper-runtime/scripts/native-helper/build-macos-helper.mjs
 
 import crypto from 'node:crypto'
 import fs from 'node:fs'
@@ -9,11 +10,11 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const nativeRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const cliRoot = path.resolve(nativeRoot, '../..')
+const scriptDir = path.dirname(fileURLToPath(import.meta.url))
+const helperRuntimeRoot = path.resolve(scriptDir, '../..')
 const helperDir = process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR
   ? path.resolve(process.env.WECHAT_CHANNEL_HELPER_OUTPUT_DIR)
-  : path.join(cliRoot, 'assets', 'wechat-channel', 'macos')
+  : path.join(helperRuntimeRoot, 'wechat-channel', 'macos')
 const manifestPath = path.join(helperDir, 'manifest.json')
 const identity = process.env.WECHAT_CHANNEL_HELPER_CODESIGN_IDENTITY
   || process.env.CSC_NAME

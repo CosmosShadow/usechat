@@ -1,0 +1,15 @@
+{
+  "name": "@shennian/usechat-helper-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UseChat native helper runtime assets and installers copied out from Shennian.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-all.mjs",
+    "build:mac": "node scripts/build-macos-helper-app.mjs",
+    "build:native:mac": "node scripts/native-helper/build-macos-helper.mjs",
+    "build:native:win": "node scripts/native-helper/build-windows-helper.mjs",
+    "build:win": "node scripts/build-windows-helper-runtime.mjs",
+    "validate": "node scripts/validate-runtime-assets.mjs"
+  }
+}

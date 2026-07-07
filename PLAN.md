@@ -472,22 +472,33 @@
 
 ### Packaging
 
-- [ ] 确定内部 package registry / GitHub package 路径。
-- [ ] 构建 CLI package。
-- [ ] 如果 SDK 已准备好，构建 SDK package。
-- [ ] 如果 model-provider 单独发包，构建 model-provider package。
-- [ ] 生成 package provenance notes。
+- [x] 确定内部 package registry / GitHub package 路径（当前私有默认使用 `@shennian/*` scope，支持内部 npm registry / GitHub Packages，正式 registry URL 和权限发布前确认）。
+- [x] 构建 CLI package。
+- [x] 如果 SDK 已准备好，构建 SDK package。
+- [x] 如果 model-provider 单独发包，构建 model-provider package。
+- [x] 生成 package provenance notes。
 
 ### Helper artifacts
 
-- [ ] 添加 macOS helper 构建说明。
-- [ ] 添加 Windows helper 构建说明。
-- [ ] 构建 macOS helper runtime。
-- [ ] 构建 Windows helper runtime。
+- [x] 添加 macOS helper 构建说明。
+- [x] 添加 Windows helper 构建说明。
+- [x] 构建 macOS helper runtime。
+- [x] 构建 Windows helper runtime。
 - [ ] 可选：签名 macOS helper。
 - [ ] 可选：签名 Windows helper。
-- [ ] 生成 helper runtime manifests。
-- [ ] 生成 helper runtime evidence。
+- [x] 生成 helper runtime manifests。
+- [x] 生成 helper runtime evidence。
+
+### Phase 9 验证记录
+
+- [x] 2026-07-07：新增 `docs/RELEASE.md`、`helper-runtime/package.json`、`scripts/release-private-packages.mjs`，私有 package release 只执行 build / pack / sha256 / provenance，不重新实现微信 RPA。
+- [x] 2026-07-07：`pnpm release:private:packages` 通过，生成 `@shennian/usechat-core`、`@shennian/usechat-model-provider`、`@shennian/usechat-sdk`、`@shennian/usechat` 四个私有 tarball 和 `package-provenance.json`。
+- [x] 2026-07-07：helper native build 脚本已从 Shennian copy-out 形态适配到 UseChat 的 `native/` / `helper-runtime/` 目录，只改路径和 release manifest 同步，不改 helper protocol / command / response shape。
+- [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:build:native:mac && USECHAT_HELPER_VALIDATE_PLATFORMS=darwin pnpm helper-runtime:validate && pnpm helper-runtime:build:mac` 通过；生成 universal `shennian-wechat-channel-helper`、`Shennian Helper.app`、macOS zip、manifest 和 evidence。
+- [x] 2026-07-07：Windows 测试机 `pnpm helper-runtime:build:native:win && USECHAT_HELPER_VALIDATE_PLATFORMS=win32 pnpm helper-runtime:validate && pnpm helper-runtime:build:win` 通过；从 UseChat 的 C# helper 源码构建 `shennian-wechat-channel-helper.exe`，生成 Windows runtime manifest、evidence 和 zip。
+- [x] 2026-07-07：从 Shennian helper runtime assets copy-out Windows PP-OCRv5 `models/v5`，保持 Shennian 已确定的 RapidOcrNet + PP-OCRv5 + ONNX Runtime/.NET 本地 OCR 路线，不替换为新 OCR 实现。
+- [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:validate && pnpm helper-runtime:build:win` 通过，确认 UseChat 本地全平台 helper runtime input assets 可校验，Windows runtime zip 可在 macOS 打包生成。
+- [x] 2026-07-07：重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
 
 ### 私有 release 检查
 

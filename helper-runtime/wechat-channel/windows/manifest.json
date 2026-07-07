@@ -5,8 +5,8 @@
   "platforms": {
     "win32": {
       "executable": "shennian-wechat-channel-helper.exe",
-      "sha256": "319177963d3a75e5a34594c96b2e2d9b5deacd894eee3af1123ba7a80f26d744",
-      "signed": true,
+      "sha256": "64ef718213045f99519d5a3a335bf903e312a3cba89957635dace9d99471ff16",
+      "signed": false,
       "notarized": false,
       "target": "win-x64",
       "selfContained": true

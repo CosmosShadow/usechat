@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// @arch docs/architecture/local-runtime.md
-// @test src/__tests__/helper-runtime-packaging.test.ts
+// @arch ../docs/HELPER_RUNTIME.md
+// @arch ../docs/COPY_OUT_SOURCES.md
+// @test node helper-runtime/scripts/validate-runtime-assets.mjs
 
 import fs from 'node:fs'
 import path from 'node:path'
@@ -9,18 +10,27 @@ import { fileURLToPath } from 'node:url'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const assetsRoot = path.join(root, 'wechat-channel')
+const requestedPlatforms = (process.env.USECHAT_HELPER_VALIDATE_PLATFORMS || 'darwin,win32')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean)
+const platformSet = new Set(requestedPlatforms)
 const required = [
-  path.join(assetsRoot, 'macos', 'manifest.json'),
-  path.join(assetsRoot, 'macos', 'helper-runtime-package.json'),
-  path.join(assetsRoot, 'windows', 'manifest.json'),
-  path.join(assetsRoot, 'windows', 'helper-runtime-package.json'),
+  ...(platformSet.has('darwin') ? [
+    path.join(assetsRoot, 'macos', 'manifest.json'),
+    path.join(assetsRoot, 'macos', 'helper-runtime-package.json'),
+  ] : []),
+  ...(platformSet.has('win32') ? [
+    path.join(assetsRoot, 'windows', 'manifest.json'),
+    path.join(assetsRoot, 'windows', 'helper-runtime-package.json'),
+  ] : []),
 ]
 for (const file of required) {
   if (!fs.existsSync(file)) fail(`missing helper runtime manifest: ${file}`)
 }
-validatePlatform('darwin', path.join(assetsRoot, 'macos'))
-validatePlatform('win32', path.join(assetsRoot, 'windows'))
-console.log(JSON.stringify({ ok: true, assetsRoot }))
+if (platformSet.has('darwin')) validatePlatform('darwin', path.join(assetsRoot, 'macos'))
+if (platformSet.has('win32')) validatePlatform('win32', path.join(assetsRoot, 'windows'))
+console.log(JSON.stringify({ ok: true, assetsRoot, platforms: requestedPlatforms }))
 
 function validatePlatform(platform, dir) {
   const manifest = JSON.parse(fs.readFileSync(path.join(dir, 'manifest.json'), 'utf8'))

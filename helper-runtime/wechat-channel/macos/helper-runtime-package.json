@@ -6,8 +6,8 @@
   "protocolVersion": 1,
   "minCliVersion": "0.2.100",
   "sha256": {
-    "runtimeManifest": "2bf105c822fd83f916543db62bfaa84dafcc5e648a452457ff76d3e7fcfaad55",
-    "entrypoint": "78eb60f0e787cc30ac3791f778c3432e452f42d6a3d4059a6d412ba38825232a"
+    "runtimeManifest": "876f732a4830b8c5caeb77f35148633387b8a597591a806098b2f272e3fc78a6",
+    "entrypoint": "509823d6d1eb2c8640ced04768170153dedd5679b9cb70b53c8a5c0aca3c0f79"
   },
   "installTarget": {
     "kind": "app-bundle",
@@ -17,11 +17,12 @@
     "kind": "macos-helper-app",
     "bundleId": "ai.shennian.helper",
     "runtimeManifest": "Contents/Resources/wechat-channel/macos/manifest.json",
-    "entrypoint": "Contents/MacOS/Shennian Helper"
+    "entrypoint": "Contents/MacOS/Shennian Helper",
+    "manifestSha256": "876f732a4830b8c5caeb77f35148633387b8a597591a806098b2f272e3fc78a6"
   },
   "signature": {
     "requiredForRelease": true,
-    "signed": true,
+    "signed": false,
     "notarized": false
   }
 }

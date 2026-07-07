@@ -41,6 +41,15 @@ Windows 远程测试必须在已登录的可见桌面会话中执行；SSH Sessi
 pnpm smoke:wechat:abc:windows-task
 ```
 
+私有 release 打包入口：
+
+```bash
+pnpm release:private:packages
+pnpm helper-runtime:build
+```
+
+完整流程见 [docs/RELEASE.md](./docs/RELEASE.md)。
+
 ## 为什么做 UseChat
 
 真实工作仍然大量发生在消息软件里。多数 AI Agent 能写代码、读文件、调用 API，但不能安全地使用用户自己的本机聊天软件。UseChat 要把这件事做成明确、本地、可审计、可授权的能力。
@@ -175,6 +184,6 @@ UseChat 是从神念体系中独立出来的新私有项目。初期抽取过程
 
 ## 当前状态
 
-当前状态：**私有正式项目基础阶段**。
+当前状态：**私有正式 release 准备阶段**。
 
-下一步按 [PLAN.md](./PLAN.md) 执行 Phase 1：在不修改神念仓库的前提下，把现有 helper 源码和 connector 逻辑 copy-out 到本项目。
+已完成从 Shennian copy-out 的微信 read/write/watch、出站附件、入站媒体 resolver、ledger、trace 和 helper 源码基础迁移。下一步按 [PLAN.md](./PLAN.md) 推进私有 package、helper runtime artifacts、clean-machine 验收和公开开源前 gate。

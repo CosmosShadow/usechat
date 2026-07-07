@@ -8,6 +8,13 @@
   "scripts": {
     "build": "pnpm -r build",
     "check": "pnpm typecheck && pnpm test",
+    "helper-runtime:build": "pnpm --dir helper-runtime build",
+    "helper-runtime:build:mac": "pnpm --dir helper-runtime build:mac",
+    "helper-runtime:build:native:mac": "pnpm --dir helper-runtime build:native:mac",
+    "helper-runtime:build:native:win": "pnpm --dir helper-runtime build:native:win",
+    "helper-runtime:build:win": "pnpm --dir helper-runtime build:win",
+    "helper-runtime:validate": "pnpm --dir helper-runtime validate",
+    "release:private:packages": "node scripts/release-private-packages.mjs",
     "smoke:wechat:abc": "node scripts/wechat-abc-smoke.mjs --chat ABC",
     "smoke:wechat:abc:attachments": "node scripts/wechat-abc-attachment-smoke.mjs --chat ABC",
     "smoke:wechat:abc:attachments:windows-task": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/windows-run-wechat-abc-smoke-task.ps1 -Chat ABC -TaskName UseChatWechatAbcAttachmentSmoke -ScriptName wechat-abc-attachment-smoke.mjs -WaitSeconds 360",

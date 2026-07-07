@@ -5,17 +5,9 @@
   "platforms": {
     "darwin": {
       "executable": "shennian-wechat-channel-helper",
-      "sha256": "78eb60f0e787cc30ac3791f778c3432e452f42d6a3d4059a6d412ba38825232a",
-      "signed": true,
-      "notarized": false,
-      "signing": {
-        "authority": "Developer ID Application: Wave Leap (Chengdu) Technology Co., Ltd (MCU3455YJJ)",
-        "teamIdentifier": "MCU3455YJJ",
-        "hardenedRuntime": true
-      },
-      "notarization": {
-        "status": "not_submitted"
-      }
+      "sha256": "509823d6d1eb2c8640ced04768170153dedd5679b9cb70b53c8a5c0aca3c0f79",
+      "signed": false,
+      "notarized": false
     }
   }
 }

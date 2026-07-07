@@ -144,3 +144,5 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 - 针对“不要把截图 preview 冒充视频原件”的测试，显式锁定非 Windows 平台，避免混入 Shennian 原有 Windows WeChat cache fallback 默认扫描分支；Windows cache fallback 由独立 cache 测试覆盖。
 - Trace phase 词表、media resolve trace 和 helper request trace hook 已从 Shennian copy-out；UseChat 新增薄层 trace recorder 负责 summary / JSONL / redaction，本身不重新实现微信 RPA。
 - Watch 已从 Shennian `scheduler` 的 start/tick/stop 轮询骨架、`runtime` 的 poll interval 常量、`product-channel` 的安全路径与 stable id 规则、以及已 copy-out 的 ledger baseline/dedupe 语义接入；UseChat 只输出本地 JSONL 事件，不接神念服务端 ingest。
+- Helper native build / signing / runtime packaging scripts 保持 Shennian 原脚本语义，只把路径从 Shennian monorepo 的 `packages/cli/native/wechat-channel-helper` / `packages/helper-runtime` 适配为 UseChat 的 `native/` / `helper-runtime/`；不修改 helper protocol、command 名称、response shape 或微信动作实现。
+- Private release package provenance 脚本只负责 `pnpm build`、`pnpm pack`、sha256 和文件清单记录；不实现任何微信 RPA 能力。
