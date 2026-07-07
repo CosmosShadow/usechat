@@ -59,6 +59,29 @@ function validatePlatform(platform, dir) {
     const actual = crypto.createHash('sha256').update(fs.readFileSync(executable)).digest('hex')
     if (actual !== asset.sha256) fail(`sha256 mismatch: ${executable}`)
   }
+  if (platform === 'win32') validateWindowsRuntimeAssets(dir)
+}
+
+function validateWindowsRuntimeAssets(dir) {
+  const requiredFiles = [
+    'onnxruntime.dll',
+    'onnxruntime_providers_shared.dll',
+    'libSkiaSharp.dll',
+    'D3DCompiler_47_cor3.dll',
+    'PresentationNative_cor3.dll',
+    'PenImc_cor3.dll',
+    'vcruntime140_cor3.dll',
+    'wpfgfx_cor3.dll',
+    path.join('models', 'v5', 'manifest.json'),
+    path.join('models', 'v5', 'ch_PP-OCRv5_mobile_det.onnx'),
+    path.join('models', 'v5', 'ch_ppocr_mobile_v2.0_cls_infer.onnx'),
+    path.join('models', 'v5', 'ch_PP-OCRv5_rec_mobile.onnx'),
+    path.join('models', 'v5', 'ppocrv5_dict.txt'),
+  ]
+  for (const rel of requiredFiles) {
+    const file = path.join(dir, rel)
+    if (!fs.existsSync(file)) fail(`missing Windows helper runtime asset: ${file}`)
+  }
 }
 
 function fail(message) {

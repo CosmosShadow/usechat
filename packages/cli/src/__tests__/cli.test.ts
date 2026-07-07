@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { isAffirmativeSendConfirmation, main, shouldPromptBeforeSend } from '../index.js'
+import { defaultHelperInstallTarget, installHelperRuntime, isAffirmativeSendConfirmation, isSameEntrypointPath, main, shouldPromptBeforeSend } from '../index.js'
 
 describe('UseChat CLI', () => {
   it('parses explicit send confirmations only', () => {
@@ -188,6 +188,52 @@ describe('UseChat CLI', () => {
         },
       },
     })
+  })
+
+  it('installs a macOS helper runtime only from an explicit source', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-helper-install-'))
+    const sourceApp = path.join(dir, 'Shennian Helper.app')
+    const helperDir = path.join(sourceApp, 'Contents', 'Resources', 'wechat-channel', 'macos')
+    const executable = path.join(sourceApp, 'Contents', 'MacOS', 'Shennian Helper')
+    fs.mkdirSync(path.dirname(executable), { recursive: true })
+    fs.mkdirSync(helperDir, { recursive: true })
+    fs.writeFileSync(executable, '#!/bin/sh\n')
+    fs.writeFileSync(path.join(helperDir, 'manifest.json'), JSON.stringify({
+      schemaVersion: 1,
+      helperVersion: '0.1.0',
+      protocolVersion: 1,
+      platforms: { darwin: { executable: '../../../MacOS/Shennian Helper', sha256: null, signed: false, notarized: false } },
+    }))
+    const target = path.join(dir, 'target', 'Shennian Helper.app')
+
+    const result = installHelperRuntime({
+      source: sourceApp,
+      target,
+      platform: 'darwin',
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      dryRun: false,
+      platform: 'darwin',
+      target,
+      helperDir: path.join(target, 'Contents', 'Resources', 'wechat-channel', 'macos'),
+    })
+    expect(fs.existsSync(path.join(result.helperDir, 'manifest.json'))).toBe(true)
+  })
+
+  it('uses stable Shennian-compatible helper install targets', () => {
+    expect(defaultHelperInstallTarget('darwin')).toContain(path.join('Application Support', 'Shennian', 'Helper', 'Shennian Helper.app'))
+    expect(defaultHelperInstallTarget('win32', { LOCALAPPDATA: 'C:\\Users\\test\\AppData\\Local' } as NodeJS.ProcessEnv)).toBe('C:\\Users\\test\\AppData\\Local/Programs/Shennian Helper')
+  })
+
+  it('treats npm global bin symlinks as the CLI entrypoint', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-cli-entrypoint-'))
+    const realEntrypoint = path.join(dir, 'index.js')
+    fs.writeFileSync(realEntrypoint, '#!/usr/bin/env node\n')
+    const symlinkEntrypoint = path.join(dir, 'usechat')
+    fs.symlinkSync(realEntrypoint, symlinkEntrypoint)
+    expect(isSameEntrypointPath(symlinkEntrypoint, realEntrypoint)).toBe(true)
   })
 
   it('keeps async command errors in the JSON error contract', async () => {

@@ -27,7 +27,7 @@ UseChat 当前处于私有 copy-out 阶段。首批 helper protocol、helper cli
 | `native/macos/ShennianWeChatChannelHelper.swift` | `packages/cli/native/wechat-channel-helper/macos/ShennianWeChatChannelHelper.swift` |
 | `native/windows/*` | `packages/cli/native/wechat-channel-helper/windows/*` |
 
-### Helper runtime 脚本与 manifest fixture
+### Helper runtime 脚本、manifest 与运行资产
 
 | UseChat 路径 | Shennian 来源路径 |
 |-------------|-------------------|
@@ -40,10 +40,15 @@ UseChat 当前处于私有 copy-out 阶段。首批 helper protocol、helper cli
 | `helper-runtime/wechat-channel/macos/helper-runtime-package.json` | `packages/helper-runtime/wechat-channel/macos/helper-runtime-package.json` |
 | `helper-runtime/wechat-channel/windows/manifest.json` | `packages/helper-runtime/wechat-channel/windows/manifest.json` |
 | `helper-runtime/wechat-channel/windows/helper-runtime-package.json` | `packages/helper-runtime/wechat-channel/windows/helper-runtime-package.json` |
+| `helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper` | `packages/helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper` |
+| `helper-runtime/wechat-channel/windows/shennian-wechat-channel-helper.exe` | `packages/helper-runtime/wechat-channel/windows/shennian-wechat-channel-helper.exe` |
+| `helper-runtime/wechat-channel/windows/*.dll` | `packages/helper-runtime/wechat-channel/windows/*.dll` |
+| `helper-runtime/wechat-channel/windows/models/v5/*` | `packages/helper-runtime/wechat-channel/windows/models/v5/*` |
 
 ## 当前取舍
 
-- Phase 1 只 copy-out 源码、脚本和 manifest fixture。
-- Phase 1 不复制预编译 helper 二进制、Windows native DLL、ONNX Runtime DLL、OCR 模型或 zip release artifact。
+- UseChat 首个正式版本按“全量能力 copy-out”处理：helper 源码、helper protocol、JS runtime、helper runtime 二进制、Windows native DLL 和 PP-OCRv5 模型都来自 Shennian 已有实现或运行资产。
+- 本仓库不重新实现微信自动化、OCR、协议或客户端控制能力；只做路径、包名、私有 release、文档和独立项目接线适配。
+- helper runtime zip 和 release evidence 由 UseChat release 脚本重新生成，生成过程必须记录 sha256、manifest、签名状态和来源说明。
 - 首个正式版本保持 helper command 名称和 response shape 兼容。
 - 后续如修改 helper protocol，需要同步更新架构文档、测试和兼容说明。

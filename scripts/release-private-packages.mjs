@@ -77,6 +77,7 @@ function run(command, args, options = {}) {
     cwd: options.cwd || repoRoot,
     stdio: 'inherit',
     env: { ...process.env, FORCE_COLOR: '0' },
+    shell: process.platform === 'win32',
   })
   if (result.error) fail(`${command}: ${result.error.message}`)
   if (result.status !== 0) fail(`${command} ${args.join(' ')} exited ${result.status}`)
@@ -91,7 +92,7 @@ function listTarballFiles(tarballPath) {
 function gitInfo() {
   const commit = gitOutput(['rev-parse', 'HEAD'])
   const branch = gitOutput(['branch', '--show-current'])
-  const status = gitOutput(['status', '--short'])
+  const status = gitOutput(['status', '--short']) ?? ''
   return {
     commit,
     branch,

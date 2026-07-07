@@ -117,19 +117,25 @@ packages/helper-runtime/scripts/*
 packages/helper-runtime/wechat-channel/{macos,windows}/manifest.json
 packages/helper-runtime/wechat-channel/{macos,windows}/helper-runtime-package.json
   -> helper-runtime/wechat-channel/{macos,windows}/
+
+packages/helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper
+  -> helper-runtime/wechat-channel/macos/shennian-wechat-channel-helper
+
+packages/helper-runtime/wechat-channel/windows/shennian-wechat-channel-helper.exe
+packages/helper-runtime/wechat-channel/windows/*.dll
+packages/helper-runtime/wechat-channel/windows/models/v5/*
+  -> helper-runtime/wechat-channel/windows/
 ```
 
 ## 未复制内容
 
 ```text
-packages/helper-runtime/wechat-channel/**/helper binary
-packages/helper-runtime/wechat-channel/windows/*.dll
 packages/helper-runtime/dist/**/*.zip
 packages/helper-runtime/dist/**/helper-runtime-evidence.json
 packages/helper-runtime/dist/**/install-helper-runtime.ps1
 ```
 
-这些二进制和发布产物后续需要在 UseChat 自己的构建、签名、notice 和 release 流程中重新生成。
+helper runtime 的源输入资产来自 Shennian copy-out；zip、install script 和 evidence 由 UseChat 自己的 release 脚本重新生成，并在 release evidence 中记录 sha256、manifest、签名状态和来源说明。
 
 
 ## UseChat 路径适配说明
@@ -146,3 +152,4 @@ packages/helper-runtime/dist/**/install-helper-runtime.ps1
 - Watch 已从 Shennian `scheduler` 的 start/tick/stop 轮询骨架、`runtime` 的 poll interval 常量、`product-channel` 的安全路径与 stable id 规则、以及已 copy-out 的 ledger baseline/dedupe 语义接入；UseChat 只输出本地 JSONL 事件，不接神念服务端 ingest。
 - Helper native build / signing / runtime packaging scripts 保持 Shennian 原脚本语义，只把路径从 Shennian monorepo 的 `packages/cli/native/wechat-channel-helper` / `packages/helper-runtime` 适配为 UseChat 的 `native/` / `helper-runtime/`；不修改 helper protocol、command 名称、response shape 或微信动作实现。
 - Private release package provenance 脚本只负责 `pnpm build`、`pnpm pack`、sha256 和文件清单记录；不实现任何微信 RPA 能力。
+- Windows runtime DLL、ONNX Runtime DLL 和 PP-OCRv5 模型从 Shennian helper runtime assets copy-out；UseChat 只新增校验，确保打包时不会漏掉 Shennian 已有运行能力。

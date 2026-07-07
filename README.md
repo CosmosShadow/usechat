@@ -50,6 +50,12 @@ pnpm helper-runtime:build
 
 完整流程见 [docs/RELEASE.md](./docs/RELEASE.md)。
 
+内部测试用户安装与配置：
+
+- [安装与首次配置](./docs/INSTALL.md)
+- [BYO Model 配置](./docs/BYO_MODEL.md)
+- [Troubleshooting](./docs/TROUBLESHOOTING.md)
+
 ## 为什么做 UseChat
 
 真实工作仍然大量发生在消息软件里。多数 AI Agent 能写代码、读文件、调用 API，但不能安全地使用用户自己的本机聊天软件。UseChat 要把这件事做成明确、本地、可审计、可授权的能力。

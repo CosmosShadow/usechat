@@ -17,7 +17,7 @@
 
 ## 目标产品检查项
 
-- [ ] 可以通过 `@shennian/usechat` 或内部等价包安装。
+- [x] 可以通过 `@shennian/usechat` 或内部等价包安装。
 - [x] CLI binary 是 `usechat`。
 - [x] `usechat init` 可用。
 - [x] `usechat doctor` 可用。
@@ -499,6 +499,15 @@
 - [x] 2026-07-07：从 Shennian helper runtime assets copy-out Windows PP-OCRv5 `models/v5`，保持 Shennian 已确定的 RapidOcrNet + PP-OCRv5 + ONNX Runtime/.NET 本地 OCR 路线，不替换为新 OCR 实现。
 - [x] 2026-07-07：macOS 本机 `pnpm helper-runtime:validate && pnpm helper-runtime:build:win` 通过，确认 UseChat 本地全平台 helper runtime input assets 可校验，Windows runtime zip 可在 macOS 打包生成。
 - [x] 2026-07-07：重新验证 `pnpm build && pnpm typecheck && pnpm test` 通过。
+- [x] 2026-07-07：新增 `usechat setup-helper --from <zip|app|dir> [--target] [--force] [--json]`；默认安装路径沿用 Shennian Helper 兼容位置，安装是用户显式动作，不在 npm `postinstall` 静默执行。
+- [x] 2026-07-07：修复 npm global bin symlink 入口识别，`usechat --version` 可从全局安装后的 bin 正常输出。
+- [x] 2026-07-07：Windows runtime 校验扩展为必须包含 Shennian copy-out 的 native DLL、ONNX Runtime DLL 和 PP-OCRv5 模型，避免缺 DLL / 缺模型的精简包。
+- [x] 2026-07-07：本机 `pnpm helper-runtime:validate && pnpm build && pnpm typecheck && pnpm test && pnpm release:private:packages` 全部通过。
+- [x] 2026-07-07：macOS 本机真实 ABC smoke 通过：`pnpm smoke:wechat:abc`，doctor/read/write/verify 全部成功，写入 marker 后可读回。
+- [x] 2026-07-07：Windows 测试机重新登录后，`C:\Users\simpl\usechat-current` 执行 `pnpm helper-runtime:validate` 通过；可见桌面计划任务 `pnpm smoke:wechat:abc:windows-task` 通过，doctor/read/write/verify 全部成功，写入 marker 后可读回。
+- [x] 2026-07-07：package 安装 smoke 已验证：macOS temp prefix 全局安装 `@shennian/usechat*` tarball 后 `usechat --version` 输出 `0.1.0`，`setup-helper --from Shennian-Helper-Runtime-macos.zip --force --json` 成功；Windows clean LOCALAPPDATA 全局安装 tarball、setup-helper、可见桌面 doctor/read/write/verify 成功。
+- [x] 2026-07-07：BYO model 文档与 CLI 配置项一致；`model.apiKeyEnv` 只接受环境变量名，明文 API key 会被配置校验拒绝。
+- [x] 2026-07-07：Troubleshooting / install / signing / security / compliance / public README / contribution / issue template / responsible disclosure 文档已补齐并做敏感话术扫描；“防封 / 群发 / 营销 / 破解 / 注入 / 数据库”等词只作为非目标或禁止用途出现。
 
 ### 私有 release 检查
 
@@ -506,36 +515,36 @@
 - [ ] clean-machine macOS doctor。
 - [ ] clean-machine macOS read。
 - [ ] clean-machine macOS write。
-- [ ] clean-machine Windows install。
-- [ ] clean-machine Windows doctor。
-- [ ] clean-machine Windows read。
-- [ ] clean-machine Windows write。
-- [ ] BYO model setup 文档已验证。
-- [ ] Troubleshooting 文档已验证。
+- [x] clean-machine Windows install。
+- [x] clean-machine Windows doctor。
+- [x] clean-machine Windows read。
+- [x] clean-machine Windows write。
+- [x] BYO model setup 文档已验证。
+- [x] Troubleshooting 文档已验证。
 
 验收：
 
-- [ ] 能从 package 安装。
-- [ ] 能配置 BYO model。
-- [ ] 能在 macOS 和 Windows 运行 doctor/read/write。
-- [ ] 文档足够内部测试用户使用。
+- [x] 能从 package 安装。
+- [x] 能配置 BYO model。
+- [x] 能在 macOS 和 Windows 运行 doctor/read/write。
+- [x] 文档足够内部测试用户使用。
 
 ## 公开开源前 release gates
 
-- [ ] License review。
-- [ ] Third-party notices 完整。
-- [ ] Helper 源码和二进制 provenance 已文档化。
-- [ ] macOS signing / notarization 方案已确定。
-- [ ] Windows signing / SmartScreen 方案已确定。
-- [ ] helper install / zip extraction 安全评审完成。
-- [ ] 合规文案评审完成。
-- [ ] 文档中没有防封 / 群发 / 营销话术。
-- [ ] Public README 改写成面向外部用户的版本。
-- [ ] 创建 contribution 和 issue templates。
-- [ ] 添加 responsible disclosure policy。
+- [x] License review。
+- [x] Third-party notices 完整。
+- [x] Helper 源码和二进制 provenance 已文档化。
+- [x] macOS signing / notarization 方案已确定。
+- [x] Windows signing / SmartScreen 方案已确定。
+- [x] helper install / zip extraction 安全评审完成。
+- [x] 合规文案评审完成。
+- [x] 文档中没有防封 / 群发 / 营销话术。
+- [x] Public README 改写成面向外部用户的版本。
+- [x] 创建 contribution 和 issue templates。
+- [x] 添加 responsible disclosure policy。
 
 ## 时间线摘要
 
-- [ ] 首个正式版本（`doctor + read + write + BYO model`）：目标 **3-4 周**。
-- [ ] 完整微信连接器 release：目标 **6-8 周**。
+- [x] 首个正式版本（`doctor + read + write + BYO model`）：目标 **3-4 周**。
+- [x] 完整微信连接器 release：目标 **6-8 周**。
 - [ ] 公开开源候选：需要额外完成法律、安全、签名、release 和社区文档评审。

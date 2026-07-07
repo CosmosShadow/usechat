@@ -6,6 +6,9 @@ import { randomUUID } from 'node:crypto'
 import { createInterface } from 'node:readline/promises'
 import { stdin as input, stdout as output } from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import {
   ensureUseChatConfig,
@@ -57,6 +60,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       case 'init': return await commandInit(parsed)
       case 'config': return await commandConfig(parsed)
       case 'doctor': return await commandDoctor(parsed)
+      case 'setup-helper': return await commandSetupHelper(parsed)
       case 'read': return await commandRead(parsed)
       case 'write': return await commandWrite(parsed)
       case 'watch': return await commandWatch(parsed)
@@ -67,6 +71,30 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
   } catch (error) {
     return handleCliError(error, parsed.global.json || parsed.flags.json === true)
   }
+}
+
+async function commandSetupHelper(parsed: ParsedArgs): Promise<number> {
+  const source = readStringFlag(parsed, 'from') ?? parsed.positionals[0]
+  if (!source || parsed.flags.help === true) {
+    printSetupHelperHelp()
+    return source ? 0 : 1
+  }
+  const platform = process.platform
+  if (platform !== 'darwin' && platform !== 'win32') throw new Error(`unsupported_platform: ${platform}`)
+  const target = readStringFlag(parsed, 'target') ?? defaultHelperInstallTarget(platform)
+  const result = installHelperRuntime({
+    source,
+    target,
+    platform,
+    force: parsed.flags.force === true,
+    dryRun: parsed.flags['dry-run'] === true,
+  })
+  if (parsed.global.json || parsed.flags.json === true) printJson(result)
+  else {
+    console.log(result.dryRun ? `dry-run：将安装 Helper 到 ${result.target}` : `Helper 已安装到：${result.target}`)
+    console.log(`Helper manifest：${result.helperDir}`)
+  }
+  return 0
 }
 
 async function commandInit(parsed: ParsedArgs): Promise<number> {
@@ -325,7 +353,7 @@ function parseArgs(argv: string[]): ParsedArgs {
 }
 
 function flagRequiresValue(key: string): boolean {
-  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video', 'trace-jsonl', 'trace-id', 'emit', 'poll-interval-ms'].includes(key)
+  return ['config', 'app', 'chat', 'text', 'format', 'limit', 'download', 'file', 'image', 'video', 'trace-jsonl', 'trace-id', 'emit', 'poll-interval-ms', 'from', 'target'].includes(key)
 }
 
 function readStringFlag(parsed: ParsedArgs, key: string): string | undefined {
@@ -361,6 +389,143 @@ function attachmentPathFlags(parsed: ParsedArgs): { file?: string; image?: strin
 function attachmentSummary(attachment?: { kind: string; localPath: string }): string {
   if (!attachment) return ''
   return `[${attachment.kind}: ${attachment.localPath}]`
+}
+
+export type InstallHelperRuntimeResult = {
+  ok: true
+  dryRun: boolean
+  platform: NodeJS.Platform | string
+  source: string
+  target: string
+  helperDir: string
+  manifestPath: string
+}
+
+export function defaultHelperInstallTarget(platform: NodeJS.Platform | string, env: NodeJS.ProcessEnv = process.env): string {
+  if (platform === 'darwin') {
+    return path.join(os.homedir(), 'Library', 'Application Support', 'Shennian', 'Helper', 'Shennian Helper.app')
+  }
+  if (platform === 'win32') {
+    const localAppData = env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+    return path.join(localAppData, 'Programs', 'Shennian Helper')
+  }
+  throw new Error(`unsupported_platform: ${platform}`)
+}
+
+export function installHelperRuntime(input: {
+  source: string
+  target: string
+  platform: NodeJS.Platform | string
+  force?: boolean
+  dryRun?: boolean
+}): InstallHelperRuntimeResult {
+  const source = path.resolve(expandHome(input.source))
+  const target = path.resolve(expandHome(input.target))
+  const extracted = prepareHelperSource(source, input.platform)
+  const sourceRoot = extracted.sourceRoot
+  const helperDir = helperDirForInstalledTarget(target, input.platform)
+  const manifestPath = path.join(helperDir, 'manifest.json')
+  try {
+    if (!fs.existsSync(path.join(helperDirForInstalledTarget(sourceRoot, input.platform), 'manifest.json'))) {
+      throw new Error(`helper_manifest_missing: ${source}`)
+    }
+    if (!input.dryRun) {
+      if (fs.existsSync(target)) {
+        if (!input.force) throw new Error(`target_exists: ${target}; pass --force to replace it`)
+        stopRunningHelperBeforeReplace(input.platform)
+        fs.rmSync(target, { recursive: true, force: true })
+      }
+      fs.mkdirSync(path.dirname(target), { recursive: true })
+      fs.cpSync(sourceRoot, target, { recursive: true })
+      if (input.platform === 'darwin') ensureExecutableBit(path.join(target, 'Contents', 'MacOS', 'Shennian Helper'))
+      if (!fs.existsSync(manifestPath)) throw new Error(`helper_manifest_missing_after_install: ${manifestPath}`)
+    }
+    return {
+      ok: true,
+      dryRun: input.dryRun === true,
+      platform: input.platform,
+      source,
+      target,
+      helperDir,
+      manifestPath,
+    }
+  } finally {
+    if (extracted.cleanupDir) fs.rmSync(extracted.cleanupDir, { recursive: true, force: true })
+  }
+}
+
+function stopRunningHelperBeforeReplace(platform: NodeJS.Platform | string): void {
+  if (platform !== 'win32') return
+  // Mirrors the Shennian Windows helper-runtime installer behavior:
+  // Stop-Process -Name "shennian-wechat-channel-helper" -Force -ErrorAction SilentlyContinue
+  spawnSync('taskkill.exe', ['/IM', 'shennian-wechat-channel-helper.exe', '/F', '/T'], {
+    stdio: 'ignore',
+    windowsHide: true,
+  })
+}
+
+function prepareHelperSource(source: string, platform: NodeJS.Platform | string): { sourceRoot: string; cleanupDir?: string } {
+  if (!fs.existsSync(source)) throw new Error(`helper_source_missing: ${source}`)
+  if (fs.statSync(source).isDirectory()) {
+    const direct = normalizeHelperRuntimeRoot(source, platform)
+    return { sourceRoot: direct }
+  }
+  if (!source.toLowerCase().endsWith('.zip')) throw new Error(`helper_source_unsupported: ${source}`)
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'usechat-helper-runtime-'))
+  unzipArchive(source, tempDir)
+  return { sourceRoot: normalizeHelperRuntimeRoot(tempDir, platform), cleanupDir: tempDir }
+}
+
+function normalizeHelperRuntimeRoot(root: string, platform: NodeJS.Platform | string): string {
+  const candidates = platform === 'darwin'
+    ? [
+        root,
+        path.join(root, 'Shennian Helper.app'),
+        ...safeReaddir(root).filter((entry) => entry.endsWith('.app')).map((entry) => path.join(root, entry)),
+      ]
+    : [
+        root,
+        path.join(root, 'Shennian Helper'),
+      ]
+  for (const candidate of candidates) {
+    if (fs.existsSync(path.join(helperDirForInstalledTarget(candidate, platform), 'manifest.json'))) return candidate
+  }
+  throw new Error(`helper_manifest_missing: ${root}`)
+}
+
+function helperDirForInstalledTarget(target: string, platform: NodeJS.Platform | string): string {
+  if (platform === 'darwin') return path.join(target, 'Contents', 'Resources', 'wechat-channel', 'macos')
+  if (platform === 'win32') return path.join(target, 'resources', 'wechat-channel', 'windows')
+  throw new Error(`unsupported_platform: ${platform}`)
+}
+
+function unzipArchive(zipPath: string, outputDir: string): void {
+  const command = process.platform === 'win32' ? 'powershell.exe' : 'ditto'
+  const args = process.platform === 'win32'
+    ? ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', `Expand-Archive -LiteralPath ${JSON.stringify(zipPath)} -DestinationPath ${JSON.stringify(outputDir)} -Force`]
+    : ['-x', '-k', zipPath, outputDir]
+  const result = spawnSync(command, args, { encoding: 'utf8' })
+  if (result.status !== 0) throw new Error(`helper_zip_extract_failed: ${result.stderr || result.stdout || result.status}`)
+}
+
+function safeReaddir(dir: string): string[] {
+  try {
+    return fs.readdirSync(dir)
+  } catch {
+    return []
+  }
+}
+
+function ensureExecutableBit(filePath: string): void {
+  if (!fs.existsSync(filePath)) return
+  const stat = fs.statSync(filePath)
+  fs.chmodSync(filePath, stat.mode | 0o755)
+}
+
+function expandHome(value: string): string {
+  if (value === '~') return os.homedir()
+  if (value.startsWith(`~${path.sep}`) || value.startsWith('~/')) return path.join(os.homedir(), value.slice(2))
+  return value
 }
 
 function traceJsonlRequested(parsed: ParsedArgs): boolean {
@@ -420,6 +585,7 @@ function printHelp(): void {
   usechat config get [key] [--json]
   usechat config set <key> <value>
   usechat config list [--json]
+  usechat setup-helper --from <helper-runtime.zip|app|dir> [--target <path>] [--force]
   usechat doctor [--json]
   usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto] [--trace-id <id>] [--trace-jsonl [path]]
   usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json] [--trace-id <id>] [--trace-jsonl [path]]
@@ -431,6 +597,17 @@ function printHelp(): void {
   --json           输出 JSON
   --version        输出版本
   --help           显示帮助
+`)
+}
+
+function printSetupHelperHelp(): void {
+  console.log(`用法：
+  usechat setup-helper --from <helper-runtime.zip|Shennian Helper.app|Shennian Helper dir> [--target <path>] [--force] [--json]
+
+说明：
+  setup-helper 是显式安装动作，不会在 npm install/postinstall 阶段自动运行。
+  macOS 默认安装到 ~/Library/Application Support/Shennian/Helper/Shennian Helper.app
+  Windows 默认安装到 %LOCALAPPDATA%\\Programs\\Shennian Helper
 `)
 }
 
@@ -475,8 +652,20 @@ if (isCliEntrypoint()) {
   })
 }
 
-function isCliEntrypoint(): boolean {
+export function isCliEntrypoint(): boolean {
   const entrypoint = process.argv[1]
   if (!entrypoint) return false
-  return path.resolve(entrypoint) === path.resolve(fileURLToPath(import.meta.url))
+  return isSameEntrypointPath(entrypoint, fileURLToPath(import.meta.url))
+}
+
+export function isSameEntrypointPath(entrypoint: string, modulePath: string): boolean {
+  return realpathOrResolve(entrypoint) === realpathOrResolve(modulePath)
+}
+
+function realpathOrResolve(filePath: string): string {
+  try {
+    return fs.realpathSync(filePath)
+  } catch {
+    return path.resolve(filePath)
+  }
 }
