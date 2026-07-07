@@ -425,25 +425,32 @@
 
 ### 工具服务
 
-- [ ] 设计 `usechat serve --stdio` protocol。
-- [ ] 实现 `doctor` tool。
-- [ ] 实现 `read` tool。
-- [ ] 实现 `write` tool。
-- [ ] 返回稳定 JSON contract。
-- [ ] 文档化未来 MCP-compatible mapping。
+- [x] 设计 `usechat serve --stdio` protocol。
+- [x] 实现 `doctor` tool。
+- [x] 实现 `read` tool。
+- [x] 实现 `write` tool。
+- [x] 返回稳定 JSON contract。
+- [x] 文档化未来 MCP-compatible mapping。
 
 ### Agent 文档
 
-- [ ] 添加 Codex 使用说明。
-- [ ] 添加 Claude Code 使用说明。
-- [ ] 添加 Cursor / OpenCode 使用说明。
-- [ ] 添加 custom agent JSON 示例。
+- [x] 添加 Codex 使用说明。
+- [x] 添加 Claude Code 使用说明。
+- [x] 添加 Cursor / OpenCode 使用说明。
+- [x] 添加 custom agent JSON 示例。
 
 验收：
 
-- [ ] 外部 Agent 可以通过 CLI 调用 read/write。
-- [ ] 程序化模式有稳定 JSON contract。
-- [ ] 面向 Agent 的人类确认策略已文档化。
+- [x] 外部 Agent 可以通过 CLI 调用 read/write。
+- [x] 程序化模式有稳定 JSON contract。
+- [x] 面向 Agent 的人类确认策略已文档化。
+
+### Phase 8 验证记录
+
+- [x] 2026-07-07：新增 `usechat serve --stdio` JSONL 工具服务，工具名 `doctor` / `read` / `write` 只包装现有 UseChat runtime，不重新实现微信 RPA。
+- [x] 2026-07-07：新增 `stdio-server` 单元测试，覆盖 invalid JSON、doctor、read、write 显式确认、JSONL streaming、secret-like 字段脱敏。
+- [x] 2026-07-07：`pnpm --filter @shennian/usechat typecheck && pnpm --filter @shennian/usechat test` 通过，CLI 共 12 个测试通过。
+- [x] 2026-07-07：构建后真实入口 smoke 通过：`node packages/cli/dist/index.js --config <tmp> serve --stdio` 输入 `doctor` JSONL，返回 `ok: true`、`tool: "doctor"`。
 
 ## Phase 9 — 私有正式 release
 

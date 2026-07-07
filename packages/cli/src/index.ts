@@ -22,6 +22,7 @@ import {
   type UseChatConfig,
 } from '@shennian/usechat-core'
 import { createOcrOnlyVisionProvider, createOpenAICompatibleVisionProvider } from '@shennian/usechat-model-provider'
+import { runUseChatStdioServer } from './stdio-server.js'
 
 const VERSION = '0.1.0'
 
@@ -55,6 +56,7 @@ export async function main(argv = process.argv.slice(2)): Promise<number> {
       case 'doctor': return await commandDoctor(parsed)
       case 'read': return await commandRead(parsed)
       case 'write': return await commandWrite(parsed)
+      case 'serve': return await commandServe(parsed)
       default:
         throw new Error(`unknown_command: ${parsed.command}`)
     }
@@ -189,6 +191,13 @@ async function commandWrite(parsed: ParsedArgs): Promise<number> {
   }
 }
 
+async function commandServe(parsed: ParsedArgs): Promise<number> {
+  const transport = readStringFlag(parsed, 'stdio') === undefined && parsed.flags.stdio !== true ? undefined : 'stdio'
+  if (transport !== 'stdio') throw new Error('usage: usechat serve --stdio')
+  await runUseChatStdioServer({ configPath: parsed.global.configPath })
+  return 0
+}
+
 function createProviderFromConfig(config: UseChatConfig) {
   const validation = validateUseChatConfig(config)
   if (!validation.ok) throw new Error(`model_not_configured: ${validation.issues.map((issue) => issue.path).join(', ')}`)
@@ -318,6 +327,7 @@ function printHelp(): void {
   usechat doctor [--json]
   usechat read --app wechat --chat <name> [--limit <n>] [--format markdown|json] [--download never|auto]
   usechat write --app wechat --chat <name> --text <text> [--yes] [--dry-run] [--json]
+  usechat serve --stdio
 
 全局选项：
   --config <path>  指定配置文件路径

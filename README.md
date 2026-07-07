@@ -22,6 +22,7 @@ AI Agent
 usechat doctor
 usechat read --app wechat --chat "ABC" --limit 10
 usechat write --app wechat --chat "ABC" --text "hello" --yes
+usechat serve --stdio
 ```
 
 真实设备回归可以直接跑：
@@ -115,7 +116,7 @@ pnpm smoke:wechat:abc:windows-task
 - 下载当前可见媒体并物化为本机附件。
 - 本机 ledger、baseline、去重、echo suppression。
 - `watch` 模式输出 JSONL 事件。
-- 面向 Codex、Claude Code、Cursor、OpenCode 和自定义 Agent 的工具服务 / MCP 风格接口。
+- 面向 Codex、Claude Code、Cursor、OpenCode 和自定义 Agent 的 `serve --stdio` 工具服务；未来可增加 MCP adapter。
 - 微信之后接入更多消息软件连接器。
 
 ## 仓库结构
