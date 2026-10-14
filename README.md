@@ -14,6 +14,14 @@ usechat watch --app wechat --chat "ABC" --emit jsonl
 usechat serve --stdio
 ```
 
+## 架构一览
+
+![UseChat 架构：本地 Core 分别调用原生 Helper 与模型 Provider，通过用户授权的微信窗口读写消息](docs/assets/usechat-architecture.svg)
+
+[English diagram](docs/assets/usechat-architecture-en.svg) · [完整技术架构](docs/ARCHITECTURE.md)
+
+实线表示本机工具调用与窗口操作，虚线表示视觉模型请求和响应。`watch` 使用可见窗口轮询；读取会调用视觉模型，发送切换对话时也可能调用模型识别布局。使用远程模型时，截图和 OCR 提示会发送到用户配置的服务。
+
 ## 核心能力
 
 - **读取微信消息**：读取指定对话当前可见消息，输出 Markdown 或 JSON。

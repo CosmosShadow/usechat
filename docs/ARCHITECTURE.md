@@ -2,6 +2,13 @@
 
 ## 一句话架构
 
+![UseChat 本地运行时、原生 Helper 和视觉模型数据流](assets/usechat-architecture.svg)
+
+[English diagram](assets/usechat-architecture-en.svg)
+
+Core 分别调用本机 Helper 和 Model Provider；Model Provider 是本机接口层，视觉模型服务可为远程端点。图中的模型路径既用于读取消息，也可能用于发送前的布局识别。Watch 的去重发生在识别之后，不表示无新消息时不调用模型。
+
+
 ```text
 Agent / 人类 CLI
   -> UseChat CLI / SDK / 工具服务

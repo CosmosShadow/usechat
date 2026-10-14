@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1340" viewBox="0 0 1000 1340" role="img" aria-labelledby="title desc">
+<title id="title">UseChat 架构</title>
+<desc id="desc">watch 是可见窗口轮询；发送切换对话时也可能识别布局</desc>
+<defs><marker id="local" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#52718c"/></marker><marker id="model" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#7c3aed"/></marker></defs>
+<rect width="1000" height="1340" fill="#ffffff"/>
+<g font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif">
+<text x="500" y="50" font-size="36" fill="#102b46" font-weight="700" text-anchor="middle">UseChat 架构</text>
+<rect x="190" y="80" width="620" height="90" rx="20" fill="#edf6ff" stroke="#7badd6" stroke-width="2"/>
+<text x="500" y="119" font-size="28" fill="#102b46" font-weight="650" text-anchor="middle">用户 / AI Agent</text>
+<text x="500" y="151" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">决定目标、理解消息、草拟回复</text>
+<rect x="30" y="200" width="940" height="830" rx="28" fill="#f4f8fb" stroke="#aabfd0" stroke-width="2"/>
+<text x="65" y="235" font-size="22" fill="#4d6b84" font-weight="600" text-anchor="start">用户电脑 · 本地运行</text>
+<rect x="90" y="265" width="820" height="90" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="500" y="304" font-size="28" fill="#102b46" font-weight="650" text-anchor="middle">CLI / SDK / stdio 工具服务</text>
+<text x="500" y="336" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">read · write · watch</text>
+<path d="M480 170 L480 265" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<path d="M520 265 L520 170" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<rect x="90" y="400" width="820" height="140" rx="20" fill="#e9f5f2" stroke="#67a79a" stroke-width="2"/>
+<text x="500" y="440" font-size="30" fill="#18594e" font-weight="700" text-anchor="middle">TypeScript Core</text>
+<text x="500" y="480" font-size="24" fill="#243449" font-weight="400" text-anchor="middle">消息校验与归一化 · watch 基线与去重</text>
+<text x="500" y="515" font-size="24" fill="#243449" font-weight="400" text-anchor="middle">发送状态 · reasonCode · trace</text>
+<path d="M480 355 L480 400" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<path d="M520 400 L520 355" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<rect x="90" y="635" width="420" height="170" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="300" y="675" font-size="28" fill="#102b46" font-weight="650" text-anchor="middle">Native Helper</text>
+<text x="300" y="718" font-size="24" fill="#243449" font-weight="400" text-anchor="middle">窗口 · 截图 · 本机 OCR</text>
+<text x="300" y="751" font-size="24" fill="#243449" font-weight="400" text-anchor="middle">输入 · 剪贴板 · 文件</text>
+<text x="300" y="783" font-size="21" fill="#243449" font-weight="400" text-anchor="middle">macOS Swift / Windows C#</text>
+<rect x="590" y="635" width="320" height="170" rx="20" fill="#f3edff" stroke="#b5a0dc" stroke-width="2"/>
+<text x="750" y="675" font-size="28" fill="#563193" font-weight="650" text-anchor="middle">Model Provider</text>
+<text x="750" y="718" font-size="20" fill="#243449" font-weight="400" text-anchor="middle">OpenAI-compatible 接口</text>
+<text x="750" y="754" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">结构化消息 / 布局识别</text>
+<path d="M185 540 L185 635" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<path d="M415 635 L415 540" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<text x="300" y="586" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">JSON-RPC</text>
+<text x="300" y="615" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">观察 / 执行</text>
+<path d="M650 540 L650 635" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<path d="M855 635 L855 540" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<text x="750" y="586" font-size="20" fill="#243449" font-weight="400" text-anchor="middle">截图 + OCR 提示</text>
+<text x="750" y="615" font-size="20" fill="#243449" font-weight="400" text-anchor="middle">结构化 JSON</text>
+<rect x="90" y="890" width="420" height="105" rx="20" fill="#e8f4e8" stroke="#87b38a" stroke-width="2"/>
+<text x="300" y="933" font-size="28" fill="#205829" font-weight="650" text-anchor="middle">微信桌面端</text>
+<text x="300" y="973" font-size="21" fill="#243449" font-weight="400" text-anchor="middle">已登录、用户授权的可见窗口</text>
+<path d="M185 805 L185 890" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<path d="M415 890 L415 805" fill="none" stroke="#52718c" stroke-width="3" marker-end="url(#local)"/>
+<text x="300" y="856" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">观察 / 执行</text>
+<rect x="535" y="1110" width="430" height="115" rx="20" fill="#f3edff" stroke="#b5a0dc" stroke-width="2"/>
+<text x="750" y="1157" font-size="24" fill="#563193" font-weight="650" text-anchor="middle">视觉模型服务 · 用户自配</text>
+<text x="750" y="1194" font-size="22" fill="#243449" font-weight="400" text-anchor="middle">推荐 qwen3.5-flash</text>
+<path d="M665 805 L665 1110" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#model)" stroke-dasharray="8 7"/>
+<path d="M855 1110 L855 805" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#model)" stroke-dasharray="8 7"/>
+<rect x="580" y="1043" width="340" height="52" rx="10" fill="#ffffff" stroke="#ffffff" stroke-width="2"/>
+<text x="750" y="1064" font-size="20" fill="#563193" font-weight="400" text-anchor="middle">截图与提示 →</text>
+<text x="750" y="1088" font-size="20" fill="#563193" font-weight="400" text-anchor="middle">← JSON 结果</text>
+<text x="500" y="1275" font-size="21" fill="#4d6b84" font-weight="400" text-anchor="middle">虚线：模型请求与响应；模型服务可为远程端点</text>
+<text x="500" y="1310" font-size="20" fill="#4d6b84" font-weight="400" text-anchor="middle">watch 是可见窗口轮询；发送切换对话时也可能识别布局</text>
+</g></svg>
