@@ -35,13 +35,21 @@ UseChat 选择 Skill，是为了把已经验证过的微信操作经验和本地
 
 这种定位也符合 [OpenAI 官方对 Skill 的说明](https://developers.openai.com/cookbook/examples/skills_in_api)：将可重复的操作流程、脚本和资源打包，供 Agent 按需复用。
 
+## 把微信操作中的麻烦沉淀下来
+
+UseChat 采用与人使用桌面软件相同的交互路径：**看当前画面 → 确认目标 → 点击或输入 → 再看结果**。这让 Agent 可以围绕用户真正看到的界面工作，不必依赖微信内部结构树或私有数据接口。Skill 将这条路径中的适配经验和脚本一起保存，后续任务可以复用。
+
+本机实际遇到过：系统截图遗漏微信、普通键入无效、发送按键差异、窗口与焦点变化、滚动落点不对。这些都比“点击发送”四个字复杂。当前 Skill 已记录对应的截图后端选择、授权粘贴与按键方案、坐标换算、画面校验和发送后检查；遇到弹窗时先看清再决定，不能继续使用被遮挡前的坐标。
+
+**“像人一样操作”描述的是交互方式。** 它不代表无法被识别为自动化，也不代表不会触发账号限制。现有证据不足以把上述异常归因于微信反自动化。登录、安全验证或账号限制提示需要交给用户处理。项目沉淀的是可复用的界面操作经验，不承诺绕过检测。
+
 ## 架构图
 
 ![UseChat Skill 架构：用户 → Agent 与 Skill → 本地 Node.js 工具 → macOS 微信，截图返回 Agent 验证](docs/assets/usechat-skill-architecture.svg)
 
 **Agent 负责理解与判断，Skill 约定操作流程，本地工具执行动作，微信画面提供验证依据。** 图中的返回箭头代表每步操作后的新截图；输入前还会重新采集画面，校验标题、草稿和前台身份。工具本身不调用模型 API，宿主 Agent 如何处理截图取决于其数据设置。
 
-最新打包版本见 [GitHub Releases](https://github.com/CosmosShadow/usechat/releases/latest)。下载 `wechat-visual-skill-0.5.1.zip`，解压后将 `wechat-visual` 文件夹放入 Agent 的 skills 目录，依赖和系统授权要求与下文相同。
+最新打包版本见 [GitHub Releases](https://github.com/CosmosShadow/usechat/releases/latest)。下载 `wechat-visual-skill-0.5.2.zip`，解压后将 `wechat-visual` 文件夹放入 Agent 的 skills 目录，依赖和系统授权要求与下文相同。
 
 ## 安装
 

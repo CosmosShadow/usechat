@@ -1,6 +1,6 @@
 {
   "name": "wechat-visual-skill",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "private": true,
   "description": "UseChat: screenshot-first WeChat operations through the wechat-visual Agent Skill.",
   "type": "module",
