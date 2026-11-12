@@ -19,7 +19,8 @@
     "NOTICE",
     "agents",
     "scripts",
-    "tests"
+    "tests",
+    "docs/assets"
   ],
   "bin": {
     "wechat-visual": "scripts/wechat.mjs"

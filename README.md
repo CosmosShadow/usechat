@@ -6,6 +6,24 @@ UseChat 现在以 **`wechat-visual` Skill + Node.js 单步工具**分发。Agent
 
 当前支持 **macOS 微信桌面端**。Windows 尚未实现。需要一个能查看本地图片、运行本地命令并加载 Skill 的 Agent；本机已通过 Codex 实际验证。其他宿主请自行验证其 Skill 加载和图像工具。
 
+## 为什么做这个
+
+当你已经在用 Codex 这样的 AI Agent 时，处理微信仍然常常需要自己切换窗口、找群、输入，再回到原任务。UseChat 把这段操作做成可安装的 Skill，让当前 Agent 在你的授权范围内继续完成它。
+
+- **把自然语言变成实际操作**：指定群聊和正文，就能由 Agent 看图定位、输入、发送并检查结果；也可以逐页读取指定群的可见消息，帮助整理上下文。
+- **复用已经在用的 Agent**：判断和看图由宿主 Agent 完成，本地脚本只执行单步动作，少一套模型配置和原生 Helper 构建流程。宿主 Agent 自身仍可能产生模型费用。
+- **每一步都有可见依据**：操作前检查新截图与保护区域，操作后返回画面，便于核查“点了哪里、输入了什么、是否出现发送气泡”。
+
+它的价值是让 Agent 接上用户正在使用的桌面工作流。当前适合用户主动发起的微信读写与协作，不提供无人值守的群消息监听或批量营销服务。
+
+## 架构图
+
+![UseChat Skill 架构：用户 → Agent 与 Skill → 本地 Node.js 工具 → macOS 微信，截图返回 Agent 验证](docs/assets/usechat-skill-architecture.svg)
+
+**Agent 负责理解与判断，Skill 约定操作流程，本地工具执行动作，微信画面提供验证依据。** 图中的返回箭头代表每步操作后的新截图；输入前还会重新采集画面，校验标题、草稿和前台身份。工具本身不调用模型 API，宿主 Agent 如何处理截图取决于其数据设置。
+
+最新打包版本见 [GitHub Releases](https://github.com/CosmosShadow/usechat/releases/latest)。下载 `wechat-visual-skill-0.5.0.zip`，解压后将 `wechat-visual` 文件夹放入 Agent 的 skills 目录，依赖和系统授权要求与下文相同。
+
 ## 安装
 
 需要 Node.js 20+、Git，以及 FFmpeg 和 cliclick。第三方工具不随项目分发，也不会被脚本静默安装。已有 Homebrew 的用户可以自行安装依赖：
