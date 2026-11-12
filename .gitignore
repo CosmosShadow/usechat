@@ -1,35 +1,13 @@
-# Dependencies
-node_modules/
-.pnpm-store/
-
-# Build output
-dist/
-build/
-coverage/
-*.tsbuildinfo
-
-# Helper runtime build output / large runtime assets
-helper-runtime/dist/
-helper-runtime/wechat-channel/macos/usechat-wechat-channel-helper
-helper-runtime/wechat-channel/windows/usechat-wechat-channel-helper.exe
-helper-runtime/wechat-channel/windows/*.dll
-helper-runtime/wechat-channel/windows/models/v5/*.onnx
-helper-runtime/wechat-channel/windows/models/v5/*.txt
-
-# Runtime / local state
-.usechat/
-.dev-runtime/
-logs/
-*.log
-
-# OS / editor
+.build/
 .DS_Store
-.idea/
-.vscode/
+*.png
+*.snapshot.json
 
-# Secrets
+node_modules/
+dist/
+coverage/
 .env
 .env.*
-!.env.example
-.shennian/runtime/manager/cmrbpettk0nm32ooy18v3fvsb/instructions.md
-.uploads/IMG_7861.jpg
+.shennian/
+.uploads/
+*.tgz

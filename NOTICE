@@ -1,0 +1,8 @@
+The screenshot-to-screen coordinate mapping in scripts/geometry.mjs is adapted
+from UseChat, Copyright (c) 2026 Shennian, MIT License.
+Upstream: https://github.com/CosmosShadow/usechat
+Reviewed source revision: a5b353a69509fe6b21ba3cea3879130dbb985e5b
+Source path: packages/core/src/wechat/points.ts.
+The main branch now distributes the wechat-visual Skill implementation.
+The original UseChat runtime is preserved on the legacy branch.
+See LICENSE for the retained MIT notice.

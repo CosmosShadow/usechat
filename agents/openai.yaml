@@ -1,0 +1,4 @@
+interface:
+  display_name: "微信视觉操作"
+  short_description: "AI 主动看截图读写微信，无 OCR/监听，Node.js 脚本免编译，需运行时工具"
+  default_prompt: "使用 $wechat-visual 在我指定的微信群读取消息，并逐步验证我授权的测试消息发送。"
