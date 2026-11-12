@@ -1,56 +1,56 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980" role="img" aria-labelledby="title desc">
-<title id="title">UseChat: WeChat through an Agent Skill</title>
-<desc id="desc">The user specifies a chat and message. The Agent loads wechat-visual, inspects screenshots, and calls local Node.js primitives. macOS tools operate WeChat. Fresh screenshots and pixel guards protect each input; the Agent visually verifies the result.</desc>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#526680"/></marker></defs>
-<rect width="1400" height="980" fill="#f5f7fb"/>
-<style>text{font-family:Arial,Helvetica,sans-serif;fill:#172c48}.title{font-size:44px;font-weight:700}.sub{font-size:21px;fill:#536983}.label{font-size:15px;font-weight:700;letter-spacing:2px;fill:#536983}.head{font-size:25px;font-weight:700}.body{font-size:19px;fill:#435a76}.small{font-size:17px;fill:#536983}.line{fill:none;stroke:#526680;stroke-width:3;marker-end:url(#arrow)}</style>
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1240" viewBox="0 0 1400 1240" role="img" aria-labelledby="title desc">
+<title id="title">UseChat：通过 Skill 操作微信的中文架构图</title>
+<desc id="desc">用户指定群聊与消息，Agent 根据 Skill 看图判断，调用本地工具操作微信，再查看截图验证结果。Agent 可以直接操作；Skill 用于复用流程、脚本与验证经验。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#526680" /></marker></defs>
+<rect width="1400" height="1240" fill="#f5f7fb" />
+<style>text{font-family:"PingFang SC","Heiti SC",sans-serif;fill:#172c48}.title{font-size:44px;font-weight:700}.sub{font-size:21px;fill:#536983}.label{font-size:15px;font-weight:700;letter-spacing:2px;fill:#536983}.head{font-size:25px;font-weight:700}.body{font-size:19px;fill:#435a76}.small{font-size:17px;fill:#536983}.line{fill:none;stroke:#526680;stroke-width:3;marker-end:url(#arrow)}</style>
 
 <text x="60" y="80" class="title">UseChat</text>
-<text x="60" y="120" class="sub">A screenshot-first WeChat Skill for your existing AI Agent</text>
-<text x="60" y="178" class="label">INTENT</text>
-<text x="390" y="178" class="label">REASONING</text>
-<text x="720" y="178" class="label">LOCAL EXECUTION</text>
-<text x="1050" y="178" class="label">VISIBLE APP</text>
-<rect x="60" y="205" width="280" height="280" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2"/>
-<rect x="390" y="205" width="280" height="280" rx="18" fill="#eaf1ff" stroke="#d9e2ee" stroke-width="2"/>
-<rect x="720" y="205" width="280" height="280" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2"/>
-<rect x="1050" y="205" width="290" height="280" rx="18" fill="#e9f7ee" stroke="#d9e2ee" stroke-width="2"/>
-<text x="82" y="250" class="head">User</text>
-<text x="82" y="302" class="body">Choose the chat</text>
-<text x="82" y="339" class="body">Specify the message</text>
-<text x="82" y="376" class="body">Authorize shared input</text>
-<text x="82" y="451" class="small">“Send hello to my group”</text>
+<text x="60" y="120" class="sub">让你正在使用的 AI Agent，看着截图操作微信</text>
+<text x="60" y="178" class="label">用户意图</text>
+<text x="390" y="178" class="label">理解与判断</text>
+<text x="720" y="178" class="label">本地执行</text>
+<text x="1050" y="178" class="label">可见的微信窗口</text>
+<rect x="60" y="205" width="280" height="280" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2" />
+<rect x="390" y="205" width="280" height="280" rx="18" fill="#eaf1ff" stroke="#d9e2ee" stroke-width="2" />
+<rect x="720" y="205" width="280" height="280" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2" />
+<rect x="1050" y="205" width="290" height="280" rx="18" fill="#e9f7ee" stroke="#d9e2ee" stroke-width="2" />
+<text x="82" y="250" class="head">用户</text>
+<text x="82" y="302" class="body">指定群聊或联系人</text>
+<text x="82" y="339" class="body">指定要发送的正文</text>
+<text x="82" y="376" class="body">授权本次共享键鼠</text>
+<text x="82" y="451" class="small">“给指定群发送 hello”</text>
 <text x="412" y="250" class="head">Agent + Skill</text>
-<text x="412" y="302" class="body">Load wechat-visual</text>
-<text x="412" y="339" class="body">Inspect the actual PNG</text>
-<text x="412" y="376" class="body">Choose the next action</text>
-<text x="412" y="451" class="small">Uses the host’s AI model</text>
-<text x="742" y="250" class="head">Node.js tools</text>
-<text x="742" y="302" class="body">shot / read / scroll</text>
-<text x="742" y="339" class="body">click / type / key</text>
-<text x="742" y="376" class="body">Return image + receipt</text>
-<text x="742" y="451" class="small">No separate model API</text>
-<text x="1072" y="250" class="head">macOS WeChat</text>
-<text x="1072" y="302" class="body">FFmpeg captures pixels</text>
-<text x="1072" y="339" class="body">cliclick / JXA send input</text>
-<text x="1072" y="376" class="body">Shared foreground desktop</text>
-<text x="1072" y="451" class="small">No native Helper build</text>
-<path d="M 345 345 H 382" class="line"/>
-<path d="M 675 345 H 712" class="line"/>
-<path d="M 1005 345 H 1042" class="line"/>
-<path d="M 1195 489 V 547 H 530 V 492" class="line"/>
-<text x="655" y="580" class="sub">New screenshot → Agent checks the visible result</text>
-<rect x="60" y="625" width="1280" height="242" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2"/>
-<text x="88" y="668" class="label">BEFORE EVERY INPUT</text>
-<text x="88" y="715" class="head">1. Capture</text>
-<text x="88" y="759" class="small">One frame → crop to WeChat</text>
-<text x="88" y="791" class="small">Window metadata; no UI tree</text>
-<text x="510" y="715" class="head">2. Guard</text>
-<text x="510" y="759" class="small">Fresh pixels + title / draft checks</text>
-<text x="510" y="791" class="small">Single-use receipt; stop on change</text>
-<text x="930" y="715" class="head">3. Act &amp; inspect</text>
-<text x="930" y="759" class="small">Type and Return are separate</text>
-<text x="930" y="791" class="small">Check bubble / text / errors</text>
-<text x="60" y="914" class="small">Local scripts do not call a model API. Screenshot processing follows the Agent host’s data settings.</text>
-<text x="60" y="945" class="small">macOS only · Node.js 20+ · FFmpeg + cliclick · No OCR, chat database, injection or message listener</text>
-</svg>
+<text x="412" y="302" class="body">读取微信操作 Skill</text>
+<text x="412" y="339" class="body">看截图，确认群名与正文</text>
+<text x="412" y="376" class="body">判断并选择下一步操作</text>
+<text x="412" y="451" class="small">使用当前 Agent 的模型</text>
+<text x="742" y="250" class="head">本地 Node.js 工具</text>
+<text x="742" y="302" class="body">截图 / 读取 / 滚动</text>
+<text x="742" y="339" class="body">点击 / 输入 / 按键</text>
+<text x="742" y="376" class="body">返回截图与操作回执</text>
+<text x="742" y="451" class="small">脚本无需另接模型 API</text>
+<text x="1072" y="250" class="head">macOS 微信</text>
+<text x="1072" y="302" class="body">FFmpeg 采集画面</text>
+<text x="1072" y="339" class="body">cliclick / JXA 执行输入</text>
+<text x="1072" y="376" class="body">使用共享的前台桌面</text>
+<text x="1072" y="451" class="small">无需编译原生 Helper</text>
+<path d="M 345 345 H 382" class="line" />
+<path d="M 675 345 H 712" class="line" />
+<path d="M 1005 345 H 1042" class="line" />
+<path d="M 1195 489 V 547 H 530 V 492" class="line" />
+<text x="655" y="580" class="sub">返回新截图，由 Agent 核对实际操作结果</text>
+<rect x="60" y="625" width="1280" height="242" rx="18" fill="#ffffff" stroke="#d9e2ee" stroke-width="2" />
+<text x="88" y="668" class="label">每次输入前后，都有检查依据</text>
+<text x="88" y="715" class="head">1. 截图定位</text>
+<text x="88" y="759" class="small">采集一帧，自动裁剪微信窗口</text>
+<text x="88" y="791" class="small">使用窗口元数据，不遍历界面树</text>
+<text x="510" y="715" class="head">2. 操作前校验</text>
+<text x="510" y="759" class="small">核对新画面、群名和待发送文字</text>
+<text x="510" y="791" class="small">快照回执仅用一次，画面变化即停</text>
+<text x="930" y="715" class="head">3. 执行后验证</text>
+<text x="930" y="759" class="small">输入正文与回车发送分开执行</text>
+<text x="930" y="791" class="small">检查消息气泡、正文和错误标记</text>
+<text x="60" y="1180" class="small">本地脚本不调用模型 API；Agent 如何处理截图，遵循其宿主的数据设置。</text>
+<text x="60" y="1210" class="small">仅支持 macOS · Node.js 20+ · FFmpeg + cliclick · 无 OCR、聊天数据库读取、进程注入或消息监听</text>
+<rect x="60" y="895" width="1280" height="242" rx="18" fill="#eaf1ff" stroke="#d9e2ee" stroke-width="2" /><text x="88" y="938" class="head">为什么用 Skill？Agent 可以直接操作，Skill 把经验变成可复用的能力。</text><text x="88" y="986" class="head">流程可复用</text><text x="88" y="1028" class="small">不必每次从头描述操作步骤</text><text x="88" y="1064" class="small">群名、草稿、发送结果都有核对约定</text><text x="510" y="986" class="head">工具可复用</text><text x="510" y="1028" class="small">窗口裁剪、坐标换算和画面校验</text><text x="510" y="1064" class="small">交给已验证的脚本执行</text><text x="930" y="986" class="head">便于安装和维护</text><text x="930" y="1028" class="small">说明、脚本、测试一起分发</text><text x="930" y="1064" class="small">修复一次，后续任务可以复用</text><text x="88" y="1110" class="small">Skill 本身不授予系统权限，也不保证成功；临时任务已有可靠工具时，Agent 可以直接完成。</text></svg>

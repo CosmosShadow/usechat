@@ -16,13 +16,32 @@ UseChat 现在以 **`wechat-visual` Skill + Node.js 单步工具**分发。Agent
 
 它的价值是让 Agent 接上用户正在使用的桌面工作流。当前适合用户主动发起的微信读写与协作，不提供无人值守的群消息监听或批量营销服务。
 
+## Agent 可以直接操作，为什么还要 Skill？
+
+**可以直接操作。** 如果 Agent 已有可用的截图、点击和输入工具，也获得了用户授权，一次临时任务完全可以直接完成。Skill 并不是操作微信的必要条件，也不会赋予模型原本没有的视觉能力或系统权限。
+
+UseChat 选择 Skill，是为了把已经验证过的微信操作经验和本地工具一起交付，方便重复使用：
+
+| 关注点 | Agent 直接操作 | 使用 UseChat Skill |
+|---|---|---|
+| 操作流程 | 由当次上下文和现有工具决定 | 带有核对群名、保护原草稿、分步输入与发送、检查结果的流程约定 |
+| 本地工具 | 复用宿主工具，或临时编写脚本 | 提供窗口裁剪、坐标换算、快照回执和像素校验脚本 |
+| 经验复用 | 新会话可能需要重新说明或发现约定 | 操作说明、脚本与测试一起安装，后续可按需读取 |
+| 维护更新 | 取决于宿主工具与临时实现 | 同一份仓库集中修复、测试和版本发布 |
+
+例如，“给指定群发送 hello”只有一句话，但执行时仍要处理：微信窗口在哪、截图像素如何对应点击坐标、输入框有没有原草稿、画面是否发生变化，以及发送后是否真的出现了消息气泡。Skill 负责说明这些步骤；脚本负责执行可以确定检查的部分；Agent 仍负责看图和判断。
+
+**Skill 是可安装的操作说明和工具包。** 像素校验等保护来自随包脚本的实现和实际调用，不能仅靠一份说明保证。它不会自动获得微信权限，也不保证零误操作、零模型费用或所有版本兼容。如果你的 Agent 已有可靠的微信操作工具和完整流程，可以直接使用，或只复用本项目中需要的部分。
+
+这种定位也符合 [OpenAI 官方对 Skill 的说明](https://developers.openai.com/cookbook/examples/skills_in_api)：将可重复的操作流程、脚本和资源打包，供 Agent 按需复用。
+
 ## 架构图
 
 ![UseChat Skill 架构：用户 → Agent 与 Skill → 本地 Node.js 工具 → macOS 微信，截图返回 Agent 验证](docs/assets/usechat-skill-architecture.svg)
 
 **Agent 负责理解与判断，Skill 约定操作流程，本地工具执行动作，微信画面提供验证依据。** 图中的返回箭头代表每步操作后的新截图；输入前还会重新采集画面，校验标题、草稿和前台身份。工具本身不调用模型 API，宿主 Agent 如何处理截图取决于其数据设置。
 
-最新打包版本见 [GitHub Releases](https://github.com/CosmosShadow/usechat/releases/latest)。下载 `wechat-visual-skill-0.5.0.zip`，解压后将 `wechat-visual` 文件夹放入 Agent 的 skills 目录，依赖和系统授权要求与下文相同。
+最新打包版本见 [GitHub Releases](https://github.com/CosmosShadow/usechat/releases/latest)。下载 `wechat-visual-skill-0.5.1.zip`，解压后将 `wechat-visual` 文件夹放入 Agent 的 skills 目录，依赖和系统授权要求与下文相同。
 
 ## 安装
 
